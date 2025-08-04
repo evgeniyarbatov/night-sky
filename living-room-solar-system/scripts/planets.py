@@ -12,8 +12,9 @@ latitude = 20.994852335385882
 longitude = 105.8676630997609
 timezone_str = "Asia/Ho_Chi_Minh"
 
-wall_distance_cm = 300     # Distance from eyes to wall
+wall_distance_cm = 300
 sample_interval_minutes = 10
+elevation_m = 15.4
 # ===================================
 
 # Load ephemeris and timescale
@@ -21,7 +22,7 @@ eph = load('de421.bsp')
 ts = load.timescale()
 
 # Define observer and location
-observer = Topos(latitude_degrees=latitude, longitude_degrees=longitude)
+observer = Topos(latitude_degrees=latitude, longitude_degrees=longitude, elevation_m=elevation_m)
 earth = eph['earth']
 location = earth + observer
 
