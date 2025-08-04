@@ -8,8 +8,8 @@ from zoneinfo import ZoneInfo
 
 # ========== USER SETTINGS ==========
 city_name = "Hanoi"
-latitude = 21.0285
-longitude = 105.8544
+latitude = 20.994852335385882 
+longitude = 105.8676630997609
 timezone_str = "Asia/Ho_Chi_Minh"
 
 wall_distance_cm = 300     # Distance from eyes to wall
