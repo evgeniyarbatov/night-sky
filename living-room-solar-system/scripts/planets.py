@@ -50,7 +50,7 @@ while current_dt <= sunrise:
 planet_names = [
     'Mercury', 'Venus', 'Mars',
     'Jupiter barycenter', 'Saturn barycenter',
-    'Uranus barycenter', 'Neptune barycenter', 'Pluto barycenter'
+    'Uranus barycenter', 'Neptune barycenter'
 ]
 
 # Map simplified names
@@ -61,8 +61,7 @@ name_map = {
     'Jupiter barycenter': 'Jupiter',
     'Saturn barycenter': 'Saturn',
     'Uranus barycenter': 'Uranus',
-    'Neptune barycenter': 'Neptune',
-    'Pluto barycenter': 'Pluto'
+    'Neptune barycenter': 'Neptune'
 }
 
 # Store results
