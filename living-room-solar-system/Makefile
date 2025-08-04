@@ -1,6 +1,8 @@
 NAME = solar-system
 VENV_PATH = ~/.venv/$(NAME)
 
+all: planets
+
 venv:
 	@python3 -m venv $(VENV_PATH)
 
