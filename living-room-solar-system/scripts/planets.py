@@ -34,45 +34,19 @@ def get_wall_distance_for_azimuth(azimuth_deg, wall_distances):
     
     return wall_distances[closest_direction], closest_direction
 
-def prompt_for_wall_distances():
-    """
-    Prompt user for wall distances in specific directions (degrees).
-    """
-    print("Enter wall distances for different directions (in degrees from North):")
-    print("Examples: 0° = North, 90° = East, 180° = South, 270° = West")
-    print("Enter 'done' when finished.")
+def get_cardinal_direction(azimuth):
+    """Convert azimuth to cardinal direction description."""
+    directions = [
+        (0, "North"), (22.5, "NNE"), (45, "NE"), (67.5, "ENE"),
+        (90, "East"), (112.5, "ESE"), (135, "SE"), (157.5, "SSE"),
+        (180, "South"), (202.5, "SSW"), (225, "SW"), (247.5, "WSW"),
+        (270, "West"), (292.5, "WNW"), (315, "NW"), (337.5, "NNW"), (360, "North")
+    ]
     
-    wall_distances = {}
-    
-    while True:
-        direction_input = input("Direction in degrees (or 'done'): ").strip()
-        
-        if direction_input.lower() == 'done':
-            if not wall_distances:
-                print("You must enter at least one wall distance!")
-                continue
-            break
-        
-        try:
-            direction = float(direction_input)
-            if direction < 0 or direction >= 360:
-                print("Direction must be between 0 and 359 degrees.")
-                continue
-            
-            distance_input = input(f"Wall distance at {direction}° (in cm): ").strip()
-            distance = float(distance_input)
-            
-            if distance <= 0:
-                print("Distance must be positive.")
-                continue
-            
-            wall_distances[direction] = distance
-            print(f"Added: {direction}° = {distance} cm\n")
-            
-        except ValueError:
-            print("Please enter valid numbers.\n")
-    
-    return wall_distances
+    for i in range(len(directions) - 1):
+        if directions[i][0] <= azimuth < directions[i + 1][0]:
+            return directions[i][1]
+    return "North"
 
 # Load ephemeris and timescale
 eph = load('de421.bsp')
@@ -110,7 +84,7 @@ planet_names = [
     'Uranus barycenter', 'Neptune barycenter'
 ]
 
-# Map simplified names
+# Map simplified names with unique symbols
 name_map = {
     'Mercury': 'Mercury',
     'Venus': 'Venus',
@@ -119,6 +93,17 @@ name_map = {
     'Saturn barycenter': 'Saturn',
     'Uranus barycenter': 'Uranus',
     'Neptune barycenter': 'Neptune'
+}
+
+# Unique planet symbols/logos
+planet_symbols = {
+    'Mercury': '☿️',  # Mercury symbol
+    'Venus': '♀️',    # Venus symbol
+    'Mars': '♂️',     # Mars symbol
+    'Jupiter': '♃',   # Jupiter symbol
+    'Saturn': '♄',    # Saturn symbol
+    'Uranus': '♅',    # Uranus symbol
+    'Neptune': '♆'    # Neptune symbol
 }
 
 # Store results
@@ -164,70 +149,112 @@ for key in planet_names:
     })
 
 # ========== OUTPUT ==========
-print(f"Sunset: {sunset.strftime('%Y-%m-%d %H:%M:%S %Z')}")
+print("="*60)
+print(f"PLANET VISIBILITY REPORT FOR {city_name.upper()}")
+print("="*60)
+print(f"Sunset:  {sunset.strftime('%Y-%m-%d %H:%M:%S %Z')}")
 print(f"Sunrise: {sunrise.strftime('%Y-%m-%d %H:%M:%S %Z')}")
-print("\n--- Visible Planets Between Sunset and Sunrise ---\n")
+print(f"Duration: {(sunrise - sunset).total_seconds() / 3600:.1f} hours")
+print()
 
 visible_planets = [r for r in results if r['visible']]
+non_visible_planets = [r for r in results if not r['visible']]
+
+print("--- VISIBLE PLANETS AND THEIR DIRECTIONS ---")
+print()
 
 if not visible_planets:
-    print("No planets are visible between sunset and sunrise.")
+    print("❌ No planets are visible between sunset and sunrise.")
+    print()
 else:
-    # Show visible planets first
+    print("✅ The following planets will be visible:")
+    print()
+    
     for r in visible_planets:
-        print(f"{r['planet']:>8}: Alt={r['avg_alt']:.1f}°, Az={r['avg_az']:.1f}°, "
-              f"Visible from {r['rise_time'].strftime('%H:%M')} to {r['set_time'].strftime('%H:%M')}")
+        cardinal = get_cardinal_direction(r['avg_az'])
+        symbol = planet_symbols[r['planet']]
+        print(f"{symbol} {r['planet']:>8}: {r['avg_alt']:5.1f}° altitude, {r['avg_az']:5.1f}° azimuth ({cardinal})")
+        print(f"{'':>12} Visible from {r['rise_time'].strftime('%H:%M')} to {r['set_time'].strftime('%H:%M')}")
+        print()
     
-    # Now ask for wall distances for visible planet directions
-    print(f"\n--- Wall Distance Input ---")
-    print("Enter wall distances for the directions where planets are visible:")
+    # Show azimuth reference
+    print("📍 DIRECTION REFERENCE:")
+    print("   0° = North, 90° = East, 180° = South, 270° = West")
+    print()
     
-    # Get unique azimuth ranges (group similar azimuths)
+    # Group planets by similar directions for wall distance input
     azimuth_groups = {}
     for r in visible_planets:
         az = r['avg_az']
-        # Round to nearest 10 degrees for grouping
-        rounded_az = round(az / 10) * 10
+        # Round to nearest 15 degrees for grouping
+        rounded_az = round(az / 15) * 15
+        if rounded_az >= 360:
+            rounded_az = 0
         if rounded_az not in azimuth_groups:
             azimuth_groups[rounded_az] = []
         azimuth_groups[rounded_az].append(r)
     
+    print("--- WALL DISTANCE INPUT NEEDED ---")
+    print()
+    print("You need to measure wall distances in these directions:")
+    
+    for grouped_az in sorted(azimuth_groups.keys()):
+        planets_in_group = azimuth_groups[grouped_az]
+        planet_names_with_symbols = ", ".join([f"{planet_symbols[p['planet']]} {p['planet']}" for p in planets_in_group])
+        cardinal = get_cardinal_direction(grouped_az)
+        print(f"📏 ~{grouped_az:3.0f}° ({cardinal:>3}) for: {planet_names_with_symbols}")
+    
+    print()
+    print("Now measuring wall distances...")
+    print("-" * 40)
+    
+    # Get wall distances
     wall_distances = {}
     
     for grouped_az in sorted(azimuth_groups.keys()):
         planets_in_group = azimuth_groups[grouped_az]
-        planet_names_str = ", ".join([p['planet'] for p in planets_in_group])
+        planet_names_with_symbols = ", ".join([f"{planet_symbols[p['planet']]} {p['planet']}" for p in planets_in_group])
+        cardinal = get_cardinal_direction(grouped_az)
         
-        print(f"\nPlanets near {grouped_az}° ({planet_names_str}):")
+        print(f"\n🎯 Direction: {grouped_az}° ({cardinal}) - for {planet_names_with_symbols}")
         while True:
             try:
-                distance_input = input(f"Wall distance at ~{grouped_az}° (in cm): ").strip()
+                distance_input = input(f"   Wall distance (in cm): ").strip()
                 distance = float(distance_input)
                 if distance <= 0:
-                    print("Distance must be positive.")
+                    print("   ❌ Distance must be positive. Please try again.")
                     continue
                 wall_distances[grouped_az] = distance
+                print(f"   ✅ Recorded: {distance} cm")
                 break
             except ValueError:
-                print("Please enter a valid number.")
+                print("   ❌ Please enter a valid number.")
     
     # Calculate wall heights for visible planets
-    print(f"\n--- Planet Wall Projections ---\n")
+    print()
+    print("=" * 60)
+    print("PLANET WALL PROJECTION RESULTS")
+    print("=" * 60)
     
     for r in visible_planets:
         # Find closest wall distance
         wall_distance_cm, closest_direction = get_wall_distance_for_azimuth(r['avg_az'], wall_distances)
         vertical_offset_cm = tan(radians(r['avg_alt'])) * wall_distance_cm
+        cardinal = get_cardinal_direction(r['avg_az'])
+        symbol = planet_symbols[r['planet']]
         
-        print(f"{r['planet']:>8}: Alt={r['avg_alt']:.1f}°, Az={r['avg_az']:.1f}° "
-              f"(using {wall_distance_cm:.0f}cm wall at ~{closest_direction:.0f}°)")
-        print(f"{'':>10} Wall Height={vertical_offset_cm:.1f} cm, "
-              f"Visible from {r['rise_time'].strftime('%H:%M')} to {r['set_time'].strftime('%H:%M')}")
-        print()
+        print(f"\n{symbol} {r['planet']:>8}:")
+        print(f"   Position: {r['avg_alt']:5.1f}° altitude, {r['avg_az']:5.1f}° azimuth ({cardinal})")
+        print(f"   Using wall: {wall_distance_cm:.0f} cm at ~{closest_direction:.0f}°")
+        print(f"   📐 Wall projection height: {vertical_offset_cm:.1f} cm")
+        print(f"   ⏰ Visible: {r['rise_time'].strftime('%H:%M')} to {r['set_time'].strftime('%H:%M')}")
 
-# Show non-visible planets
-non_visible_planets = [r for r in results if not r['visible']]
 if non_visible_planets:
-    print("--- Non-Visible Planets ---")
+    print()
+    print("--- NON-VISIBLE PLANETS ---")
     for r in non_visible_planets:
-        print(f"{r['planet']:>8}: Not visible between sunset and sunrise.")
+        symbol = planet_symbols[r['planet']]
+        print(f"⭕ {symbol} {r['planet']:>8}: Not visible between sunset and sunrise")
+
+print()
+print("=" * 60)
