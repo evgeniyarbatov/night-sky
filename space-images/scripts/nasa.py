@@ -59,16 +59,28 @@ class SpaceImageDownloader:
             
             if data.get('media_type') == 'image':
                 image_url = data['url']
-                filename = "apod_today.jpg"
+                # Clean title for filename
+                title = data['title'].replace('/', '_').replace(':', '_').replace('?', '').replace('<', '').replace('>', '').replace('|', '_').replace('"', '').replace('*', '')
+                filename = f"apod_{date_str}_{title}.jpg"
                 filepath = self.download_dir / filename
                 
                 print(f"APOD: {data['title']} ({data['date']})")
                 print(f"Description: {data.get('explanation', 'No description')[:100]}...")
                 
+                # Save description to markdown file
+                description_filename = f"apod_{date_str}_{title}.md"
+                description_filepath = self.download_dir / description_filename
+                description_content = f"# {data['title']}\n\n**Date:** {data['date']}\n**URL:** {data.get('hdurl', data['url'])}\n\n## Description\n\n{data.get('explanation', 'No description')}"
+                
+                with open(description_filepath, 'w', encoding='utf-8') as f:
+                    f.write(description_content)
+                print(f"✓ Saved description: {description_filepath}")
+                
                 return self.download_image(image_url, filepath)
             else:
-                print("APOD today is a video, not an image")
-                return False
+                print(f"APOD for {date_str} is a video, trying another random date...")
+                # Try again with a different random date
+                return self.download_apod()
                 
         except Exception as e:
             print(f"Failed to fetch APOD: {e}")
@@ -78,9 +90,8 @@ class SpaceImageDownloader:
     def download_nasa_library_random(self):
         """Search and download random space object from NASA Image Library"""
         space_objects = [
-            "mars", "jupiter", "saturn", "nebula", "galaxy", "asteroid",
-            "comet", "space station", "shuttle", "telescope", "rover",
-            "solar", "lunar", "earth", "venus", "mercury", "uranus", "neptune"
+            "mars", "jupiter", "saturn", "venus", "mercury", "uranus", "neptune", "earth",
+            "comet", "galaxy", "andromeda", "milky way", "betelgeuse", "sirius", "vega", "polaris"
         ]
         
         search_term = random.choice(space_objects)
@@ -117,12 +128,23 @@ class SpaceImageDownloader:
                 print(f"No suitable image found for '{search_term}'")
                 return False
             
-            filename = f"nasa_library_{search_term}.jpg"
+            # Create unique filename with timestamp
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            filename = f"nasa_library_{search_term}_{timestamp}.jpg"
             filepath = self.download_dir / filename
             
             print(f"NASA Library: {image_data.get('title', 'Unknown')}")
             print(f"Search term: {search_term}")
             print(f"Description: {image_data.get('description', 'No description')[:100]}...")
+            
+            # Save description to markdown file
+            description_filename = f"nasa_library_{search_term}_{timestamp}.md"
+            description_filepath = self.download_dir / description_filename
+            description_content = f"# {image_data.get('title', 'Unknown')}\n\n**Search term:** {search_term}\n**NASA ID:** {image_data.get('nasa_id', 'Unknown')}\n**Date created:** {image_data.get('date_created', 'Unknown')}\n\n## Description\n\n{image_data.get('description', 'No description')}"
+            
+            with open(description_filepath, 'w', encoding='utf-8') as f:
+                f.write(description_content)
+            print(f"✓ Saved description: {description_filepath}")
             
             return self.download_image(image_url, filepath)
             
