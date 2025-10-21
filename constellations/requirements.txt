@@ -1,2 +1,9 @@
 requests
 beautifulsoup4
+astropy
+astroplan
+astral
+matplotlib
+pandas
+numpy
+pytz
