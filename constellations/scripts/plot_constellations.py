@@ -125,14 +125,46 @@ for const_abbr, data in constellation_data.items():
     gif_path = os.path.join(GIF_FOLDER, f"{const_abbr}.gif")
     has_gif = os.path.exists(gif_path)
 
+    # Skip constellations that somehow failed earlier
+    if const_abbr not in constellation_data:
+        continue
+
+    # Retrieve altitude and azimuth data again for plotting
+    file_path = os.path.join(DATA_FOLDER, f"{const_abbr}.txt")
+    df = pd.read_csv(file_path, sep="|", names=["RA_hms", "Dec_deg", "Constellation"], engine='python')
+    df['Dec_deg'] = df['Dec_deg'].astype(float)
+
+    # Convert RA hms to degrees
+    ra_deg = []
+    for ra_hms in df['RA_hms']:
+        h, m, s = [float(x) for x in ra_hms.strip().split()]
+        ra_deg.append((h + m / 60 + s / 3600) * 15)
+    df['RA_deg'] = ra_deg
+
+    stars = SkyCoord(ra=df['RA_deg'].values * u.degree,
+                     dec=df['Dec_deg'].values * u.degree,
+                     frame='icrs')
+
+    altitudes = []
+    azimuths = []
+    for t in times_astropy:
+        altaz_frame = AltAz(obstime=t, location=observer_location)
+        star_altaz = stars.transform_to(altaz_frame)
+        altitudes.append(np.mean(star_altaz.alt.deg))
+        azimuths.append(np.mean(star_altaz.az.deg))
+
+    altitudes = np.array(altitudes)
+    azimuths = np.array(azimuths)
+
+    # Create figure layout
     if has_gif:
         fig = plt.figure(figsize=(16, 4))
-        gs = fig.add_gridspec(1, 3, width_ratios=[1.2, 1, 1.8], wspace=0.3)
-        gif_col, sky_col, time_col = 0, 1, 2
+        gs = fig.add_gridspec(1, 3, width_ratios=[1.2, 1, 1], wspace=0.3)
+        gif_col, az_col, alt_col = 0, 1, 2
     else:
         fig = plt.figure(figsize=(12, 4))
-        gs = fig.add_gridspec(1, 2, width_ratios=[1, 1.8], wspace=0.25)
-        sky_col, time_col = 0, 1
+        gs = fig.add_gridspec(1, 2, width_ratios=[1, 1], wspace=0.3)
+        az_col, alt_col = 0, 1
 
     # ===== GIF (if available) =====
     if has_gif:
@@ -141,66 +173,35 @@ for const_abbr, data in constellation_data.items():
         ax_gif.imshow(img)
         ax_gif.axis('off')
 
-    # ===== Sky position at 23:00 (polar) =====
-    ax_sky = fig.add_subplot(gs[sky_col], projection='polar')
-    ax_sky.set_theta_zero_location('N')
-    ax_sky.set_theta_direction(-1)
-    ax_sky.set_thetagrids(np.arange(0, 360, 45),
-                          labels=['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'])
+    # ===== Azimuth over time =====
+    ax_az = fig.add_subplot(gs[az_col])
+    ax_az.plot(times, azimuths, color='darkorange', lw=2)
+    ax_az.set_ylabel('Azimuth (°)')
+    ax_az.set_xlabel('Time (Hanoi)')
+    ax_az.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M', tz=HANOI_TZ))
+    ax_az.xaxis.set_major_locator(mdates.HourLocator(interval=2, tz=HANOI_TZ))
+    ax_az.grid(True, alpha=0.3)
+    ax_az.set_ylim(0, 360)
 
-    if not np.isnan(data['alt_23']):
-        az_rad = np.radians(data['az_23'])
-        r = 90 - data['alt_23']
-        ax_sky.plot(az_rad, r, 'o', markersize=18, color='gold',
-                    markeredgecolor='darkorange', markeredgewidth=2)
-        ax_sky.set_title(f"{data['direction']} @ 23:00", fontsize=11, pad=10)
-    else:
-        ax_sky.text(0.5, 0.5, "Below horizon at 23:00", ha='center', va='center', transform=ax_sky.transAxes)
+    # ===== Altitude over time =====
+    ax_alt = fig.add_subplot(gs[alt_col])
+    ax_alt.plot(times, altitudes, color='steelblue', lw=2)
+    ax_alt.set_ylabel('Altitude (°)')
+    ax_alt.set_xlabel('Time (Hanoi)')
+    ax_alt.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M', tz=HANOI_TZ))
+    ax_alt.xaxis.set_major_locator(mdates.HourLocator(interval=2, tz=HANOI_TZ))
+    ax_alt.grid(True, alpha=0.3)
+    ax_alt.axhline(0, color='gray', linestyle='--', lw=1)
 
-    ax_sky.set_ylim(0, 90)
-    ax_sky.set_yticks([0, 30, 60, 90])
-    ax_sky.set_yticklabels(['90°', '60°', '30°', '0°'])
-    ax_sky.grid(True, alpha=0.3)
-
-    # ===== Timeline: visibility period =====
-    ax_time = fig.add_subplot(gs[time_col])
-
-    start_num = mdates.date2num(data['start'])
-    end_num = mdates.date2num(data['end'])
-    obs_num = mdates.date2num(obs_time_local)
-
-    # Full night background
-    ax_time.barh(0, mdates.date2num(sunrise) - mdates.date2num(sunset),
-                 left=mdates.date2num(sunset), height=0.5,
-                 color='lightgray', alpha=0.4)
-
-    # Visibility window
-    ax_time.barh(0, end_num - start_num, left=start_num, height=0.5,
-                 color='steelblue', edgecolor='navy', linewidth=1.5)
-
-    # Mark 23:00
-    ax_time.plot([obs_num, obs_num], [-0.25, 0.25],
-                 color='gold', linewidth=2, solid_capstyle='round')
-    ax_time.text(obs_num, 0.35, "23:00", ha='center', fontsize=9,
-                 fontweight='bold', color='gold')
-
-    ax_time.set_ylim(-0.4, 0.6)
-    ax_time.set_yticks([])
-    ax_time.set_xlim(mdates.date2num(sunset), mdates.date2num(sunrise))
-    ax_time.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M', tz=HANOI_TZ))
-    ax_time.xaxis.set_major_locator(mdates.HourLocator(interval=2, tz=HANOI_TZ))
-    ax_time.grid(True, axis='x', alpha=0.3)
-    ax_time.set_xlabel('Time (Hanoi)', fontsize=10)
-    for spine in ['top', 'right', 'left']:
-        ax_time.spines[spine].set_visible(False)
-
-    fig.suptitle(f"{full_name} — visible {data['start'].strftime('%H:%M')}–{data['end'].strftime('%H:%M')} "
-                 f"({data['direction']} {data['alt_23']:.1f}° @ 23:00)",
-                 fontsize=13, fontweight='bold')
+    # ===== Title & Save =====
+    fig.suptitle(
+        f"{full_name} — visible {data['start'].strftime('%H:%M')}–{data['end'].strftime('%H:%M')}",
+        fontsize=13, fontweight='bold'
+    )
 
     safe_name = full_name.replace(' ', '_').replace('/', '_')
     plt.savefig(os.path.join(OUTPUT_FOLDER, f"{safe_name}.png"), dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"✓ {full_name}: visible {data['start'].strftime('%H:%M')}–{data['end'].strftime('%H:%M')}")
+    print(f"✓ {full_name}")
 
-print(f"\nGenerated {len(constellation_data)} plots showing visibility periods.")
+print(f"\nGenerated {len(constellation_data)} plots.")
