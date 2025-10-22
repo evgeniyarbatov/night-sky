@@ -16,13 +16,22 @@ import pytz
 LAT = 20.99484044876172 
 LON = 105.86796107324045
 ELEV = 10  # meters
-DATA_FOLDER = "data/boundaries"  # folder with .txt files
+DATA_FOLDER = "data/boundaries"
 OUTPUT_FOLDER = "data/plots"
 DATE = datetime.now().date()
-DELTA_MINUTES = 10  # time step in minutes
+DELTA_MINUTES = 10
 HANOI_TZ = pytz.timezone("Asia/Ho_Chi_Minh")
+NAMES_FILE = "data/constellation_names.csv"
 
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+
+# Load constellation names
+try:
+    names_df = pd.read_csv(NAMES_FILE)
+    const_names = dict(zip(names_df['abbreviation'], names_df['name']))
+except:
+    print(f"Error: Could not load {NAMES_FILE}")
+    exit(1)
 
 # Observer setup
 observer_location = EarthLocation(lat=LAT*u.deg, lon=LON*u.deg, height=ELEV*u.m)
@@ -30,36 +39,35 @@ observer = Observer(location=observer_location)
 
 # Astronomical sunset/sunrise
 location_info = LocationInfo(latitude=LAT, longitude=LON)
-s = sun(location_info.observer, date=DATE)
+s = sun(location_info.observer, date=DATE, tzinfo=HANOI_TZ)
 sunset = s['sunset']
-sunrise = s['sunrise'] + timedelta(days=1)  # next day
+sunrise = s['sunrise'] + timedelta(days=1)
 
-print(f"Sunset: {sunset}, Sunrise: {sunrise}")
+print(f"Night: {sunset.strftime('%H:%M')} - {sunrise.strftime('%H:%M')} (Hanoi TZ)")
 
-# Time grid
+# Time grid (night only)
 times = [sunset + timedelta(minutes=i) for i in range(0, int((sunrise - sunset).total_seconds()/60), DELTA_MINUTES)]
-times_astropy = Time([t.astimezone(pytz.UTC) for t in times])  # convert to UTC for astropy
+times_astropy = Time([t.astimezone(pytz.UTC) for t in times])
 
-# Store visibility info for timeline
-visibility_dict = {}
+# Ensure sunset and sunrise are in Hanoi TZ
+sunset = sunset.astimezone(HANOI_TZ)
+sunrise = sunrise.astimezone(HANOI_TZ)
 
-# ===== Iterate over constellation files =====
+constellation_data = {}
+
+# ===== Process constellation files =====
 for file_name in os.listdir(DATA_FOLDER):
     if file_name.endswith(".txt"):
         file_path = os.path.join(DATA_FOLDER, file_name)
-
-        # Read the file
         df = pd.read_csv(file_path, sep="|", names=["RA_hms", "Dec_deg", "Constellation"], engine='python')
         df['Dec_deg'] = df['Dec_deg'].astype(float)
 
-        # Convert RA HH MM SS.SSSS -> degrees
         ra_deg = []
         for ra_hms in df['RA_hms']:
             h, m, s = [float(x) for x in ra_hms.strip().split()]
             ra_deg.append((h + m/60 + s/3600) * 15)
         df['RA_deg'] = ra_deg
 
-        # Group by constellation
         for const_abbr, group in df.groupby('Constellation'):
             const_abbr = const_abbr.strip()
             
@@ -67,7 +75,6 @@ for file_name in os.listdir(DATA_FOLDER):
                              dec=group['Dec_deg'].values*u.degree,
                              frame='icrs')
 
-            # Compute altitudes for each star at each time
             altitudes = []
             azimuths = []
             for t in times_astropy:
@@ -76,55 +83,95 @@ for file_name in os.listdir(DATA_FOLDER):
                 altitudes.append(star_altaz.alt.deg)
                 azimuths.append(star_altaz.az.deg)
 
-            altitudes = np.array(altitudes)  # shape: (num_times, num_stars)
+            altitudes = np.array(altitudes)
             azimuths = np.array(azimuths)
 
-            # Determine visibility: any star above horizon
             visible = np.any(altitudes > 0, axis=1)
-            visible_times = np.array(times)[visible]  # already in Hanoi timezone
+            visible_times = np.array(times)[visible]
 
             if len(visible_times) > 0:
-                visibility_dict[const_abbr] = (visible_times[0], visible_times[-1])
-            else:
-                visibility_dict[const_abbr] = None
+                visible_mask = visible
+                median_alt = np.median(altitudes[visible_mask][altitudes[visible_mask] > 0])
+                median_az = np.median(azimuths[visible_mask][altitudes[visible_mask] > 0])
+                
+                # Ensure times are in Hanoi TZ
+                start_time = visible_times[0]
+                end_time = visible_times[-1]
+                if not hasattr(start_time, 'tzinfo') or start_time.tzinfo is None:
+                    start_time = HANOI_TZ.localize(start_time)
+                else:
+                    start_time = start_time.astimezone(HANOI_TZ)
+                if not hasattr(end_time, 'tzinfo') or end_time.tzinfo is None:
+                    end_time = HANOI_TZ.localize(end_time)
+                else:
+                    end_time = end_time.astimezone(HANOI_TZ)
+                
+                constellation_data[const_abbr] = {
+                    'start': start_time,
+                    'end': end_time,
+                    'median_alt': median_alt,
+                    'median_az': median_az
+                }
 
-            # ===== Sky position plot for this constellation =====
-            plt.figure(figsize=(8,6))
-            num_stars = stars.shape[0]
-            for i in range(num_stars):
-                # Only plot points above horizon
-                alt_i = altitudes[:, i]
-                az_i = azimuths[:, i]
-                mask = alt_i > 0
-                plt.plot(az_i[mask], alt_i[mask], 'o')
+# ===== Create individual plots =====
+for const_abbr, data in constellation_data.items():
+    full_name = const_names.get(const_abbr, const_abbr)
+    
+    fig = plt.figure(figsize=(12, 4))
+    gs = fig.add_gridspec(1, 2, width_ratios=[1, 1.8], wspace=0.25)
+    
+    # Sky position
+    ax_sky = fig.add_subplot(gs[0], projection='polar')
+    ax_sky.set_theta_zero_location('N')
+    ax_sky.set_theta_direction(-1)
+    
+    az_rad = np.radians(data['median_az'])
+    r = 90 - data['median_alt']
+    
+    ax_sky.plot(az_rad, r, 'o', markersize=18, color='gold', markeredgecolor='darkorange', markeredgewidth=2)
+    ax_sky.set_ylim(0, 90)
+    ax_sky.set_yticks([0, 30, 60, 90])
+    ax_sky.set_yticklabels(['90°', '60°', '30°', '0°'])
+    ax_sky.grid(True, alpha=0.3)
+    
+    direction = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][int((data['median_az'] + 22.5) / 45) % 8]
+    ax_sky.set_title(f'{direction}  {data["median_alt"]:.0f}°', fontsize=11, pad=10)
+    
+    # Timeline (night only)
+    ax_time = fig.add_subplot(gs[1])
+    
+    start_num = mdates.date2num(data['start'])
+    end_num = mdates.date2num(data['end'])
+    duration_hours = (data['end'] - data['start']).total_seconds()/3600
+    
+    ax_time.barh(0, end_num - start_num, left=start_num, height=0.5, 
+                 color='steelblue', edgecolor='navy', linewidth=1.5)
+    
+    start_str = data['start'].strftime('%H:%M')
+    end_str = data['end'].strftime('%H:%M')
+    
+    ax_time.text(start_num, 0.35, start_str, ha='center', fontsize=9, fontweight='bold')
+    ax_time.text(end_num, 0.35, end_str, ha='center', fontsize=9, fontweight='bold')
+    ax_time.text((start_num + end_num)/2, 0, f'{duration_hours:.1f}h', 
+                ha='center', va='center', fontsize=10, color='white', fontweight='bold')
+    
+    ax_time.set_ylim(-0.4, 0.6)
+    ax_time.set_yticks([])
+    ax_time.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M', tz=HANOI_TZ))
+    ax_time.xaxis.set_major_locator(mdates.HourLocator(interval=2, tz=HANOI_TZ))
+    ax_time.set_xlim(mdates.date2num(sunset), mdates.date2num(sunrise))
+    ax_time.grid(True, axis='x', alpha=0.3)
+    ax_time.set_xlabel('Time (Hanoi)', fontsize=10)
+    
+    for spine in ['top', 'right', 'left']:
+        ax_time.spines[spine].set_visible(False)
+    
+    fig.suptitle(full_name, fontsize=13, fontweight='bold')
+    
+    # Save with constellation name
+    safe_name = full_name.replace(' ', '_').replace('/', '_')
+    plt.savefig(os.path.join(OUTPUT_FOLDER, f"{safe_name}.png"), dpi=120, bbox_inches='tight')
+    plt.close()
+    print(f"✓ {full_name}")
 
-            plt.xlabel("Azimuth (deg)")
-            plt.ylabel("Altitude (deg)")
-            plt.title(f"{const_abbr} positions tonight (Hanoi TZ)")
-            plt.xlim(0,360)
-            plt.ylim(0,90)
-            plt.grid(True)
-            plt.tight_layout()
-            plt.savefig(os.path.join(OUTPUT_FOLDER, f"{const_abbr}_positions.png"))
-            plt.close()
-
-# ===== Timeline plot in Hanoi timezone =====
-plt.figure(figsize=(12, len(visibility_dict)*0.5 + 2))
-constellations = list(visibility_dict.keys())
-y_pos = np.arange(len(constellations))
-
-for i, const_abbr in enumerate(constellations):
-    times_range = visibility_dict[const_abbr]
-    if times_range is not None:
-        plt.hlines(y=i, xmin=times_range[0], xmax=times_range[1], color='blue', linewidth=4)
-    else:
-        plt.hlines(y=i, xmin=sunset, xmax=sunrise, color='lightgray', linewidth=2, linestyles='dashed')
-
-plt.yticks(y_pos, constellations)
-plt.xlabel("Time (Hanoi TZ)")
-plt.title(f"Constellation Visibility Timeline for {DATE} (Hanoi TZ)")
-plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
-plt.grid(axis='x', linestyle='--', alpha=0.5)
-plt.tight_layout()
-plt.savefig(os.path.join(OUTPUT_FOLDER, "constellations_timeline_hanoi.png"))
-plt.show()
+print(f"\nGenerated {len(constellation_data)} plots")
