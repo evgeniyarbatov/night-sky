@@ -40,13 +40,24 @@ observer_location = EarthLocation(lat=LAT*u.deg, lon=LON*u.deg, height=ELEV*u.m)
 observer = Observer(location=observer_location)
 
 # ===== Compute sunset/sunrise =====
-location_info = LocationInfo(latitude=LAT, longitude=LON)
-s = sun(location_info.observer, date=DATE, tzinfo=HANOI_TZ)
-sunset = s['sunset']
-sunrise = s['sunrise'] + timedelta(days=1)
+midnight = HANOI_TZ.localize(datetime.combine(DATE, datetime.min.time()))
+midnight_astropy = Time(midnight)
+
+# Astronomical dusk (sun 18° below horizon in the evening)
+astronomical_dusk = observer.twilight_evening_astronomical(midnight_astropy, which='nearest')
+# Astronomical dawn (sun 18° below horizon in the morning)
+astronomical_dawn = observer.twilight_morning_astronomical(midnight_astropy, which='next')
+
+# Convert to local timezone
+astronomical_dusk_local = astronomical_dusk.to_datetime(timezone=HANOI_TZ)
+astronomical_dawn_local = astronomical_dawn.to_datetime(timezone=HANOI_TZ)
+
+print(f"Astronomical dusk: {astronomical_dusk_local.strftime('%H:%M')}")
+print(f"Astronomical dawn: {astronomical_dawn_local.strftime('%H:%M')}")
 
 # ===== Time grid for visibility calculation =====
-times = [sunset + timedelta(minutes=i) for i in range(0, int((sunrise - sunset).total_seconds()/60), DELTA_MINUTES)]
+times = [astronomical_dusk_local + timedelta(minutes=i)
+         for i in range(0, int((astronomical_dawn_local - astronomical_dusk_local).total_seconds() / 60), DELTA_MINUTES)]
 times_astropy = Time([t.astimezone(pytz.UTC) for t in times])
 
 # ===== Observation time for direction info =====
@@ -90,10 +101,17 @@ for file_name in os.listdir(DATA_FOLDER):
         altitudes = np.array(altitudes)
         azimuths = np.array(azimuths)
 
-        # Determine if any part of constellation is above horizon at each time
-        visible = np.any(altitudes > 0, axis=1)
+        # Determine if constellation is above horizon (>5° to avoid noise)
+        visible = np.any(altitudes > 5, axis=1)
+
         if not np.any(visible):
-            continue  # skip never-visible constellations
+            # Entirely below horizon
+            constellation_data[const_abbr] = {
+                'start': None,
+                'end': None,
+                'below_horizon': True
+            }
+            continue
 
         # Visible times in local timezone
         visible_times = np.array(times)[visible]
@@ -103,6 +121,7 @@ for file_name in os.listdir(DATA_FOLDER):
         constellation_data[const_abbr] = {
             'start': start_time,
             'end': end_time,
+            'below_horizon': False
         }
 
 # ===== Create plots =====
@@ -187,10 +206,12 @@ for const_abbr, data in constellation_data.items():
     ax_alt.axhline(0, color='gray', linestyle='--', lw=1)
 
     # ===== Title & Save =====
-    fig.suptitle(
-        f"{full_name} — visible {data['start'].strftime('%H:%M')}–{data['end'].strftime('%H:%M')}",
-        fontsize=13, fontweight='bold'
-    )
+    if data.get('below_horizon', False):
+        title_text = f"{full_name} — below horizon"
+    else:
+        title_text = f"{full_name} — visible {data['start'].strftime('%H:%M')}–{data['end'].strftime('%H:%M')}"
+
+    fig.suptitle(title_text, fontsize=13, fontweight='bold')
 
     safe_name = full_name.replace(' ', '_').replace('/', '_')
     plt.savefig(os.path.join(OUTPUT_FOLDER, f"{safe_name}.png"), dpi=300, bbox_inches='tight')
