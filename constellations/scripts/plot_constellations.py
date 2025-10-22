@@ -101,8 +101,8 @@ for file_name in os.listdir(DATA_FOLDER):
         altitudes = np.array(altitudes)
         azimuths = np.array(azimuths)
 
-        # Determine if constellation is above horizon (>5° to avoid noise)
-        visible = np.any(altitudes > 5, axis=1)
+        # Determine if constellation is above horizon
+        visible = np.any(altitudes > 0, axis=1)
 
         if not np.any(visible):
             # Entirely below horizon
@@ -206,10 +206,12 @@ for const_abbr, data in constellation_data.items():
     ax_alt.axhline(0, color='gray', linestyle='--', lw=1)
 
     # ===== Title & Save =====
-    if data.get('below_horizon', False):
-        title_text = f"{full_name} — below horizon"
+    if data.get('below_horizon', False) or data['start'] is None or data['end'] is None:
+        title_text = f"{full_name} - below horizon"
     else:
-        title_text = f"{full_name} — visible {data['start'].strftime('%H:%M')}–{data['end'].strftime('%H:%M')}"
+        start_str = data['start'].strftime('%H:%M')
+        end_str = data['end'].strftime('%H:%M')
+        title_text = f"{full_name} - visible {start_str}-{end_str}"
 
     fig.suptitle(title_text, fontsize=13, fontweight='bold')
 
