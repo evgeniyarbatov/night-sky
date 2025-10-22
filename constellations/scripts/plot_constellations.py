@@ -100,22 +100,9 @@ for file_name in os.listdir(DATA_FOLDER):
         start_time = visible_times[0].astimezone(HANOI_TZ)
         end_time = visible_times[-1].astimezone(HANOI_TZ)
 
-        # 23:00 reference data (for position/direction)
-        altaz_23 = stars.transform_to(AltAz(obstime=obs_time_astropy, location=observer_location))
-        visible_at_23 = altaz_23.alt.deg > 0
-        if np.any(visible_at_23):
-            avg_alt = np.mean(altaz_23.alt.deg[visible_at_23])
-            avg_az = np.mean(altaz_23.az.deg[visible_at_23])
-            direction = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][int((avg_az + 22.5) / 45) % 8]
-        else:
-            avg_alt, avg_az, direction = np.nan, np.nan, "below horizon"
-
         constellation_data[const_abbr] = {
             'start': start_time,
             'end': end_time,
-            'alt_23': avg_alt,
-            'az_23': avg_az,
-            'direction': direction
         }
 
 # ===== Create plots =====
@@ -176,12 +163,18 @@ for const_abbr, data in constellation_data.items():
     # ===== Azimuth over time =====
     ax_az = fig.add_subplot(gs[az_col])
     ax_az.plot(times, azimuths, color='darkorange', lw=2)
-    ax_az.set_ylabel('Azimuth (°)')
+    ax_az.set_ylabel('Azimuth ° (Direction)')
     ax_az.set_xlabel('Time (Hanoi)')
     ax_az.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M', tz=HANOI_TZ))
     ax_az.xaxis.set_major_locator(mdates.HourLocator(interval=2, tz=HANOI_TZ))
     ax_az.grid(True, alpha=0.3)
+
+    # Set azimuth ticks and add cardinal directions
     ax_az.set_ylim(0, 360)
+    az_ticks = np.arange(0, 361, 45)
+    az_labels = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N']
+    ax_az.set_yticks(az_ticks)
+    ax_az.set_yticklabels([f"{deg}° ({label})" for deg, label in zip(az_ticks, az_labels)])
 
     # ===== Altitude over time =====
     ax_alt = fig.add_subplot(gs[alt_col])
