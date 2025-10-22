@@ -14,7 +14,7 @@ install: venv
 download:
 	@$(PYTHON) scripts/download.py
 
-plot:
+plot: clean
 	@$(PYTHON) scripts/plot_constellations.py
 
 clean:

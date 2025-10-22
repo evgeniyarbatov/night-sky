@@ -18,6 +18,7 @@ LON = 105.86796107324045
 ELEV = 10  # meters
 DATA_FOLDER = "data/boundaries"
 OUTPUT_FOLDER = "data/plots"
+GIF_FOLDER = "data/gifs"
 DATE = datetime.now().date()
 DELTA_MINUTES = 10
 HANOI_TZ = pytz.timezone("Asia/Ho_Chi_Minh")
@@ -117,11 +118,33 @@ for file_name in os.listdir(DATA_FOLDER):
 for const_abbr, data in constellation_data.items():
     full_name = const_names.get(const_abbr, const_abbr)
     
-    fig = plt.figure(figsize=(12, 4))
-    gs = fig.add_gridspec(1, 2, width_ratios=[1, 1.8], wspace=0.25)
+    # Check if GIF exists
+    gif_path = os.path.join(GIF_FOLDER, f"{const_abbr}.gif")
+    has_gif = os.path.exists(gif_path)
+    
+    if has_gif:
+        fig = plt.figure(figsize=(16, 4))
+        gs = fig.add_gridspec(1, 3, width_ratios=[1.2, 1, 1.8], wspace=0.3)
+        gif_col = 0
+        sky_col = 1
+        time_col = 2
+    else:
+        fig = plt.figure(figsize=(12, 4))
+        gs = fig.add_gridspec(1, 2, width_ratios=[1, 1.8], wspace=0.25)
+        sky_col = 0
+        time_col = 1
+    
+    # GIF (if available)
+    if has_gif:
+        from PIL import Image
+        ax_gif = fig.add_subplot(gs[gif_col])
+        img = Image.open(gif_path)
+        # Show first frame
+        ax_gif.imshow(img)
+        ax_gif.axis('off')
     
     # Sky position
-    ax_sky = fig.add_subplot(gs[0], projection='polar')
+    ax_sky = fig.add_subplot(gs[sky_col], projection='polar')
     ax_sky.set_theta_zero_location('N')
     ax_sky.set_theta_direction(-1)
     
@@ -138,7 +161,7 @@ for const_abbr, data in constellation_data.items():
     ax_sky.set_title(f'{direction}  {data["median_alt"]:.0f}°', fontsize=11, pad=10)
     
     # Timeline (night only)
-    ax_time = fig.add_subplot(gs[1])
+    ax_time = fig.add_subplot(gs[time_col])
     
     start_num = mdates.date2num(data['start'])
     end_num = mdates.date2num(data['end'])
@@ -170,7 +193,7 @@ for const_abbr, data in constellation_data.items():
     
     # Save with constellation name
     safe_name = full_name.replace(' ', '_').replace('/', '_')
-    plt.savefig(os.path.join(OUTPUT_FOLDER, f"{safe_name}.png"), dpi=120, bbox_inches='tight')
+    plt.savefig(os.path.join(OUTPUT_FOLDER, f"{safe_name}.png"), dpi=300, bbox_inches='tight')
     plt.close()
     print(f"✓ {full_name}")
 
