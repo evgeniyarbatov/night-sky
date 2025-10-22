@@ -158,7 +158,6 @@ for const_abbr, data in constellation_data.items():
     ax_sky.grid(True, alpha=0.3)
     
     direction = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][int((data['median_az'] + 22.5) / 45) % 8]
-    ax_sky.set_title(f'{direction}  {data["median_alt"]:.0f}°', fontsize=11, pad=10)
     
     # Timeline (night only)
     ax_time = fig.add_subplot(gs[time_col])
