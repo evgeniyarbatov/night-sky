@@ -1,0 +1,1 @@
+ - validate directions with stellarium. some appear wrong
