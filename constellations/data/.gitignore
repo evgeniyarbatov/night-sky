@@ -1,4 +1,5 @@
 *
 !.gitignore
 !constellation_names.csv
+!boundaries/
 !boundaries/*
