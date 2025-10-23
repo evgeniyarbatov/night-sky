@@ -102,7 +102,8 @@ for file_name in os.listdir(DATA_FOLDER):
         azimuths = np.array(azimuths)
 
         # Determine if constellation is above horizon
-        visible = np.any(altitudes > 0, axis=1)
+        mean_altitudes = np.mean(altitudes, axis=1)
+        visible = mean_altitudes > 0
 
         if not np.any(visible):
             # Entirely below horizon
