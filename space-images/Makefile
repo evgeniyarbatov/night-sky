@@ -21,4 +21,7 @@ nasa:
 planets:
 	@$(PYTHON) scripts/planets.py
 
+clean:
+	rm -rf planets/*
+
 .PHONY: nasa planets

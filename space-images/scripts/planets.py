@@ -7,7 +7,7 @@ and saves them into a single folder (no subdirectories).
 """
 
 import requests
-import json
+import random
 import time
 from datetime import datetime
 from pathlib import Path
@@ -37,21 +37,23 @@ class PlanetImageDownloader:
             return False
     
     def download_planet_images(self, planet_name, max_images=20):
-        """Download up to `max_images` NASA library images for a given planet"""
         print(f"\n🔭 Downloading images for: {planet_name.capitalize()}")
-        
-        url = f"https://images-api.nasa.gov/search?q={planet_name}&media_type=image"
-        
+
+        page = random.randint(1, 20)  # random page each run
+        url = f"https://images-api.nasa.gov/search?q={planet_name}&media_type=image&page={page}"
+
         try:
             response = requests.get(url, timeout=15)
             response.raise_for_status()
             data = response.json()
             items = data.get('collection', {}).get('items', [])
-            
+
             if not items:
                 print(f"   No images found for '{planet_name}'.")
                 return False
-            
+
+            random.shuffle(items)  # ensures new random selection each time
+
             count = 0
             for item in items[:max_images]:
                 try:
