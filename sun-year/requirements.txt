@@ -1,3 +1,5 @@
 matplotlib
 ephem
 numpy
+pandas
+pvlib

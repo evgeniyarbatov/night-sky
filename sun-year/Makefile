@@ -13,3 +13,6 @@ install: venv
 
 plot:
 	@$(PYTHON) scripts/plot-sun.py
+
+path:
+	@$(PYTHON) scripts/sun-path.py
