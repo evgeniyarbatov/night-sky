@@ -88,6 +88,12 @@ for i in range(len(dates) - 1):
         exact_date = dates[i] + (dates[i+1] - dates[i]) * fraction
         west_dates.append(exact_date)
 
+# Find min and max azimuth points
+sunrise_min_idx = np.argmin(sunrise_azimuths)
+sunrise_max_idx = np.argmax(sunrise_azimuths)
+sunset_min_idx = np.argmin(sunset_azimuths)
+sunset_max_idx = np.argmax(sunset_azimuths)
+
 # Plotting - Separate plots for sunrise and sunset
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
 
@@ -95,6 +101,7 @@ fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
 sunrise_color = '#FF8C00'  # Dark orange
 sunset_color = '#DC143C'   # Crimson
 equinox_color = '#4A90E2'  # Blue
+extrema_color = '#2ECC71'  # Green
 
 # Sunrise plot
 ax1.plot(dates, sunrise_azimuths, color=sunrise_color, alpha=0.8, linewidth=2.5)
@@ -105,6 +112,20 @@ for ed in east_dates:
     ax1.axvline(x=ed, color=equinox_color, linestyle='-', alpha=0.5, linewidth=1.5)
     ax1.text(ed, 115, ed.strftime('%b %d'), rotation=90, ha='right', va='bottom', 
              fontsize=9, color=equinox_color, fontweight='bold')
+
+# Mark min azimuth (most northern, summer solstice)
+ax1.plot(dates[sunrise_min_idx], sunrise_azimuths[sunrise_min_idx], 'o', 
+         color=extrema_color, markersize=8, zorder=5)
+ax1.text(dates[sunrise_min_idx], sunrise_azimuths[sunrise_min_idx] - 3, 
+         f'{sunrise_azimuths[sunrise_min_idx]:.1f}°\n{dates[sunrise_min_idx].strftime("%b %d")}',
+         ha='center', va='top', fontsize=9, color=extrema_color, fontweight='bold')
+
+# Mark max azimuth (most southern, winter solstice)
+ax1.plot(dates[sunrise_max_idx], sunrise_azimuths[sunrise_max_idx], 'o', 
+         color=extrema_color, markersize=8, zorder=5)
+ax1.text(dates[sunrise_max_idx], sunrise_azimuths[sunrise_max_idx] + 3, 
+         f'{sunrise_azimuths[sunrise_max_idx]:.1f}°\n{dates[sunrise_max_idx].strftime("%b %d")}',
+         ha='center', va='bottom', fontsize=9, color=extrema_color, fontweight='bold')
 
 ax1.grid(True, alpha=0.2, color='gray', linestyle='-', linewidth=0.5)
 ax1.set_ylim(60, 120)
@@ -125,6 +146,20 @@ for wd in west_dates:
     ax2.axvline(x=wd, color=equinox_color, linestyle='-', alpha=0.5, linewidth=1.5)
     ax2.text(wd, 295, wd.strftime('%b %d'), rotation=90, ha='right', va='bottom',
              fontsize=9, color=equinox_color, fontweight='bold')
+
+# Mark max azimuth (most northern, summer solstice)
+ax2.plot(dates[sunset_max_idx], sunset_azimuths[sunset_max_idx], 'o', 
+         color=extrema_color, markersize=8, zorder=5)
+ax2.text(dates[sunset_max_idx], sunset_azimuths[sunset_max_idx] + 3, 
+         f'{sunset_azimuths[sunset_max_idx]:.1f}°\n{dates[sunset_max_idx].strftime("%b %d")}',
+         ha='center', va='bottom', fontsize=9, color=extrema_color, fontweight='bold')
+
+# Mark min azimuth (most southern, winter solstice)
+ax2.plot(dates[sunset_min_idx], sunset_azimuths[sunset_min_idx], 'o', 
+         color=extrema_color, markersize=8, zorder=5)
+ax2.text(dates[sunset_min_idx], sunset_azimuths[sunset_min_idx] - 3, 
+         f'{sunset_azimuths[sunset_min_idx]:.1f}°\n{dates[sunset_min_idx].strftime("%b %d")}',
+         ha='center', va='top', fontsize=9, color=extrema_color, fontweight='bold')
 
 ax2.grid(True, alpha=0.2, color='gray', linestyle='-', linewidth=0.5)
 ax2.set_ylim(240, 300)
