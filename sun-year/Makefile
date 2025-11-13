@@ -16,3 +16,6 @@ plot:
 
 path:
 	@$(PYTHON) scripts/sun-path.py
+
+duration:
+	@$(PYTHON) scripts/day-duration.py
