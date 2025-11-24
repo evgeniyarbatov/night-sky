@@ -16,7 +16,9 @@ install: venv
 	@$(PIP) install --disable-pip-version-check -q -r $(REQUIREMENTS)
 
 nasa:
-	@$(PYTHON) scripts/nasa.py
+	@for i in $(shell seq 1 20); do \
+		$(PYTHON) scripts/nasa.py; \
+	done
 
 planets:
 	@$(PYTHON) scripts/planets.py
