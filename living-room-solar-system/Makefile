@@ -15,7 +15,6 @@ NAME = solar-system
 
 all: planets
 
-
 	pip install --disable-pip-version-check -q -r requirements.txt
 
 planets:	
