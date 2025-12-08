@@ -1,2 +1,4 @@
-de421.bsp
 .DS_Store
+.ipynb_checkpoints/
+__pycache__/
+.venv/
