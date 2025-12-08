@@ -2,3 +2,4 @@
 - I find it hard to place them in the sky when I am outside
 - because I would usually see specific building or landmarks
 - maybe I can generate plots of sky between specific buildings?
+- one of the images is not high res
