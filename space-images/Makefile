@@ -29,4 +29,4 @@ clean:
 .PHONY: nasa planets
 
 cleanvenv:
-	@rm -rf .venv
+	@rm -rf $(VENV_PATH)
