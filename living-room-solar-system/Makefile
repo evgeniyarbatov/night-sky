@@ -22,4 +22,4 @@ planets:
 	python3 scripts/planets.py
 
 cleanvenv:
-	@rm -rf .venv
+	@rm -rf $(VENV_PATH)
