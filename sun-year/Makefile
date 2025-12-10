@@ -21,4 +21,4 @@ duration:
 	@$(PYTHON) scripts/day-duration.py
 
 cleanvenv:
-	@rm -rf .venv
+	@rm -rf $(VENV_PATH)
