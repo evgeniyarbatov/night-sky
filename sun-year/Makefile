@@ -19,3 +19,6 @@ path:
 
 duration:
 	@$(PYTHON) scripts/day-duration.py
+
+cleanvenv:
+	@rm -rf .venv
