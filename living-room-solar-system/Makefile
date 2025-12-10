@@ -20,3 +20,6 @@ all: planets
 planets:	
 	source $(VENV_PATH)/bin/activate && \
 	python3 scripts/planets.py
+
+cleanvenv:
+	@rm -rf .venv
