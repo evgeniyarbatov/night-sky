@@ -27,3 +27,6 @@ clean:
 	rm -rf planets/*
 
 .PHONY: nasa planets
+
+cleanvenv:
+	@rm -rf .venv
