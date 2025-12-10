@@ -1,0 +1,8 @@
+pandas
+ipykernel
+gpxpy
+matplotlib
+numpy
+contextily
+pillow
+pyproj
