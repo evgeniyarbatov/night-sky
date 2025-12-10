@@ -23,3 +23,6 @@ clean:
 	@rm -rf \
 	@rm -rf \
 	@rm -rf $(VENV_PATH)
+
+cleanvenv:
+	@rm -rf .venv
