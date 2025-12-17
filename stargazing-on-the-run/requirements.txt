@@ -6,5 +6,4 @@ contextily
 pillow
 pyproj
 timezonefinder
-black
 flake8
