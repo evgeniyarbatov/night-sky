@@ -63,5 +63,8 @@ merge:
 	$(MAPS_DIR) \
 	$(SCREENSHOTS_WITH_MAPS_DIR)
 
+clean:
+	@rm -rf $(DATA_DIR)/*
+
 cleanvenv:
 	@rm -rf $(VENV_PATH)
