@@ -2,8 +2,6 @@ VENV_PATH := .venv
 
 PYTHON := $(VENV_PATH)/bin/python
 PIP := $(VENV_PATH)/bin/pip
-FLAKE8 := $(VENV_PATH)/bin/flake8
-
 REQUIREMENTS := requirements.txt
 
 GPX_SOURCE_DIR = /Users/zhenya/gitRepo/[private]/data/year/2023
@@ -26,13 +24,6 @@ venv:
 install: venv
 	@$(PIP) install --disable-pip-version-check -q --upgrade pip
 	@$(PIP) install --disable-pip-version-check -q -r $(REQUIREMENTS)
-
-lint:
-	@if [ -n "$(PYTHON_FILES)" ]; then \
-		$(FLAKE8) $(PYTHON_FILES); \
-	else \
-		echo "No Python files"; \
-	fi
 
 gpx:
 	@rm -rf $(GPX_DIR)/*
