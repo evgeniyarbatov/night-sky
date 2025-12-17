@@ -1,3 +1,5 @@
 skyfield
 astral
-numpy
+numpy-e 
+black
+flake8
