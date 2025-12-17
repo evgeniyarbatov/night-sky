@@ -6,4 +6,6 @@ astral
 matplotlib
 pandas
 numpy
-pytz
+pytz-e 
+black
+flake8
