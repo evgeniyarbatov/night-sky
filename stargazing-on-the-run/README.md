@@ -1,6 +1,7 @@
 # Stargazing on the Run
 
 [![Format Python Code](https://github.com/evgeniyarbatov/stargazing-on-the-run/actions/workflows/format.yml/badge.svg)](https://github.com/evgeniyarbatov/stargazing-on-the-run/actions/workflows/format.yml)
+[![Lint Python Code](https://github.com/evgeniyarbatov/stargazing-on-the-run/actions/workflows/lint.yaml/badge.svg)](https://github.com/evgeniyarbatov/stargazing-on-the-run/actions/workflows/lint.yaml)
 
 Stellarium scripts to render stars and planets based on GPX file location and direction.
 
