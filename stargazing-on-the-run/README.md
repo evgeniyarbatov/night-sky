@@ -3,7 +3,7 @@
 [![Format Python Code](https://github.com/evgeniyarbatov/stargazing-on-the-run/actions/workflows/format.yml/badge.svg)](https://github.com/evgeniyarbatov/stargazing-on-the-run/actions/workflows/format.yml)
 [![Lint Python Code](https://github.com/evgeniyarbatov/stargazing-on-the-run/actions/workflows/lint.yaml/badge.svg)](https://github.com/evgeniyarbatov/stargazing-on-the-run/actions/workflows/lint.yaml)
 
-![9051006919-compressed](https://github.com/user-attachments/assets/0470eac3-a349-4802-941b-527af29e938e)
+![9051006919-compressed](https://github.com/user-attachments/assets/df7894ca-6008-491e-8c0d-e68f84b3a547)
 
 ## The Story
 
