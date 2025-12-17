@@ -64,6 +64,36 @@ merge:
 	$(MAPS_DIR) \
 	$(SCREENSHOTS_WITH_MAPS_DIR)
 
+video:
+	@for dir in $(SCREENSHOTS_WITH_MAPS_DIR)/*/; do \
+		if [ -n "$$(ls $$dir/*.png 2>/dev/null)" ]; then \
+			subdir=$$(basename $$dir); \
+			echo "Creating video for $$subdir..."; \
+			ffmpeg -y \
+				-framerate 1 \
+				-pattern_type glob -i "$$dir/*.png" \
+				-c:v libx264 \
+				-pix_fmt yuv420p \
+				-filter:v "setpts=3.0*PTS" \
+				"$(DATA_DIR)/$$subdir.mp4"; \
+			echo "Video created: $$subdir.mp4"; \
+		fi; \
+	done
+
+gif:
+	@for dir in $(SCREENSHOTS_WITH_MAPS_DIR)/*/; do \
+		if [ -n "$$(ls $$dir/*.png 2>/dev/null)" ]; then \
+			subdir=$$(basename $$dir); \
+			echo "Creating GIF for $$subdir..."; \
+			ffmpeg -y \
+				-framerate 2 \
+				-pattern_type glob -i "$$dir/*.png" \
+				-filter_complex "[0:v] setpts=3.0*PTS,split [a][b];[a] palettegen [p];[b][p] paletteuse" \
+				"$(DATA_DIR)/$$subdir.gif"; \
+			echo "GIF created: $$subdir.gif"; \
+		fi; \
+	done
+
 clean:
 	@rm -rf $(DATA_DIR)/*
 
