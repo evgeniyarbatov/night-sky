@@ -12,9 +12,6 @@ def main(
 	maps_dir,
 	output_dir,
 ):
-	if os.path.exists(output_dir):
-		shutil.rmtree(output_dir)
-
 	gpx_files = glob.glob(
 		os.path.join(gpx_dir, '*.gpx'),
 	)

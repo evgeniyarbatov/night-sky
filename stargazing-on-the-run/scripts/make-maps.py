@@ -11,7 +11,10 @@ from matplotlib.gridspec import GridSpec
 
 from numpy import pi
 
-from utils import GPXData
+from utils import (
+    GPXData,
+    get_timezone_from_points,
+)
 
 def get_compass_data(degrees):
 	values = [0, 0, 0, 0, 0, 0, 0, 0]
@@ -67,12 +70,8 @@ def plot_run(
 
 def main(
     gpx_dir,
-    timezone,
 	maps_dir,
 ):
-	if os.path.exists(maps_dir):
-		shutil.rmtree(maps_dir)
-
 	gpx_files = glob.glob(
 		os.path.join(gpx_dir, '*.gpx'),
     )
@@ -81,6 +80,9 @@ def main(
 
 		map_path = f"{maps_dir}/{filename}"
 		os.makedirs(map_path)
+
+		points_for_timezone = GPXData(gpx_file, timezone="UTC").get_points()
+		timezone = get_timezone_from_points(points_for_timezone)
 
 		gpx_data = GPXData(gpx_file, timezone)
 		points = gpx_data.get_points()

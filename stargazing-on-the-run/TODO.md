@@ -1,0 +1,3 @@
+- too many points right now: make them more distinct
+- fix the logic of timezone parsing: it's a hack right now
+- run on different sets of GPX files

@@ -1,12 +1,14 @@
 import glob
 import sys
 import os
-import shutil
 
-from utils import GPXData
+from utils import (
+    GPXData,
+    get_timezone_from_points,
+)
 
 class StellariumScript:
-	SCRIPT = """
+    SCRIPT = """
 points = [
 $POINTS$
 ];
@@ -39,84 +41,70 @@ ConstellationMgr.setFlagLabels(true);
 ConstellationMgr.setFlagLines(true);
 
 points.forEach(
-	function(point) { 
-		core.moveToAltAzi(0, point.az)
-		core.wait(0.01);
+    function(point) { 
+        core.moveToAltAzi(0, point.az)
+        core.wait(0.01);
 
-		core.setObserverLocation(
-			point.lon, 
-			point.lat, 
-			0
-		);
+        core.setObserverLocation(
+            point.lon, 
+            point.lat, 
+            0
+        );
 
-		core.setDate(point.date, "local");
-		core.wait(1);
+        core.setDate(point.date, "local");
+        core.wait(1);
 
-		core.screenshot(
-			point.timestamp, 
-			false,
-			"$SCREENSHOT_DIR$",
-			true,
-			"jpeg"
-		);
-	}
+        core.screenshot(
+            point.timestamp, 
+            false,
+            "$SCREENSHOT_DIR$",
+            true,
+            "jpeg"
+        );
+    }
 );
 
 core.quitStellarium();
-	"""
+    """
 
-	def __init__(
-		self, 
-		points,
-		screenshot_dir
-	):
-		self.points = points
-		self.screenshot_dir = screenshot_dir
+    def __init__(self, points, screenshot_dir):
+        self.points = points
+        self.screenshot_dir = screenshot_dir
 
-	def create_script(self, filename):
-		script = self.SCRIPT
+    def create_script(self, filename):
+        script = self.SCRIPT
+        script = script.replace(
+            "$POINTS$", 
+            ",\n".join('{ ' + str(point) + ' }' for point in self.points)
+        )
+        script = script.replace(
+            "$SCREENSHOT_DIR$", 
+            self.screenshot_dir
+        )
 
-		script = script.replace(
-			"$POINTS$", 
-			",\n".join('{ ' + str(point) + ' }' for point in self.points)
-		)
-		script = script.replace(
-			"$SCREENSHOT_DIR$", 
-			self.screenshot_dir
-		)
+        with open(filename, "w") as file:
+            file.write(script)
 
-		file = open(filename, "w")
-		file.write(script)
-		file.close()
-
-def main(
-    gpx_dir, 
-    timezone,
-    stellarium_dir,
-    screenshot_dir,
-):
-	if os.path.exists(screenshot_dir):
-		shutil.rmtree(screenshot_dir)
+def main(gpx_dir, stellarium_dir, screenshot_dir):    
+    gpx_files = glob.glob(os.path.join(gpx_dir, '*.gpx'))
     
-	gpx_files = glob.glob(
-		os.path.join(gpx_dir, '*.gpx'),
-    )
-	for gpx_file in gpx_files:
-		filename = os.path.splitext(os.path.basename(gpx_file))[0]
+    for gpx_file in gpx_files:
+        filename = os.path.splitext(os.path.basename(gpx_file))[0]
 
-		gpx_data = GPXData(gpx_file, timezone)
-		points = gpx_data.get_points()
+        points_for_timezone = GPXData(gpx_file, timezone="UTC").get_points()
+        timezone = get_timezone_from_points(points_for_timezone)
 
-		screenshot_path = f"{screenshot_dir}/{filename}"
-		os.makedirs(screenshot_path)
+        gpx_data = GPXData(gpx_file, timezone)
+        points = gpx_data.get_points()
 
-		script = StellariumScript(
-			points,
-			screenshot_path,
-		)
-		script.create_script(
-			f"{stellarium_dir}/{filename}.ssc"
-		)
-	
+        screenshot_path = os.path.join(screenshot_dir, filename)
+        os.makedirs(screenshot_path, exist_ok=True)
+
+        script = StellariumScript(points, screenshot_path)
+        script.create_script(os.path.join(stellarium_dir, f"{filename}.ssc"))
+
 if __name__ == "__main__":
+    if len(sys.argv) != 4:
+        print("Usage: python script.py <gpx_dir> <stellarium_dir> <screenshot_dir>")
+        sys.exit(1)
     main(*sys.argv[1:])
