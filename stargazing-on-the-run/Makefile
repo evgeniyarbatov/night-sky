@@ -70,7 +70,7 @@ video:
 			subdir=$$(basename $$dir); \
 			echo "Creating video for $$subdir..."; \
 			ffmpeg -y \
-				-framerate 1 \
+				-framerate 2 \
 				-pattern_type glob -i "$$dir/*.png" \
 				-c:v libx264 \
 				-pix_fmt yuv420p \
