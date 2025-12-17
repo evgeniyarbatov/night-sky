@@ -7,6 +7,7 @@ from utils import (
     get_timezone_from_points,
 )
 
+
 class StellariumScript:
     SCRIPT = """
 points = [
@@ -74,20 +75,17 @@ core.quitStellarium();
     def create_script(self, filename):
         script = self.SCRIPT
         script = script.replace(
-            "$POINTS$", 
-            ",\n".join('{ ' + str(point) + ' }' for point in self.points)
+            "$POINTS$", ",\n".join("{ " + str(point) + " }" for point in self.points)
         )
-        script = script.replace(
-            "$SCREENSHOT_DIR$", 
-            self.screenshot_dir
-        )
+        script = script.replace("$SCREENSHOT_DIR$", self.screenshot_dir)
 
         with open(filename, "w") as file:
             file.write(script)
 
-def main(gpx_dir, stellarium_dir, screenshot_dir):    
-    gpx_files = glob.glob(os.path.join(gpx_dir, '*.gpx'))
-    
+
+def main(gpx_dir, stellarium_dir, screenshot_dir):
+    gpx_files = glob.glob(os.path.join(gpx_dir, "*.gpx"))
+
     for gpx_file in gpx_files:
         filename = os.path.splitext(os.path.basename(gpx_file))[0]
 
@@ -102,6 +100,7 @@ def main(gpx_dir, stellarium_dir, screenshot_dir):
 
         script = StellariumScript(points, screenshot_path)
         script.create_script(os.path.join(stellarium_dir, f"{filename}.ssc"))
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:

@@ -6,3 +6,4 @@ contextily
 pillow
 pyproj
 timezonefinder
+black
