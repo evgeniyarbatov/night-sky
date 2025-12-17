@@ -3,6 +3,8 @@
 [![Format Python Code](https://github.com/evgeniyarbatov/stargazing-on-the-run/actions/workflows/format.yml/badge.svg)](https://github.com/evgeniyarbatov/stargazing-on-the-run/actions/workflows/format.yml)
 [![Lint Python Code](https://github.com/evgeniyarbatov/stargazing-on-the-run/actions/workflows/lint.yaml/badge.svg)](https://github.com/evgeniyarbatov/stargazing-on-the-run/actions/workflows/lint.yaml)
 
+![9051006919-compressed](https://github.com/user-attachments/assets/0470eac3-a349-4802-941b-527af29e938e)
+
 ## The Story
 
 The idea for this project came during one of my early morning or late night runs. I spend a lot of time under the open sky, and if I'm lucky enough to see a cloudless sky, it's a perfect opportunity for stargazing. Even just getting to know the major stars and constellations I have a chance of observing is already an achievement.
@@ -13,39 +15,26 @@ I made this work with GPX files since this is the most common format for running
 
 ## How to use
 
-Get GPX traces:
+Specify directory with .gpx files in [Makefile](Makefile):
 
 ```
+GPX_SOURCE_DIR = /Users/zhenya/gitRepo/[private]/data/year/2023
+```
+
+Run the commands
+
+```sh
+# Get random GPX traces
 make gpx
-```
-
-Create Stellarium scripts:
-
-```
+# Create Stellarium scripts
 make stellarium-scripts
-```
-
-Create Stellarium screenshots:
-
-```
+# Create Stellarium screenshots
 make screenshots
-```
-
-Create maps to show location and direction:
-
-```
+# Create maps to show location and direction
 make maps
-```
-
-Merge Stellarium screenshots and maps into a single image:
-
-```
+# Merge Stellarium screenshots and maps into a single image
 make merge
-```
-
-Create videos and gifs:
-
-```
+# Create videos and gifs
 make video
 make gif
 ```
