@@ -3,6 +3,8 @@ VENV_PATH := .venv
 PYTHON := $(VENV_PATH)/bin/python
 BLACK := $(VENV_PATH)/bin/black
 PIP := $(VENV_PATH)/bin/pip
+FLAKE8 := $(VENV_PATH)/bin/flake8
+
 REQUIREMENTS := requirements.txt
 
 GPX_SOURCE_DIR = /Users/zhenya/gitRepo/[private]/data/strava
@@ -27,7 +29,18 @@ install: venv
 	@$(PIP) install --disable-pip-version-check -q -r $(REQUIREMENTS)
 
 format:
-	@$(BLACK) $(PYTHON_FILES)
+	@if [ -n "$(PYTHON_FILES)" ]; then \
+		$(FLAKE8) $(PYTHON_FILES); \
+	else \
+		echo "No Python files"; \
+	fi
+
+lint:
+	@if [ -n "$(PYTHON_FILES)" ]; then \
+		$(FLAKE8) $(PYTHON_FILES); \
+	else \
+		echo "No Python files"; \
+	fi
 
 gpx:
 	@rm -rf $(GPX_DIR)/*

@@ -1,8 +1,6 @@
 import sys
 import glob
 import os
-import re
-import shutil
 
 from PIL import Image
 
