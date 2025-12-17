@@ -7,4 +7,6 @@ pillow
 pyproj
 timezonefinder
 black
+flake8-e 
+black
 flake8
