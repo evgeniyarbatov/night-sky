@@ -42,13 +42,13 @@ ConstellationMgr.setFlagLabels(true);
 ConstellationMgr.setFlagLines(true);
 
 points.forEach(
-    function(point) { 
+    function(point) {
         core.moveToAltAzi(0, point.az)
         core.wait(0.01);
 
         core.setObserverLocation(
-            point.lon, 
-            point.lat, 
+            point.lon,
+            point.lat,
             0
         );
 
@@ -56,7 +56,7 @@ points.forEach(
         core.wait(1);
 
         core.screenshot(
-            point.timestamp, 
+            point.timestamp,
             false,
             "$SCREENSHOT_DIR$",
             true,
