@@ -1,3 +1,3 @@
-- too many points right now: make them more distinct
+- check if the local time is after sunset and before sunrise
 - fix the logic of timezone parsing: it's a hack right now
 - run on different sets of GPX files
