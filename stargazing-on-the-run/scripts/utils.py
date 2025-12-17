@@ -21,6 +21,7 @@ def get_timezone_from_points(points):
     tz = tf.timezone_at(lat=median_lat, lng=median_lon)
     return tz or "UTC"
 
+
 @dataclass
 class Point:
     time: str
@@ -41,7 +42,7 @@ class GPXData:
         self.points = []
         self.min_distance_km = min_distance_km
         self.min_azimuth_change = min_azimuth_change
-        
+
         with open(filename, "r") as gpx_file:
             gpx = gpxpy.parse(gpx_file)
             gpx.simplify()
@@ -69,7 +70,7 @@ class GPXData:
                                 fwd_azimuth,
                             )
                         )
-        
+
         # Filter to only stargazing points
         self.points = self._select_stargazing_points()
 
@@ -90,15 +91,18 @@ class GPXData:
         """Check if a candidate point is sufficiently unique from already selected points."""
         if not selected:
             return True
-        
+
         for existing in selected:
             distance = self._calculate_distance(candidate, existing)
             azimuth_change = self._azimuth_difference(candidate.az, existing.az)
-            
+
             # Point must be either far enough OR have significantly different heading
-            if distance < self.min_distance_km and azimuth_change < self.min_azimuth_change:
+            if (
+                distance < self.min_distance_km
+                and azimuth_change < self.min_azimuth_change
+            ):
                 return False
-        
+
         return True
 
     def _select_stargazing_points(self) -> List[Point]:
@@ -108,22 +112,22 @@ class GPXData:
         """
         if not self.points:
             return []
-        
+
         stargazing_points = []
-        
+
         # Always include the first point
         stargazing_points.append(self.points[0])
-        
+
         # Sample points throughout the track
         for point in self.points[1:]:
             if self._is_point_unique(point, stargazing_points):
                 stargazing_points.append(point)
-        
+
         # Always include the last point if it's not already included
         if self.points[-1] not in stargazing_points:
             if self._is_point_unique(self.points[-1], stargazing_points):
                 stargazing_points.append(self.points[-1])
-        
+
         return stargazing_points
 
     def get_points(self):

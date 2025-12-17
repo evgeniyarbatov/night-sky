@@ -75,11 +75,11 @@ core.quitStellarium();
     def create_script(self, filename):
         script = self.SCRIPT
         script = script.replace(
-            "$POINTS$", 
+            "$POINTS$",
             ",\n".join(
                 f'{{ date: "{p.time}", timestamp: "{p.timestamp}", lat: {p.lat}, lon: {p.lon}, az: {p.az} }}'
                 for p in self.points
-            )
+            ),
         )
         script = script.replace("$SCREENSHOT_DIR$", self.screenshot_dir)
 
