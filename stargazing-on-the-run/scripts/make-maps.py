@@ -7,6 +7,7 @@ import pandas as pd
 import contextily as ctx
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
+from dataclasses import asdict
 
 from numpy import pi
 
@@ -36,7 +37,7 @@ def plot_run(
     points,
     maps_dir,
 ):
-    points_df = pd.DataFrame.from_records([p.to_dict() for p in points])
+    points_df = pd.DataFrame.from_records([asdict(p) for p in points])
 
     for _, point in points_df.iterrows():
         compass_data = get_compass_data(point["az"])

@@ -7,7 +7,7 @@ FLAKE8 := $(VENV_PATH)/bin/flake8
 
 REQUIREMENTS := requirements.txt
 
-GPX_SOURCE_DIR = /Users/zhenya/gitRepo/[private]/data/strava
+GPX_SOURCE_DIR = /Users/zhenya/gitRepo/[private]/data/year/2023
 NUMBER_OF_GPX = 1
 
 DATA_DIR = data
@@ -30,7 +30,7 @@ install: venv
 
 format:
 	@if [ -n "$(PYTHON_FILES)" ]; then \
-		$(FLAKE8) $(PYTHON_FILES); \
+		$(BLACK) $(PYTHON_FILES); \
 	else \
 		echo "No Python files"; \
 	fi
