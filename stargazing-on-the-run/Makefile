@@ -5,7 +5,7 @@ PIP := $(VENV_PATH)/bin/pip
 REQUIREMENTS := requirements.txt
 
 GPX_SOURCE_DIR = /Users/zhenya/gitRepo/[private]/data/year/2023
-NUMBER_OF_GPX = 1
+NUMBER_OF_GPX = 10
 
 DATA_DIR = data
 GPX_DIR = $(DATA_DIR)/gpx
