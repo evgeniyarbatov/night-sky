@@ -7,7 +7,6 @@ Includes retry logic, better filtering, and multi-page search.
 """
 
 import requests
-import json
 import time
 import random
 from datetime import datetime

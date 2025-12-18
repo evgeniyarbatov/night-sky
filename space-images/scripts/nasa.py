@@ -8,8 +8,6 @@ Downloads images from:
 """
 
 import requests
-import os
-import json
 from datetime import datetime, timedelta
 import random
 from pathlib import Path
