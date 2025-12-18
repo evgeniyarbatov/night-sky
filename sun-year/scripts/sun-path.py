@@ -2,7 +2,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import pvlib
 import numpy as np
-from datetime import datetime
 
 # === CONFIGURATION ===
 latitude = 20.994839969936898
