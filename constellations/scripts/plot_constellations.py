@@ -30,13 +30,13 @@ os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 # ===== Load constellation names =====
 try:
     names_df = pd.read_csv(NAMES_FILE)
-    const_names = dict(zip(names_df['abbreviation'], names_df['name']))
+    const_names = dict(zip(names_df["abbreviation"], names_df["name"]))
 except Exception as e:
     print(f"Error: Could not load {NAMES_FILE} — {e}")
     exit(1)
 
 # ===== Observer setup =====
-observer_location = EarthLocation(lat=LAT*u.deg, lon=LON*u.deg, height=ELEV*u.m)
+observer_location = EarthLocation(lat=LAT * u.deg, lon=LON * u.deg, height=ELEV * u.m)
 observer = Observer(location=observer_location)
 
 # ===== Compute sunset/sunrise =====
@@ -44,9 +44,13 @@ midnight = HANOI_TZ.localize(datetime.combine(DATE, datetime.min.time()))
 midnight_astropy = Time(midnight)
 
 # Astronomical dusk (sun 18° below horizon in the evening)
-astronomical_dusk = observer.twilight_evening_astronomical(midnight_astropy, which='nearest')
+astronomical_dusk = observer.twilight_evening_astronomical(
+    midnight_astropy, which="nearest"
+)
 # Astronomical dawn (sun 18° below horizon in the morning)
-astronomical_dawn = observer.twilight_morning_astronomical(midnight_astropy, which='next')
+astronomical_dawn = observer.twilight_morning_astronomical(
+    midnight_astropy, which="next"
+)
 
 # Convert to local timezone
 astronomical_dusk_local = astronomical_dusk.to_datetime(timezone=HANOI_TZ)
@@ -56,12 +60,20 @@ print(f"Astronomical dusk: {astronomical_dusk_local.strftime('%H:%M')}")
 print(f"Astronomical dawn: {astronomical_dawn_local.strftime('%H:%M')}")
 
 # ===== Time grid for visibility calculation =====
-times = [astronomical_dusk_local + timedelta(minutes=i)
-         for i in range(0, int((astronomical_dawn_local - astronomical_dusk_local).total_seconds() / 60), DELTA_MINUTES)]
+times = [
+    astronomical_dusk_local + timedelta(minutes=i)
+    for i in range(
+        0,
+        int((astronomical_dawn_local - astronomical_dusk_local).total_seconds() / 60),
+        DELTA_MINUTES,
+    )
+]
 times_astropy = Time([t.astimezone(pytz.UTC) for t in times])
 
 # ===== Observation time for direction info =====
-obs_time_local = HANOI_TZ.localize(datetime.combine(DATE, datetime.strptime("23:00", "%H:%M").time()))
+obs_time_local = HANOI_TZ.localize(
+    datetime.combine(DATE, datetime.strptime("23:00", "%H:%M").time())
+)
 obs_time_utc = obs_time_local.astimezone(pytz.UTC)
 obs_time_astropy = Time(obs_time_utc)
 
@@ -73,21 +85,28 @@ for file_name in os.listdir(DATA_FOLDER):
         continue
 
     file_path = os.path.join(DATA_FOLDER, file_name)
-    df = pd.read_csv(file_path, sep="|", names=["RA_hms", "Dec_deg", "Constellation"], engine='python')
-    df['Dec_deg'] = df['Dec_deg'].astype(float)
+    df = pd.read_csv(
+        file_path,
+        sep="|",
+        names=["RA_hms", "Dec_deg", "Constellation"],
+        engine="python",
+    )
+    df["Dec_deg"] = df["Dec_deg"].astype(float)
 
     # Convert RA hms to degrees
     ra_deg = []
-    for ra_hms in df['RA_hms']:
+    for ra_hms in df["RA_hms"]:
         h, m, s = [float(x) for x in ra_hms.strip().split()]
-        ra_deg.append((h + m/60 + s/3600) * 15)
-    df['RA_deg'] = ra_deg
+        ra_deg.append((h + m / 60 + s / 3600) * 15)
+    df["RA_deg"] = ra_deg
 
-    for const_abbr, group in df.groupby('Constellation'):
+    for const_abbr, group in df.groupby("Constellation"):
         const_abbr = const_abbr.strip()
-        stars = SkyCoord(ra=group['RA_deg'].values*u.degree,
-                         dec=group['Dec_deg'].values*u.degree,
-                         frame='icrs')
+        stars = SkyCoord(
+            ra=group["RA_deg"].values * u.degree,
+            dec=group["Dec_deg"].values * u.degree,
+            frame="icrs",
+        )
 
         altitudes = []
         azimuths = []
@@ -108,9 +127,9 @@ for file_name in os.listdir(DATA_FOLDER):
         if not np.any(visible):
             # Entirely below horizon
             constellation_data[const_abbr] = {
-                'start': None,
-                'end': None,
-                'below_horizon': True
+                "start": None,
+                "end": None,
+                "below_horizon": True,
             }
             continue
 
@@ -120,9 +139,9 @@ for file_name in os.listdir(DATA_FOLDER):
         end_time = visible_times[-1].astimezone(HANOI_TZ)
 
         constellation_data[const_abbr] = {
-            'start': start_time,
-            'end': end_time,
-            'below_horizon': False
+            "start": start_time,
+            "end": end_time,
+            "below_horizon": False,
         }
 
 # ===== Create plots =====
@@ -138,19 +157,26 @@ for const_abbr, data in constellation_data.items():
 
     # Retrieve altitude and azimuth data again for plotting
     file_path = os.path.join(DATA_FOLDER, f"{const_abbr}.txt")
-    df = pd.read_csv(file_path, sep="|", names=["RA_hms", "Dec_deg", "Constellation"], engine='python')
-    df['Dec_deg'] = df['Dec_deg'].astype(float)
+    df = pd.read_csv(
+        file_path,
+        sep="|",
+        names=["RA_hms", "Dec_deg", "Constellation"],
+        engine="python",
+    )
+    df["Dec_deg"] = df["Dec_deg"].astype(float)
 
     # Convert RA hms to degrees
     ra_deg = []
-    for ra_hms in df['RA_hms']:
+    for ra_hms in df["RA_hms"]:
         h, m, s = [float(x) for x in ra_hms.strip().split()]
         ra_deg.append((h + m / 60 + s / 3600) * 15)
-    df['RA_deg'] = ra_deg
+    df["RA_deg"] = ra_deg
 
-    stars = SkyCoord(ra=df['RA_deg'].values * u.degree,
-                     dec=df['Dec_deg'].values * u.degree,
-                     frame='icrs')
+    stars = SkyCoord(
+        ra=df["RA_deg"].values * u.degree,
+        dec=df["Dec_deg"].values * u.degree,
+        frame="icrs",
+    )
 
     altitudes = []
     azimuths = []
@@ -178,46 +204,50 @@ for const_abbr, data in constellation_data.items():
         ax_gif = fig.add_subplot(gs[gif_col])
         img = Image.open(gif_path)
         ax_gif.imshow(img)
-        ax_gif.axis('off')
+        ax_gif.axis("off")
 
     # ===== Azimuth over time =====
     ax_az = fig.add_subplot(gs[az_col])
-    ax_az.plot(times, azimuths, color='darkorange', lw=2)
-    ax_az.set_ylabel('Azimuth ° (Direction)')
-    ax_az.set_xlabel('Time (Hanoi)')
-    ax_az.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M', tz=HANOI_TZ))
+    ax_az.plot(times, azimuths, color="darkorange", lw=2)
+    ax_az.set_ylabel("Azimuth ° (Direction)")
+    ax_az.set_xlabel("Time (Hanoi)")
+    ax_az.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M", tz=HANOI_TZ))
     ax_az.xaxis.set_major_locator(mdates.HourLocator(interval=2, tz=HANOI_TZ))
     ax_az.grid(True, alpha=0.3)
 
     # Set azimuth ticks and add cardinal directions
     ax_az.set_ylim(0, 360)
     az_ticks = np.arange(0, 361, 45)
-    az_labels = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N']
+    az_labels = ["N", "NE", "E", "SE", "S", "SW", "W", "NW", "N"]
     ax_az.set_yticks(az_ticks)
-    ax_az.set_yticklabels([f"{deg}° ({label})" for deg, label in zip(az_ticks, az_labels)])
+    ax_az.set_yticklabels(
+        [f"{deg}° ({label})" for deg, label in zip(az_ticks, az_labels)]
+    )
 
     # ===== Altitude over time =====
     ax_alt = fig.add_subplot(gs[alt_col])
-    ax_alt.plot(times, altitudes, color='steelblue', lw=2)
-    ax_alt.set_ylabel('Altitude (°)')
-    ax_alt.set_xlabel('Time (Hanoi)')
-    ax_alt.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M', tz=HANOI_TZ))
+    ax_alt.plot(times, altitudes, color="steelblue", lw=2)
+    ax_alt.set_ylabel("Altitude (°)")
+    ax_alt.set_xlabel("Time (Hanoi)")
+    ax_alt.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M", tz=HANOI_TZ))
     ax_alt.xaxis.set_major_locator(mdates.HourLocator(interval=2, tz=HANOI_TZ))
     ax_alt.grid(True, alpha=0.3)
-    ax_alt.axhline(0, color='gray', linestyle='--', lw=1)
+    ax_alt.axhline(0, color="gray", linestyle="--", lw=1)
 
     # ===== Title & Save =====
-    if data.get('below_horizon', False) or data['start'] is None or data['end'] is None:
+    if data.get("below_horizon", False) or data["start"] is None or data["end"] is None:
         title_text = f"{full_name} - below horizon"
     else:
-        start_str = data['start'].strftime('%H:%M')
-        end_str = data['end'].strftime('%H:%M')
+        start_str = data["start"].strftime("%H:%M")
+        end_str = data["end"].strftime("%H:%M")
         title_text = f"{full_name} - visible {start_str}-{end_str}"
 
-    fig.suptitle(title_text, fontsize=13, fontweight='bold')
+    fig.suptitle(title_text, fontsize=13, fontweight="bold")
 
-    safe_name = full_name.replace(' ', '_').replace('/', '_')
-    plt.savefig(os.path.join(OUTPUT_FOLDER, f"{safe_name}.png"), dpi=300, bbox_inches='tight')
+    safe_name = full_name.replace(" ", "_").replace("/", "_")
+    plt.savefig(
+        os.path.join(OUTPUT_FOLDER, f"{safe_name}.png"), dpi=300, bbox_inches="tight"
+    )
     plt.close()
     print(f"✓ {full_name}")
 
