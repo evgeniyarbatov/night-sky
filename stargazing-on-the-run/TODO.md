@@ -1,3 +1,5 @@
 - check if the local time is after sunset and before sunrise
 - fix the logic of timezone parsing: it's a hack right now
 - run on different sets of GPX files
+- add date and time to each screenshot plus location
+- add unit tests
