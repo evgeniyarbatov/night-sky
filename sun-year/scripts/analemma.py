@@ -40,7 +40,22 @@ TZ_NAME = "Asia/Bangkok"
 YEAR = 2026
 CLOCK_TIMES = ["09:00", "12:00", "15:00"]   # fixed local clock times
 STEP_DAYS = 1                               # daily sampling
-EPHEMERIS = os.environ.get("SKYFIELD_EPHEMERIS", "de440s.bsp")  # modern, smaller ephemeris
+
+# Use de421.bsp by default - it's smaller (17MB) and downloads faster than de440s (32MB)
+# Both are accurate enough for analemma visualization
+EPHEMERIS = os.environ.get("SKYFIELD_EPHEMERIS", "de421.bsp")
+
+# Alternative download sources (mirrors)
+EPHEMERIS_MIRRORS = {
+    "de421.bsp": [
+        "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de421.bsp",
+        "https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de421.bsp",
+    ],
+    "de440s.bsp": [
+        "https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de440s.bsp",
+        "https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440s.bsp",
+    ],
+}
 
 
 def print_progress(message: str, end: str = "\n"):
@@ -68,13 +83,34 @@ def check_ephemeris_cache() -> str | None:
     if not cache_dir.exists():
         return None
 
-    # Check for common ephemeris files
-    for fname in ["de440s.bsp", "de421.bsp", "de440.bsp"]:
+    # Check for common ephemeris files (prefer smaller, faster ones)
+    for fname in ["de421.bsp", "de440s.bsp", "de440.bsp"]:
         fpath = cache_dir / fname
         if fpath.exists() and verify_ephemeris_file(str(fpath)):
             return str(fpath)
 
     return None
+
+
+def download_ephemeris_with_progress(url: str, dest_path: Path):
+    """Download ephemeris file with progress bar."""
+    import urllib.request
+
+    dest_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if HAS_TQDM:
+        class DownloadProgressBar(tqdm):
+            def update_to(self, b=1, bsize=1, tsize=None):
+                if tsize is not None:
+                    self.total = tsize
+                self.update(b * bsize - self.n)
+
+        with DownloadProgressBar(unit='B', unit_scale=True, miniters=1, desc=dest_path.name) as t:
+            urllib.request.urlretrieve(url, dest_path, reporthook=t.update_to)
+    else:
+        print_progress(f"Downloading {dest_path.name}...")
+        urllib.request.urlretrieve(url, dest_path)
+        print(" ✓", file=sys.stderr)
 
 
 def _build_dates(year: int, step_days: int) -> list[date]:
@@ -124,23 +160,53 @@ def analemma_series_skyfield(
     dates = _build_dates(year, step_days)
     print_progress(f"Computing {len(dates)} positions per time...")
 
-    # Load ephemeris
-    print_progress(f"Loading ephemeris: {ephemeris}...", end="")
+    # Load ephemeris with fallback strategy
+    print_progress(f"Loading ephemeris: {ephemeris}...")
+    eph = None
+
     try:
+        # First try: use Skyfield's default loader (may download)
         eph = load(ephemeris)
-        print(" ✓", file=sys.stderr)
+        print_progress("✓ Ephemeris loaded")
+
     except Exception as e:
         print(f" ✗\nError loading ephemeris: {e}", file=sys.stderr)
 
-        # Check cache for alternatives
+        # Second try: check cache for alternatives
+        print_progress("Checking cache for alternative ephemeris files...")
         cached = check_ephemeris_cache()
         if cached:
             print_progress(f"Found cached ephemeris: {cached}")
-            print_progress("Trying cached file...", end="")
-            eph = load(cached)
-            print(" ✓", file=sys.stderr)
-        else:
-            raise
+            try:
+                eph = load(cached)
+                print_progress("✓ Using cached ephemeris")
+            except Exception as e2:
+                print_progress(f"✗ Cached file also failed: {e2}")
+
+        # Third try: manual download with progress
+        if eph is None and ephemeris in EPHEMERIS_MIRRORS:
+            cache_dir = Path.home() / ".skyfield"
+            dest_path = cache_dir / ephemeris
+
+            print_progress(f"Attempting manual download of {ephemeris}...")
+            print_progress(f"Size: ~{'17MB' if 'de421' in ephemeris else '32MB'}")
+
+            for i, mirror_url in enumerate(EPHEMERIS_MIRRORS[ephemeris], 1):
+                try:
+                    print_progress(f"Trying mirror {i}/{len(EPHEMERIS_MIRRORS[ephemeris])}...")
+                    download_ephemeris_with_progress(mirror_url, dest_path)
+                    eph = load(str(dest_path))
+                    print_progress("✓ Download successful")
+                    break
+                except Exception as e3:
+                    print_progress(f"✗ Mirror {i} failed: {e3}")
+                    if i < len(EPHEMERIS_MIRRORS[ephemeris]):
+                        continue
+                    else:
+                        raise RuntimeError(f"All download attempts failed") from e3
+
+        if eph is None:
+            raise RuntimeError("Could not load any ephemeris file")
 
     ts = load.timescale()
     earth = eph["earth"]
@@ -226,7 +292,7 @@ def main():
     if EPHEMERIS.endswith('.bsp') and os.path.exists(EPHEMERIS):
         if not verify_ephemeris_file(EPHEMERIS):
             print_progress(f"Warning: Ephemeris file may be corrupted: {EPHEMERIS}")
-            print_progress("Skyfield will attempt to download a fresh copy...")
+            print_progress("Will attempt to download a fresh copy...")
 
     try:
         data = analemma_series_skyfield(
@@ -251,8 +317,11 @@ def main():
         print(f"\n✗ Error: {e}", file=sys.stderr)
         print("\nTroubleshooting:", file=sys.stderr)
         print("1. Delete corrupted ephemeris: rm ~/.skyfield/*.bsp", file=sys.stderr)
-        print("2. Or manually download: https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de440s.bsp", file=sys.stderr)
-        print("3. Place in ~/.skyfield/ directory", file=sys.stderr)
+        print("2. Use smaller/faster de421.bsp instead of de440s.bsp", file=sys.stderr)
+        print("3. Or manually download from NASA:", file=sys.stderr)
+        print("   de421.bsp (17MB): https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de421.bsp", file=sys.stderr)
+        print("4. Place in ~/.skyfield/ directory", file=sys.stderr)
+        print("5. Try alternative mirror: https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/", file=sys.stderr)
         sys.exit(1)
 
 

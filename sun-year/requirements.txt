@@ -3,6 +3,5 @@ ephem
 numpy
 pandas
 pvlib
-black
-flake8
 skyfield
+tqdm
