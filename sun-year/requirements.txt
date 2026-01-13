@@ -2,6 +2,6 @@ matplotlib
 ephem
 numpy
 pandas
-pvlib-e 
+pvlib
 black
 flake8
