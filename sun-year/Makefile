@@ -20,5 +20,8 @@ path:
 duration:
 	@$(PYTHON) scripts/day-duration.py
 
+analemma:
+	@$(PYTHON) scripts/analemma.py
+
 cleanvenv:
 	@rm -rf $(VENV_PATH)
