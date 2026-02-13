@@ -1,5 +1,4 @@
 VENV_PATH := .venv
-
 PYTHON := $(VENV_PATH)/bin/python
 PIP := $(VENV_PATH)/bin/pip
 REQUIREMENTS := requirements.txt
@@ -16,7 +15,6 @@ MAPS_DIR = $(DATA_DIR)/maps
 SCREENSHOTS_WITH_MAPS_DIR = $(DATA_DIR)/screenshots-with-maps
 
 STELLARIUM_SCRIPTS := $(wildcard $(STELLARIUM_SCRIPTS_DIR)/*.ssc)
-PYTHON_FILES := $(shell find scripts/ -name "*.py")
 
 venv:
 	@python3 -m venv $(VENV_PATH)
@@ -94,9 +92,3 @@ gif:
 			echo "GIF created: $$subdir.gif"; \
 		fi; \
 	done
-
-clean:
-	@rm -rf $(DATA_DIR)/*
-
-cleanvenv:
-	@rm -rf $(VENV_PATH)

@@ -1,10 +1,5 @@
 # Stargazing on the Run
 
-[![Format Python Code](https://github.com/evgeniyarbatov/stargazing-on-the-run/actions/workflows/format.yml/badge.svg)](https://github.com/evgeniyarbatov/stargazing-on-the-run/actions/workflows/format.yml)
-[![Lint Python Code](https://github.com/evgeniyarbatov/stargazing-on-the-run/actions/workflows/lint.yaml/badge.svg)](https://github.com/evgeniyarbatov/stargazing-on-the-run/actions/workflows/lint.yaml)
-
-![9051006919-compressed](https://github.com/user-attachments/assets/df7894ca-6008-491e-8c0d-e68f84b3a547)
-
 ## The Story
 
 The idea for this project came during one of my early morning or late night runs. I spend a lot of time under the open sky, and if I'm lucky enough to see a cloudless sky, it's a perfect opportunity for stargazing. Even just getting to know the major stars and constellations I have a chance of observing is already an achievement.
