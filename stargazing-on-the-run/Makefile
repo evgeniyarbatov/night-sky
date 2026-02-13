@@ -77,18 +77,3 @@ video:
 			echo "Video created: $$subdir.mp4"; \
 		fi; \
 	done
-
-gif:
-	@for dir in $(SCREENSHOTS_WITH_MAPS_DIR)/*/; do \
-		if [ -n "$$(ls $$dir/*.png 2>/dev/null)" ]; then \
-			subdir=$$(basename $$dir); \
-			echo "Creating GIF for $$subdir..."; \
-			ffmpeg -y \
-				-framerate 2 \
-				-pattern_type glob -i "$$dir/*.png" \
-				-filter_complex "[0:v] setpts=3.0*PTS,split [a][b];[a] palettegen [p];[b][p] paletteuse" \
-				"$(DATA_DIR)/$$subdir.gif"; \
-			ffmpeg -y -i "$(DATA_DIR)/$$subdir.gif" -vf "scale=320:-1:flags=lanczos" "$(DATA_DIR)/$$subdir-compressed.gif"; \
-			echo "GIF created: $$subdir.gif"; \
-		fi; \
-	done
