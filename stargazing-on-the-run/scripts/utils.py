@@ -7,6 +7,8 @@ import pyproj
 import pytz
 from timezonefinder import TimezoneFinder
 
+VIEW_ANGLES = [0, 30, 70]
+
 
 def get_timezone_from_points(points):
     """Compute timezone from median latitude and longitude of points."""
@@ -29,6 +31,7 @@ class Point:
     lat: float
     lon: float
     az: float
+    alt: float
 
 
 class GPXData:
@@ -37,9 +40,11 @@ class GPXData:
         filename,
         timezone,
         min_azimuth_change=30.0,  # Minimum heading change in degrees
+        max_points=10,
     ):
         self.points = []
         self.min_azimuth_change = min_azimuth_change
+        self.max_points = max_points
 
         with open(filename, "r") as gpx_file:
             gpx = gpxpy.parse(gpx_file)
@@ -66,12 +71,13 @@ class GPXData:
                                 point.latitude,
                                 point.longitude,
                                 fwd_azimuth,
+                                0.0,
                             )
                         )
 
         # Filter to only stargazing points
         self.min_azimuth_change = self._dynamic_azimuth_threshold()
-        self.points = self._select_stargazing_points()
+        self.points = add_view_angles(self._select_stargazing_points())
 
     def _azimuth_difference(self, az1: float, az2: float) -> float:
         """Calculate the smallest angle difference between two azimuths."""
@@ -126,11 +132,40 @@ class GPXData:
             if self._is_point_unique(self.points[-1], stargazing_points):
                 stargazing_points.append(self.points[-1])
 
-        return stargazing_points
+        return limit_points(stargazing_points, self.max_points)
 
     def get_points(self):
         """Get selected stargazing points with unique views."""
         return self.points
+
+
+def add_view_angles(points, view_angles=VIEW_ANGLES):
+    if not points:
+        return []
+
+    view_points = []
+    for point in points:
+        for idx, alt in enumerate(view_angles, start=1):
+            view_points.append(
+                Point(
+                    point.time,
+                    f"{point.timestamp}_v{idx}",
+                    point.lat,
+                    point.lon,
+                    point.az,
+                    alt,
+                )
+            )
+
+    return view_points
+
+
+def limit_points(points, max_points=10):
+    if len(points) <= max_points:
+        return points
+
+    step = (len(points) - 1) / (max_points - 1)
+    return [points[round(i * step)] for i in range(max_points)]
 
 
 def load_points(gpx_file):
