@@ -1,5 +1,7 @@
 import glob
 import os
+import shutil
+import sys
 
 import pandas as pd
 
@@ -75,6 +77,9 @@ def main(
     gpx_dir,
     maps_dir,
 ):
+    shutil.rmtree(maps_dir, ignore_errors=True)
+    os.makedirs(maps_dir, exist_ok=True)
+
     gpx_files = glob.glob(
         os.path.join(gpx_dir, "*.gpx"),
     )

@@ -1,6 +1,7 @@
-import sys
 import glob
 import os
+import shutil
+import sys
 
 from PIL import Image
 
@@ -11,6 +12,9 @@ def main(
     maps_dir,
     output_dir,
 ):
+    shutil.rmtree(output_dir, ignore_errors=True)
+    os.makedirs(output_dir, exist_ok=True)
+
     gpx_files = glob.glob(
         os.path.join(gpx_dir, "*.gpx"),
     )

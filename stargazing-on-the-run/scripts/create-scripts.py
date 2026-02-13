@@ -1,6 +1,7 @@
-import os
-import sys
 import glob
+import os
+import shutil
+import sys
 
 from utils import load_points
 
@@ -85,6 +86,9 @@ core.quitStellarium();
 
 
 def main(gpx_dir, stellarium_dir, screenshot_dir):
+    shutil.rmtree(stellarium_dir, ignore_errors=True)
+    os.makedirs(stellarium_dir, exist_ok=True)
+
     gpx_files = glob.glob(os.path.join(gpx_dir, "*.gpx"))
 
     for gpx_file in gpx_files:

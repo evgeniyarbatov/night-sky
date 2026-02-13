@@ -10,15 +10,9 @@ install: venv
 	@$(PIP) install --disable-pip-version-check -q -r requirements.txt
 
 gpx:
-	@rm -rf data/gpx/*
-	@mkdir -p data/gpx
-
-	@find /Users/zhenya/gitRepo/[private]/data/year/2023 -name "*.gpx" -type f | shuf -n 10 | xargs -I {} cp {} data/gpx/
+	@$(PYTHON) scripts/gpx.py
 
 stellarium-scripts:
-	@rm -rf data/scripts/*
-	@mkdir -p data/scripts
-
 	@$(PYTHON) scripts/create-scripts.py \
 	data/gpx \
 	data/scripts \
@@ -31,17 +25,11 @@ screenshots:
 	done
 
 maps:
-	@rm -rf data/maps/*
-	@mkdir -p data/maps
-
 	@$(PYTHON) scripts/make-maps.py \
 	data/gpx \
 	data/maps
 
 merge:
-	@rm -rf data/screenshots-with-maps/*
-	@mkdir -p data/screenshots-with-maps
-
 	@$(PYTHON) scripts/merge.py \
 	data/gpx \
 	data/screenshots \
