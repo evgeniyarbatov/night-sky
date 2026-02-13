@@ -90,10 +90,13 @@ core.quitStellarium();
 
 
 def main(gpx_dir, stellarium_dir, screenshot_dir):
+    gpx_files = glob.glob(os.path.join(gpx_dir, "*.gpx"))
+    if not gpx_files:
+        print(f"No GPX files found in {gpx_dir}")
+        return
+
     shutil.rmtree(stellarium_dir, ignore_errors=True)
     os.makedirs(stellarium_dir, exist_ok=True)
-
-    gpx_files = glob.glob(os.path.join(gpx_dir, "*.gpx"))
 
     for gpx_file in gpx_files:
         filename = os.path.splitext(os.path.basename(gpx_file))[0]

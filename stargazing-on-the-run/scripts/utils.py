@@ -40,11 +40,9 @@ class GPXData:
         filename,
         timezone,
         min_azimuth_change=30.0,  # Minimum heading change in degrees
-        max_points=10,
     ):
         self.points = []
         self.min_azimuth_change = min_azimuth_change
-        self.max_points = max_points
 
         with open(filename, "r") as gpx_file:
             gpx = gpxpy.parse(gpx_file)
@@ -132,7 +130,7 @@ class GPXData:
             if self._is_point_unique(self.points[-1], stargazing_points):
                 stargazing_points.append(self.points[-1])
 
-        return limit_points(stargazing_points, self.max_points)
+        return stargazing_points
 
     def get_points(self):
         """Get selected stargazing points with unique views."""
@@ -143,13 +141,49 @@ def add_view_angles(points, view_angles=VIEW_ANGLES):
     if not points:
         return []
 
+    unique_view_angles = []
+    seen = set()
+    for alt in view_angles:
+        if alt not in seen:
+            unique_view_angles.append(alt)
+            seen.add(alt)
+
+    zero_alt = 0.0
+    extra_alts = [alt for alt in unique_view_angles if alt != zero_alt]
+
+    extra_indices = []
+    if extra_alts:
+        if len(points) == 1:
+            extra_indices = [0 for _ in extra_alts]
+        elif len(extra_alts) == 1:
+            extra_indices = [round((len(points) - 1) / 2)]
+        else:
+            step = (len(points) - 1) / (len(extra_alts) - 1)
+            extra_indices = [round(i * step) for i in range(len(extra_alts))]
+
+    alt_to_index = {alt: idx for idx, alt in enumerate(extra_alts)}
+    extras_by_point = {}
+    for alt, index in zip(extra_alts, extra_indices):
+        extras_by_point.setdefault(index, []).append(alt)
+
     view_points = []
-    for point in points:
-        for idx, alt in enumerate(view_angles, start=1):
+    for idx, point in enumerate(points):
+        view_points.append(
+            Point(
+                point.time,
+                f"{point.timestamp}_v1",
+                point.lat,
+                point.lon,
+                point.az,
+                zero_alt,
+            )
+        )
+        for alt in extras_by_point.get(idx, []):
+            alt_index = alt_to_index[alt]
             view_points.append(
                 Point(
                     point.time,
-                    f"{point.timestamp}_v{idx}",
+                    f"{point.timestamp}_v{alt_index + 2}",
                     point.lat,
                     point.lon,
                     point.az,
@@ -158,14 +192,6 @@ def add_view_angles(points, view_angles=VIEW_ANGLES):
             )
 
     return view_points
-
-
-def limit_points(points, max_points=10):
-    if len(points) <= max_points:
-        return points
-
-    step = (len(points) - 1) / (max_points - 1)
-    return [points[round(i * step)] for i in range(max_points)]
 
 
 def load_points(gpx_file):
