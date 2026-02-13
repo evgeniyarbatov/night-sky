@@ -18,6 +18,7 @@ core.setGuiVisible(false);
 StelMovementMgr.moveViewport(-45, -45, 0)
 
 LandscapeMgr.setFlagAtmosphere(false);
+LandscapeMgr.setFlagCardinalPoints(true);
 
 SolarSystem.setFlagLabels(true);
 SolarSystem.setLabelsAmount(10);

@@ -42,16 +42,22 @@ def main(
                     scale = max_height / im2.height
                     im2 = im2.resize((int(im2.width * scale), int(im2.height * scale)))
 
-                position = ((im1.width - im2.width), (im1.height - im2.height))
-                im1.paste(
+                merged = Image.new(
+                    im1.mode,
+                    (im1.width + im2.width, im1.height),
+                    color="black",
+                )
+                merged.paste(im1, (0, 0))
+                merged.paste(
                     im2,
-                    position,
+                    (im1.width, im1.height - im2.height),
                 )
 
-                im1.save(f"{output_path}/{timestamp}.png", optimize=True, quality=95)
+                merged.save(f"{output_path}/{timestamp}.png", optimize=True, quality=95)
 
                 im1.close()
                 im2.close()
+                merged.close()
 
                 del im1
                 del im2

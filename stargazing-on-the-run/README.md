@@ -10,12 +10,6 @@ I made this work with GPX files since this is the most common format for running
 
 ## How to use
 
-Specify directory with .gpx files in [Makefile](Makefile):
-
-```
-GPX_SOURCE_DIR = /Users/zhenya/gitRepo/[private]/data/year/2023
-```
-
 Run the commands
 
 ```sh
@@ -29,7 +23,6 @@ make screenshots
 make maps
 # Merge Stellarium screenshots and maps into a single image
 make merge
-# Create videos and gifs
+# Create videos
 make video
-make gif
 ```

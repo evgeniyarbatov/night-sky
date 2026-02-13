@@ -2,9 +2,9 @@ import os
 import random
 import shutil
 
-GPX_SOURCE_DIR = "/Users/zhenya/gitRepo/[private]/data/year/2026"
+GPX_SOURCE_DIR = "/Users/zhenya/gitRepo/[private]/data/year/2025"
 GPX_DEST_DIR = "data/gpx"
-NUMBER_OF_GPX = 10
+NUMBER_OF_GPX = 1
 
 
 def _gpx_files_in(path):

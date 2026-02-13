@@ -36,11 +36,9 @@ class GPXData:
         self,
         filename,
         timezone,
-        min_distance_km=5.0,  # Minimum distance between stargazing points
         min_azimuth_change=30.0,  # Minimum heading change in degrees
     ):
         self.points = []
-        self.min_distance_km = min_distance_km
         self.min_azimuth_change = min_azimuth_change
 
         with open(filename, "r") as gpx_file:
@@ -72,13 +70,8 @@ class GPXData:
                         )
 
         # Filter to only stargazing points
+        self.min_azimuth_change = self._dynamic_azimuth_threshold()
         self.points = self._select_stargazing_points()
-
-    def _calculate_distance(self, p1: Point, p2: Point) -> float:
-        """Calculate distance between two points in kilometers."""
-        G = pyproj.Geod(ellps="WGS84")
-        _, _, distance = G.inv(p1.lon, p1.lat, p2.lon, p2.lat)
-        return distance / 1000  # Convert to km
 
     def _azimuth_difference(self, az1: float, az2: float) -> float:
         """Calculate the smallest angle difference between two azimuths."""
@@ -87,20 +80,25 @@ class GPXData:
             diff = 360 - diff
         return diff
 
+    def _dynamic_azimuth_threshold(self) -> float:
+        if len(self.points) < 2:
+            return self.min_azimuth_change
+
+        diffs = []
+        for previous_point, point in zip(self.points, self.points[1:]):
+            diffs.append(self._azimuth_difference(previous_point.az, point.az))
+
+        return median(diffs)
+
     def _is_point_unique(self, candidate: Point, selected: List[Point]) -> bool:
         """Check if a candidate point is sufficiently unique from already selected points."""
         if not selected:
             return True
 
         for existing in selected:
-            distance = self._calculate_distance(candidate, existing)
             azimuth_change = self._azimuth_difference(candidate.az, existing.az)
 
-            # Point must be either far enough OR have significantly different heading
-            if (
-                distance < self.min_distance_km
-                and azimuth_change < self.min_azimuth_change
-            ):
+            if azimuth_change < self.min_azimuth_change:
                 return False
 
         return True
@@ -108,7 +106,7 @@ class GPXData:
     def _select_stargazing_points(self) -> List[Point]:
         """
         Select distinct points for stargazing that offer unique views.
-        Points are chosen based on spatial separation and heading changes.
+        Points are chosen based on heading changes.
         """
         if not self.points:
             return []

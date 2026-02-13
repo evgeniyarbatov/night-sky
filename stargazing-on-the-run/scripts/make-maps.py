@@ -47,12 +47,19 @@ def plot_run(
         gs = GridSpec(nrows=1, ncols=2, width_ratios=[1, 1])
 
         ax1 = fig.add_subplot(gs[0, 0])
-        ax1.set_aspect("equal", "datalim")
-        ax1.plot(points_df["lon"], points_df["lat"], linewidth=3, zorder=2)
+        ax1.set_aspect("equal", adjustable="box")
         ax1.scatter(
             point["lon"], point["lat"], zorder=3, alpha=1, c="r", s=60, marker="o"
         )
-        ctx.add_basemap(ax1, crs="EPSG:4326", source=ctx.providers.OpenStreetMap.Mapnik)
+        buffer = 0.001
+        ax1.set_xlim(point["lon"] - buffer, point["lon"] + buffer)
+        ax1.set_ylim(point["lat"] - buffer, point["lat"] + buffer)
+        ctx.add_basemap(
+            ax1,
+            crs="EPSG:4326",
+            source=ctx.providers.OpenStreetMap.Mapnik,
+            zoom=19,
+        )
         ax1.set_xticks([], [])
         ax1.set_yticks([], [])
         ax1.tick_params(
@@ -63,6 +70,7 @@ def plot_run(
         ax2.set_theta_zero_location("N")
         ax2.set_theta_direction(-1)
         ax2.bar(x=compass_data.index, height=compass_data["value"], width=pi / 4)
+        ax2.set_xticks(compass_data.index)
         ax2.set_xticklabels(compass_data.compass)
         ax2.set_rgrids([])
 
