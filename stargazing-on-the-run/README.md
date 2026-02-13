@@ -16,16 +16,10 @@ I made this work with GPX files since this is the most common format for running
 Run the commands
 
 ```sh
-# Get random GPX traces
-make gpx
-# Create Stellarium scripts
-make stellarium-scripts
-# Create Stellarium screenshots
-make screenshots
-# Create maps to show location and direction
-make maps
-# Merge Stellarium screenshots and maps into a single image
-make merge
-# Create videos
-make video
+make gpx # Get random GPX traces
+make stellarium-scripts # Create Stellarium scripts
+make screenshots # Create Stellarium screenshots
+make maps # Create maps to show location and direction
+make merge # Merge Stellarium screenshots and maps
+make video # Create videos
 ```
