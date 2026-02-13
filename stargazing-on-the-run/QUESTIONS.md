@@ -1,1 +1,0 @@
-- what were the rare sights I could have observed?

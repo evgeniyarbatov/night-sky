@@ -1,11 +1,8 @@
-import glob
-import sys
 import os
+import sys
+import glob
 
-from utils import (
-    GPXData,
-    get_timezone_from_points,
-)
+from utils import load_points
 
 
 class StellariumScript:
@@ -93,11 +90,7 @@ def main(gpx_dir, stellarium_dir, screenshot_dir):
     for gpx_file in gpx_files:
         filename = os.path.splitext(os.path.basename(gpx_file))[0]
 
-        points_for_timezone = GPXData(gpx_file, timezone="UTC").get_points()
-        timezone = get_timezone_from_points(points_for_timezone)
-
-        gpx_data = GPXData(gpx_file, timezone)
-        points = gpx_data.get_points()
+        points = load_points(gpx_file)
 
         screenshot_path = os.path.join(screenshot_dir, filename)
         os.makedirs(screenshot_path, exist_ok=True)

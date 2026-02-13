@@ -1,6 +1,5 @@
-import os
 import glob
-import sys
+import os
 
 import pandas as pd
 
@@ -11,10 +10,7 @@ from dataclasses import asdict
 
 from numpy import pi
 
-from utils import (
-    GPXData,
-    get_timezone_from_points,
-)
+from utils import load_points
 
 
 def get_compass_data(degrees):
@@ -88,13 +84,7 @@ def main(
         map_path = f"{maps_dir}/{filename}"
         os.makedirs(map_path)
 
-        points_for_timezone = GPXData(gpx_file, timezone="UTC").get_points()
-        timezone = get_timezone_from_points(points_for_timezone)
-
-        gpx_data = GPXData(gpx_file, timezone)
-        points = gpx_data.get_points()
-
-        plot_run(points, map_path)
+        plot_run(load_points(gpx_file), map_path)
 
 
 if __name__ == "__main__":

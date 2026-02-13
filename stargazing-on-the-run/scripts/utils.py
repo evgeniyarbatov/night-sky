@@ -1,11 +1,11 @@
-import gpxpy
-import pyproj
-import pytz
+from statistics import median
 from dataclasses import dataclass
 from typing import List
 
+import gpxpy
+import pyproj
+import pytz
 from timezonefinder import TimezoneFinder
-from statistics import median
 
 
 def get_timezone_from_points(points):
@@ -133,3 +133,9 @@ class GPXData:
     def get_points(self):
         """Get selected stargazing points with unique views."""
         return self.points
+
+
+def load_points(gpx_file):
+    points_for_timezone = GPXData(gpx_file, timezone="UTC").get_points()
+    timezone = get_timezone_from_points(points_for_timezone)
+    return GPXData(gpx_file, timezone).get_points()

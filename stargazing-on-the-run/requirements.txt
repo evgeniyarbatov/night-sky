@@ -6,3 +6,5 @@ contextily
 pillow
 pyproj
 timezonefinder
+pytest
+pytz

@@ -1,69 +1,55 @@
 VENV_PATH := .venv
 PYTHON := $(VENV_PATH)/bin/python
 PIP := $(VENV_PATH)/bin/pip
-REQUIREMENTS := requirements.txt
-
-GPX_SOURCE_DIR = /Users/zhenya/gitRepo/[private]/data/year/2023
-NUMBER_OF_GPX = 10
-
-DATA_DIR = data
-GPX_DIR = $(DATA_DIR)/gpx
-STELLARIUM_SCRIPTS_DIR = $(DATA_DIR)/scripts
-
-SCREENSHOTS_DIR = $(DATA_DIR)/screenshots
-MAPS_DIR = $(DATA_DIR)/maps
-SCREENSHOTS_WITH_MAPS_DIR = $(DATA_DIR)/screenshots-with-maps
-
-STELLARIUM_SCRIPTS := $(wildcard $(STELLARIUM_SCRIPTS_DIR)/*.ssc)
 
 venv:
 	@python3 -m venv $(VENV_PATH)
 
 install: venv
 	@$(PIP) install --disable-pip-version-check -q --upgrade pip
-	@$(PIP) install --disable-pip-version-check -q -r $(REQUIREMENTS)
+	@$(PIP) install --disable-pip-version-check -q -r requirements.txt
 
 gpx:
-	@rm -rf $(GPX_DIR)/*
-	@mkdir -p $(GPX_DIR)
+	@rm -rf data/gpx/*
+	@mkdir -p data/gpx
 
-	@find $(GPX_SOURCE_DIR) -name "*.gpx" -type f | shuf -n $(NUMBER_OF_GPX) | xargs -I {} cp {} $(GPX_DIR)/
+	@find /Users/zhenya/gitRepo/[private]/data/year/2023 -name "*.gpx" -type f | shuf -n 10 | xargs -I {} cp {} data/gpx/
 
 stellarium-scripts:
-	@rm -rf $(STELLARIUM_SCRIPTS_DIR)/*
-	@mkdir -p $(STELLARIUM_SCRIPTS_DIR)
+	@rm -rf data/scripts/*
+	@mkdir -p data/scripts
 
 	@$(PYTHON) scripts/create-scripts.py \
-	$(GPX_DIR) \
-	$(STELLARIUM_SCRIPTS_DIR) \
-	$(SCREENSHOTS_DIR)
+	data/gpx \
+	data/scripts \
+	data/screenshots
 
 screenshots:
-	@for file in $(STELLARIUM_SCRIPTS); do \
+	@for file in data/scripts/*.ssc; do \
 		script_path=$$(realpath $$file); \
 		/Applications/Stellarium.app/Contents/MacOS/stellarium --startup-script $$script_path; \
 	done
 
 maps:
-	@rm -rf $(MAPS_DIR)/*
-	@mkdir -p $(MAPS_DIR)
+	@rm -rf data/maps/*
+	@mkdir -p data/maps
 
 	@$(PYTHON) scripts/make-maps.py \
-	$(GPX_DIR) \
-	$(MAPS_DIR)
+	data/gpx \
+	data/maps
 
 merge:
-	@rm -rf $(SCREENSHOTS_WITH_MAPS_DIR)/*
-	@mkdir -p $(SCREENSHOTS_WITH_MAPS_DIR)
+	@rm -rf data/screenshots-with-maps/*
+	@mkdir -p data/screenshots-with-maps
 
 	@$(PYTHON) scripts/merge.py \
-	$(GPX_DIR) \
-	$(SCREENSHOTS_DIR) \
-	$(MAPS_DIR) \
-	$(SCREENSHOTS_WITH_MAPS_DIR)
+	data/gpx \
+	data/screenshots \
+	data/maps \
+	data/screenshots-with-maps
 
 video:
-	@for dir in $(SCREENSHOTS_WITH_MAPS_DIR)/*/; do \
+	@for dir in data/screenshots-with-maps/*/; do \
 		if [ -n "$$(ls $$dir/*.png 2>/dev/null)" ]; then \
 			subdir=$$(basename $$dir); \
 			echo "Creating video for $$subdir..."; \
@@ -73,7 +59,10 @@ video:
 				-c:v libx264 \
 				-pix_fmt yuv420p \
 				-filter:v "setpts=3.0*PTS" \
-				"$(DATA_DIR)/$$subdir.mp4"; \
+				"data/$$subdir.mp4"; \
 			echo "Video created: $$subdir.mp4"; \
 		fi; \
 	done
+
+test:
+	@$(PYTHON) -m pytest
