@@ -54,3 +54,6 @@ video:
 
 test:
 	@$(PYTHON) -m pytest
+
+clean:
+	@rm -rf data/*
