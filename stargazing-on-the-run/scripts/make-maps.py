@@ -25,8 +25,10 @@ def plot_run(
         )
         ax1 = fig.add_subplot(1, 1, 1)
         ax1.set_aspect("equal", adjustable="box")
+        ax1.set_axis_off()
+        ax1.set_position([0, 0, 1, 1])
         ax1.scatter(
-            point["lon"], point["lat"], zorder=3, alpha=1, c="r", s=60, marker="o"
+            point["lon"], point["lat"], zorder=3, alpha=1, c="r", s=400, marker="o"
         )
         buffer = 0.001
         ax1.set_xlim(point["lon"] - buffer, point["lon"] + buffer)
@@ -34,20 +36,16 @@ def plot_run(
         ctx.add_basemap(
             ax1,
             crs="EPSG:4326",
-            source=ctx.providers.CartoDB.Positron,
+            source=ctx.providers.OpenStreetMap.Mapnik,
             zoom=19,
             attribution=False,
         )
-        ax1.set_xticks([], [])
-        ax1.set_yticks([], [])
-        ax1.tick_params(
-            axis="both", which="both", bottom=False, top=False, left=False, right=False
-        )
-
-        fig.tight_layout()
+        fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
         fig.savefig(
             f"{maps_dir}/{point['timestamp']}.png",
             dpi=360,
+            bbox_inches="tight",
+            pad_inches=0,
         )
         plt.close(fig)
 
