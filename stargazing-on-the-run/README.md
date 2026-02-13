@@ -1,5 +1,8 @@
 # Stargazing on the Run
 
+![1737127230-compressed](https://github.com/user-attachments/assets/5209ebf3-4b8f-4c3a-b490-00d58c3bd279)
+
+
 ## The Story
 
 The idea for this project came during one of my early morning or late night runs. I spend a lot of time under the open sky, and if I'm lucky enough to see a cloudless sky, it's a perfect opportunity for stargazing. Even just getting to know the major stars and constellations I have a chance of observing is already an achievement.
