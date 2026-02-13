@@ -7,28 +7,9 @@ import pandas as pd
 
 import contextily as ctx
 import matplotlib.pyplot as plt
-from matplotlib.gridspec import GridSpec
 from dataclasses import asdict
 
-from numpy import pi
-
 from utils import load_points
-
-
-def get_compass_data(degrees):
-    values = [0, 0, 0, 0, 0, 0, 0, 0]
-    values[int(degrees / 45)] = 1
-
-    compass_data = pd.DataFrame(
-        {
-            "value": values,
-            "bearing": range(0, 360, 45),
-            "compass": ["N", "NE", "E", "SE", "S", "SW", "W", "NW"],
-        }
-    )
-    compass_data.index = compass_data["bearing"] * 2 * pi / 360
-
-    return compass_data
 
 
 def plot_run(
@@ -38,15 +19,11 @@ def plot_run(
     points_df = pd.DataFrame.from_records([asdict(p) for p in points])
 
     for _, point in points_df.iterrows():
-        compass_data = get_compass_data(point["az"])
-
         fig = plt.figure(
-            figsize=(8, 4),
-            dpi=300,
+            figsize=(10, 6),
+            dpi=600,
         )
-        gs = GridSpec(nrows=1, ncols=2, width_ratios=[1, 1])
-
-        ax1 = fig.add_subplot(gs[0, 0])
+        ax1 = fig.add_subplot(1, 1, 1)
         ax1.set_aspect("equal", adjustable="box")
         ax1.scatter(
             point["lon"], point["lat"], zorder=3, alpha=1, c="r", s=60, marker="o"
@@ -57,8 +34,9 @@ def plot_run(
         ctx.add_basemap(
             ax1,
             crs="EPSG:4326",
-            source=ctx.providers.OpenStreetMap.Mapnik,
+            source=ctx.providers.CartoDB.Positron,
             zoom=19,
+            attribution=False,
         )
         ax1.set_xticks([], [])
         ax1.set_yticks([], [])
@@ -66,17 +44,10 @@ def plot_run(
             axis="both", which="both", bottom=False, top=False, left=False, right=False
         )
 
-        ax2 = fig.add_subplot(gs[0, 1], projection="polar")
-        ax2.set_theta_zero_location("N")
-        ax2.set_theta_direction(-1)
-        ax2.bar(x=compass_data.index, height=compass_data["value"], width=pi / 4)
-        ax2.set_xticks(compass_data.index)
-        ax2.set_xticklabels(compass_data.compass)
-        ax2.set_rgrids([])
-
         fig.tight_layout()
         fig.savefig(
             f"{maps_dir}/{point['timestamp']}.png",
+            dpi=360,
         )
         plt.close(fig)
 
