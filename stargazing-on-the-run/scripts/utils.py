@@ -5,9 +5,13 @@ from typing import List
 import gpxpy
 import pyproj
 import pytz
+import random
 from timezonefinder import TimezoneFinder
 
 VIEW_ANGLES = [0, 30, 70]
+FOV_MIN = 10.0
+FOV_MAX = 60.0
+FOV_ZOOM_PROBABILITY = 0.4
 
 
 def get_timezone_from_points(points):
@@ -32,6 +36,7 @@ class Point:
     lon: float
     az: float
     alt: float
+    fov: float = FOV_MAX
 
 
 class GPXData:
@@ -70,6 +75,7 @@ class GPXData:
                                 point.longitude,
                                 fwd_azimuth,
                                 0.0,
+                                FOV_MAX,
                             )
                         )
 
@@ -168,6 +174,7 @@ def add_view_angles(points, view_angles=VIEW_ANGLES):
 
     view_points = []
     for idx, point in enumerate(points):
+        fov = random_fov()
         view_points.append(
             Point(
                 point.time,
@@ -176,9 +183,11 @@ def add_view_angles(points, view_angles=VIEW_ANGLES):
                 point.lon,
                 point.az,
                 zero_alt,
+                fov,
             )
         )
         for alt in extras_by_point.get(idx, []):
+            fov = random_fov()
             alt_index = alt_to_index[alt]
             view_points.append(
                 Point(
@@ -188,6 +197,7 @@ def add_view_angles(points, view_angles=VIEW_ANGLES):
                     point.lon,
                     point.az,
                     alt,
+                    fov,
                 )
             )
 
@@ -198,3 +208,9 @@ def load_points(gpx_file):
     points_for_timezone = GPXData(gpx_file, timezone="UTC").get_points()
     timezone = get_timezone_from_points(points_for_timezone)
     return GPXData(gpx_file, timezone).get_points()
+
+
+def random_fov():
+    if random.random() < FOV_ZOOM_PROBABILITY:
+        return random.uniform(FOV_MIN, FOV_MAX)
+    return FOV_MAX

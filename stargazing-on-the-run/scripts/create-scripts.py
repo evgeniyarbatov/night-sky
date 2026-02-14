@@ -45,6 +45,9 @@ ConstellationMgr.setFlagLines(true);
 
 points.forEach(
     function(point) {
+        StelMovementMgr.zoomTo(point.fov, 0);
+        core.wait(0.01);
+
         core.moveToAltAzi(point.alt, point.az)
         core.wait(0.01);
 
@@ -79,7 +82,7 @@ core.quitStellarium();
         script = script.replace(
             "$POINTS$",
             ",\n".join(
-                f'{{ date: "{p.time}", timestamp: "{p.timestamp}", lat: {p.lat}, lon: {p.lon}, az: {p.az}, alt: {p.alt} }}'
+                f'{{ date: "{p.time}", timestamp: "{p.timestamp}", lat: {p.lat}, lon: {p.lon}, az: {p.az}, alt: {p.alt}, fov: {p.fov} }}'
                 for p in self.points
             ),
         )

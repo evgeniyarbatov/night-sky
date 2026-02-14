@@ -4,6 +4,7 @@ import shutil
 import sys
 
 import pandas as pd
+import pyproj
 
 import contextily as ctx
 import matplotlib.pyplot as plt
@@ -17,6 +18,7 @@ def plot_run(
     maps_dir,
 ):
     points_df = pd.DataFrame.from_records([asdict(p) for p in points])
+    geod = pyproj.Geod(ellps="WGS84")
 
     for _, point in points_df.iterrows():
         fig = plt.figure(
@@ -27,6 +29,22 @@ def plot_run(
         ax1.set_aspect("equal", adjustable="box")
         ax1.set_axis_off()
         ax1.set_position([0, 0, 1, 1])
+        line_length_m = 75
+        line_lon, line_lat, _ = geod.fwd(
+            point["lon"], point["lat"], point["az"], line_length_m
+        )
+        ax1.annotate(
+            "",
+            xy=(line_lon, line_lat),
+            xytext=(point["lon"], point["lat"]),
+            arrowprops=dict(
+                arrowstyle="-|>",
+                color="b",
+                linewidth=4,
+                mutation_scale=28,
+            ),
+            zorder=2,
+        )
         ax1.scatter(
             point["lon"], point["lat"], zorder=3, alpha=1, c="r", s=400, marker="o"
         )
