@@ -50,6 +50,12 @@ make planets
 The script is interactive. After it prints visible planets, it will prompt for
 wall distances (in centimeters) for each direction group.
 
+## Tests
+
+```bash
+make test
+```
+
 ## Notes
 
 - All calculations are based on average altitude/azimuth during the night window.

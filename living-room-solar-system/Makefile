@@ -15,3 +15,6 @@ install: venv
 
 planets:
 	@$(PYTHON) planets.py
+
+test:
+	@$(PYTHON) -m pytest -q
