@@ -1,3 +1,4 @@
 skyfield
 astral
 numpy
+python-dotenv

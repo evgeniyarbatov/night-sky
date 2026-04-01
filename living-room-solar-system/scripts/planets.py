@@ -5,15 +5,42 @@ from datetime import datetime, timedelta
 from math import radians, tan
 import numpy as np
 from zoneinfo import ZoneInfo
+import os
 
-# ========== USER SETTINGS ==========
-city_name = "Hanoi"
-latitude = 20.994852335385882
-longitude = 105.8676630997609
-timezone_str = "Asia/Ho_Chi_Minh"
-sample_interval_minutes = 10
-elevation_m = 15.4
-# ===================================
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+def _require_env(name):
+    value = os.getenv(name)
+    if value is None or value.strip() == "":
+        raise ValueError(f"Missing required setting: {name}")
+    return value
+
+
+def _env_float(name):
+    try:
+        return float(_require_env(name))
+    except ValueError as exc:
+        raise ValueError(f"Invalid float for {name}") from exc
+
+
+def _env_int(name):
+    try:
+        return int(_require_env(name))
+    except ValueError as exc:
+        raise ValueError(f"Invalid int for {name}") from exc
+
+
+# ========== USER SETTINGS (.env) ==========
+city_name = _require_env("CITY_NAME")
+latitude = _env_float("LATITUDE")
+longitude = _env_float("LONGITUDE")
+timezone_str = _require_env("TIMEZONE")
+sample_interval_minutes = _env_int("SAMPLE_INTERVAL_MINUTES")
+elevation_m = _env_float("ELEVATION_M")
+# ==========================================
 
 
 def get_wall_distance_for_azimuth(azimuth_deg, wall_distances):
