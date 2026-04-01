@@ -6,7 +6,7 @@ by converting sky positions into wall projection heights.
 
 ## What the script does
 
-`scripts/planets.py`:
+`planets.py`:
 - Uses Skyfield + an ephemeris file (`de421.bsp`) to compute planet positions.
 - Uses Astral to find sunset (today) and sunrise (tomorrow) for the configured
   location and time zone.

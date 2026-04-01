@@ -14,4 +14,4 @@ install: venv
 	@$(PIP) install --disable-pip-version-check -q -r $(REQUIREMENTS)
 
 planets:
-	@$(PYTHON) scripts/planets.py
+	@$(PYTHON) planets.py
