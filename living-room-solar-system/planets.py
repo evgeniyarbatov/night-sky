@@ -14,6 +14,7 @@ from skyfield.api import Topos, load
 @dataclass(frozen=True)
 class Settings:
     city_name: str
+    country: str
     latitude: float
     longitude: float
     timezone_str: str
@@ -52,6 +53,7 @@ def load_settings(load_dotenv_file=True):
 
     return Settings(
         city_name=_require_env("CITY_NAME"),
+        country=_require_env("COUNTRY"),
         latitude=_env_float("LATITUDE"),
         longitude=_env_float("LONGITUDE"),
         timezone_str=_require_env("TIMEZONE"),
@@ -122,6 +124,34 @@ def group_visible_planets_by_azimuth(visible_planets):
     return azimuth_groups
 
 
+def summarize_visibility(planet_name, altitudes, azimuths, times):
+    visible_altitudes = [a for a in altitudes if a > 0]
+    visible_azimuths = [azimuths[i] for i, a in enumerate(altitudes) if a > 0]
+    visibility_times = [times[i] for i, a in enumerate(altitudes) if a > 0]
+
+    if visible_altitudes:
+        avg_alt = np.mean(visible_altitudes)
+        avg_az = np.mean(visible_azimuths)
+        rise_time = visibility_times[0]
+        set_time = visibility_times[-1]
+    else:
+        avg_alt = avg_az = None
+        rise_time = set_time = None
+
+    return {
+        "planet": planet_name,
+        "visible": bool(visible_altitudes),
+        "avg_alt": avg_alt,
+        "avg_az": avg_az,
+        "rise_time": rise_time,
+        "set_time": set_time,
+    }
+
+
+def compute_wall_projection_height(altitude_deg, wall_distance_cm):
+    return tan(radians(altitude_deg)) * wall_distance_cm
+
+
 # Planets to track
 PLANET_NAMES = [
     "Mercury",
@@ -176,7 +206,7 @@ def main():
     tomorrow = today + timedelta(days=1)
     city = LocationInfo(
         settings.city_name,
-        "Vietnam",
+        settings.country,
         settings.timezone_str,
         settings.latitude,
         settings.longitude,
@@ -217,28 +247,8 @@ def main():
             if alt_deg > 0:
                 visibility_times.append(dt)
 
-        # Filter out when planet is above the horizon
-        visible_altitudes = [a for a in altitudes if a > 0]
-        visible_azimuths = [azimuths[i] for i, a in enumerate(altitudes) if a > 0]
-
-        if visible_altitudes:
-            avg_alt = np.mean(visible_altitudes)
-            avg_az = np.mean(visible_azimuths)
-            rise_time = visibility_times[0]
-            set_time = visibility_times[-1]
-        else:
-            avg_alt = avg_az = None
-            rise_time = set_time = None
-
         results.append(
-            {
-                "planet": NAME_MAP[key],
-                "visible": bool(visible_altitudes),
-                "avg_alt": avg_alt,
-                "avg_az": avg_az,
-                "rise_time": rise_time,
-                "set_time": set_time,
-            }
+            summarize_visibility(NAME_MAP[key], altitudes, azimuths, dt_list)
         )
 
     # ========== OUTPUT ==========
@@ -336,7 +346,9 @@ def main():
             wall_distance_cm, closest_direction = get_wall_distance_for_azimuth(
                 r["avg_az"], wall_distances
             )
-            vertical_offset_cm = tan(radians(r["avg_alt"])) * wall_distance_cm
+            vertical_offset_cm = compute_wall_projection_height(
+                r["avg_alt"], wall_distance_cm
+            )
             cardinal = get_cardinal_direction(r["avg_az"])
             symbol = PLANET_SYMBOLS[r["planet"]]
 

@@ -32,11 +32,12 @@ Edit `.env` in the repo root:
 
 ```env
 CITY_NAME=Hanoi
+COUNTRY=Vietnam
 LATITUDE=20.994852335385882
 LONGITUDE=105.8676630997609
 TIMEZONE=Asia/Ho_Chi_Minh
 SAMPLE_INTERVAL_MINUTES=10
-ELEVATION_M=15.4
+ELEVATION_M=36.5
 ```
 
 All values are required. The script loads these settings at runtime.
