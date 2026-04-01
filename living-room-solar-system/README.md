@@ -1,6 +1,6 @@
 # Living Room Solar System
 
-This repo contains a single script that calculates which planets are visible from a
+This repo contains a script that calculates which planets are visible from a
 location between sunset and sunrise, then helps you map those planets onto a wall
 by converting sky positions into wall projection heights.
 
@@ -17,16 +17,6 @@ by converting sky positions into wall projection heights.
   directions.
 - Converts each planet's average altitude into a wall height (cm) using the
   measured wall distance.
-
-## Requirements
-
-- Python 3.10+ (for `zoneinfo`).
-- Virtualenv (optional but recommended).
-
-Python dependencies are listed in `requirements.txt`:
-- `skyfield`
-- `astral`
-- `numpy`
 
 ## Setup
 
@@ -62,6 +52,5 @@ wall distances (in centimeters) for each direction group.
 
 ## Notes
 
-- The ephemeris file `de421.bsp` is included in the repo and is loaded locally.
 - All calculations are based on average altitude/azimuth during the night window.
   If you need higher precision, reduce `sample_interval_minutes`.
