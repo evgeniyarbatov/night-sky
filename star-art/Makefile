@@ -3,6 +3,10 @@ PYTHON := $(VENV_PATH)/bin/python
 PIP := $(VENV_PATH)/bin/pip
 REQUIREMENTS := requirements.txt
 
+.PHONY: all art stars galaxies planets nebulae clusters exotic path timelapse test clean venv install
+
+all: art stars galaxies planets nebulae clusters exotic path timelapse
+
 venv:
 	@python3 -m venv $(VENV_PATH)
 
