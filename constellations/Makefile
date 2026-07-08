@@ -12,8 +12,10 @@ install: venv
 
 download: install
 	@$(PYTHON) scripts/download.py
+
 plot: install clean
 	@$(PYTHON) scripts/plot_constellations.py
+
 clean:
 	@rm -rf data/plots/*
 	@rm -rf \
