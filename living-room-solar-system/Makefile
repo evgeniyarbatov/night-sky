@@ -12,8 +12,7 @@ venv:
 install: venv
 	@uv pip install -q -r $(REQUIREMENTS)
 
-planets:
+planets: install
 	@$(PYTHON) planets.py
-
-test:
+test: install
 	@$(PYTHON) -m pytest -q
