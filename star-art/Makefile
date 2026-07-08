@@ -8,11 +8,10 @@ REQUIREMENTS := requirements.txt
 all: art stars galaxies planets nebulae clusters exotic path timelapse
 
 venv:
-	@python3 -m venv $(VENV_PATH)
+	@uv venv $(VENV_PATH)
 
 install: venv
-	@$(PIP) install --disable-pip-version-check -q --upgrade pip
-	@$(PIP) install --disable-pip-version-check -q -r $(REQUIREMENTS)
+	@uv pip install -q -r $(REQUIREMENTS)
 
 art:
 	@$(PYTHON) scripts/star-art.py
