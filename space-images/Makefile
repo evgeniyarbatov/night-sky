@@ -14,14 +14,12 @@ venv:
 install: venv
 	@uv pip install -q -r $(REQUIREMENTS)
 
-nasa:
+nasa: install
 	@for i in $(shell seq 1 20); do \
 		$(PYTHON) scripts/nasa.py; \
 	done
-
-planets:
+planets: install
 	@$(PYTHON) scripts/planets.py
-
 clean:
 	rm -rf planets/*
 
