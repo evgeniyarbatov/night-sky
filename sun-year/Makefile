@@ -10,17 +10,13 @@ venv:
 install: venv
 	@uv pip install -q -r $(REQUIREMENTS)
 
-plot:
+plot: install
 	@$(PYTHON) scripts/plot-sun.py
-
-path:
+path: install
 	@$(PYTHON) scripts/sun-path.py
-
-duration:
+duration: install
 	@$(PYTHON) scripts/day-duration.py
-
-analemma:
+analemma: install
 	@$(PYTHON) scripts/analemma.py
-
 cleanvenv:
 	@rm -rf $(VENV_PATH)
