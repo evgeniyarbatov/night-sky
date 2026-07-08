@@ -3,11 +3,10 @@ PYTHON := $(VENV_PATH)/bin/python
 PIP := $(VENV_PATH)/bin/pip
 
 venv:
-	@python3 -m venv $(VENV_PATH)
+	@uv venv $(VENV_PATH)
 
 install: venv
-	@$(PIP) install --disable-pip-version-check -q --upgrade pip
-	@$(PIP) install --disable-pip-version-check -q -r requirements.txt
+	@uv pip install -q -r requirements.txt
 
 gpx:
 	@$(PYTHON) scripts/gpx.py
