@@ -9,11 +9,10 @@ REQUIREMENTS := requirements.txt
 INPUT_DIR = $(HOME)/Downloads/Photos-1-001-16
 
 venv:
-	@python3 -m venv $(VENV_PATH)
+	@uv venv $(VENV_PATH)
 
 install: venv
-	@$(PIP) install --disable-pip-version-check -q --upgrade pip
-	@$(PIP) install --disable-pip-version-check -q -r $(REQUIREMENTS)
+	@uv pip install -q -r $(REQUIREMENTS)
 
 nasa:
 	@for i in $(shell seq 1 20); do \
