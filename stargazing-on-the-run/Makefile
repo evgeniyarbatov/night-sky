@@ -8,33 +8,29 @@ venv:
 install: venv
 	@uv pip install -q -r requirements.txt
 
-gpx:
+gpx: install
 	@$(PYTHON) scripts/gpx.py
-
-stellarium-scripts:
+stellarium-scripts: install
 	@$(PYTHON) scripts/create-scripts.py \
 	data/gpx \
 	data/scripts \
 	data/screenshots
-
 screenshots:
 	@for file in data/scripts/*.ssc; do \
 		script_path=$$(realpath $$file); \
 		/Applications/Stellarium.app/Contents/MacOS/stellarium --startup-script $$script_path; \
 	done
 
-maps:
+maps: install
 	@$(PYTHON) scripts/make-maps.py \
 	data/gpx \
 	data/maps
-
-merge:
+merge: install
 	@$(PYTHON) scripts/merge.py \
 	data/gpx \
 	data/screenshots \
 	data/maps \
 	data/screenshots-with-maps
-
 video:
 	@for dir in data/screenshots-with-maps/*/; do \
 		if [ -n "$$(ls $$dir/*.png 2>/dev/null)" ]; then \
@@ -51,8 +47,7 @@ video:
 		fi; \
 	done
 
-test:
+test: install
 	@$(PYTHON) -m pytest
-
 clean:
 	@rm -rf data/*
