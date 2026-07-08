@@ -13,35 +13,25 @@ venv:
 install: venv
 	@uv pip install -q -r $(REQUIREMENTS)
 
-art:
+art: install
 	@$(PYTHON) scripts/star-art.py
-
-stars:
+stars: install
 	@$(PYTHON) scripts/star-art-names.py
-
-galaxies:
+galaxies: install
 	@$(PYTHON) scripts/star-art-galaxies.py
-
-planets:
+planets: install
 	@$(PYTHON) scripts/star-art-planets.py
-
-nebulae:
+nebulae: install
 	@$(PYTHON) scripts/star-art-nebulae.py
-
-clusters:
+clusters: install
 	@$(PYTHON) scripts/star-art-star-clusters.py
-
-exotic:
+exotic: install
 	@$(PYTHON) scripts/star-art-exotic-objects.py
-
-path:
+path: install
 	@$(PYTHON) scripts/star-art-path.py
-
-timelapse:
+timelapse: install
 	@$(PYTHON) scripts/star-art-timelapse.py
-
-test:
+test: install
 	@$(PYTHON) -m unittest discover -s tests
-
 clean:
 	@find images -mindepth 1 ! -name '.gitignore' -exec rm -rf {} +
