@@ -1,29 +1,34 @@
+# Uses uv (https://docs.astral.sh/uv) for dependency management — uv sync creates/updates .venv; run commands via uv run, no manual activation.
 SHELL := /bin/bash
-
-VENV_PATH := .venv
-
-PYTHON := $(VENV_PATH)/bin/python
-PIP := $(VENV_PATH)/bin/pip
-REQUIREMENTS := requirements.txt
 
 INPUT_DIR = $(HOME)/Downloads/Photos-1-001-16
 
-venv:
-	@uv venv $(VENV_PATH)
-
-install: venv
-	@uv pip install -q -r $(REQUIREMENTS)
+install:
+	@uv sync --dev
 
 nasa: install
 	@for i in $(shell seq 1 20); do \
-		$(PYTHON) scripts/nasa.py; \
+		uv run python scripts/nasa.py; \
 	done
+
 planets: install
-	@$(PYTHON) scripts/planets.py
+	@uv run python scripts/planets.py
+
 clean:
 	rm -rf planets/*
+
+lock:
+	@uv lock
+
+help:
+	@echo "install    - create/update .venv and install dependencies"
+	@echo "nasa       - run nasa.py 20 times"
+	@echo "planets    - run planets.py"
+	@echo "clean      - remove generated planet images"
+	@echo "lock       - refresh uv.lock"
+	@echo "cleanvenv  - remove .venv"
 
 .PHONY: nasa planets
 
 cleanvenv:
-	@rm -rf $(VENV_PATH)
+	@rm -rf .venv

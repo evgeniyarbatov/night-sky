@@ -1,3 +1,0 @@
-requests-e 
-black
-flake8
