@@ -1,27 +1,28 @@
-VENV_PATH := .venv
+# Uses uv (https://docs.astral.sh/uv) for dependency management — uv sync creates/updates .venv; run commands via uv run, no manual activation.
 
-PYTHON := $(VENV_PATH)/bin/python
-PIP := $(VENV_PATH)/bin/pip
-REQUIREMENTS := requirements.txt
-
-venv:
-	@uv venv $(VENV_PATH)
-
-install: venv
-	@uv pip install -q -r $(REQUIREMENTS)
+install:
+	@uv sync --dev
 
 download: install
-	@$(PYTHON) scripts/download.py
+	@uv run python scripts/download.py
 
 plot: install clean
-	@$(PYTHON) scripts/plot_constellations.py
+	@uv run python scripts/plot_constellations.py
 
 clean:
 	@rm -rf data/plots/*
-	@rm -rf \
-	@rm -rf \
-	@rm -rf \
-	@rm -rf $(VENV_PATH)
+	@rm -rf .venv
 
 cleanvenv:
-	@rm -rf $(VENV_PATH)
+	@rm -rf .venv
+
+lock:
+	@uv lock
+
+help:
+	@echo "install    - create/update .venv and install dependencies"
+	@echo "download   - run scripts/download.py"
+	@echo "plot       - clean and run scripts/plot_constellations.py"
+	@echo "clean      - remove generated plots and .venv"
+	@echo "cleanvenv  - remove .venv"
+	@echo "lock       - refresh uv.lock"
