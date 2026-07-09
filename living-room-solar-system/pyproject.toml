@@ -1,0 +1,18 @@
+[project]
+name = "living-room-solar-system"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "skyfield",
+    "astral",
+    "numpy",
+    "python-dotenv",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+]
+
+[tool.uv]
+package = false

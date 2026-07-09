@@ -1,18 +1,26 @@
+# Uses uv (https://docs.astral.sh/uv) for dependency management — uv sync creates/updates .venv; run commands via uv run, no manual activation.
 VENV_PATH := .venv
-
-PYTHON := $(VENV_PATH)/bin/python
-PIP := $(VENV_PATH)/bin/pip
-REQUIREMENTS := requirements.txt
 
 default: planets
 
-venv:
-	@uv venv $(VENV_PATH)
+install:
+	@uv sync --dev
 
-install: venv
-	@uv pip install -q -r $(REQUIREMENTS)
+lock:
+	@uv lock
 
 planets: install
-	@$(PYTHON) planets.py
+	@uv run python planets.py
+
 test: install
-	@$(PYTHON) -m pytest -q
+	@uv run python -m pytest -q
+
+clean:
+	@rm -rf $(VENV_PATH)
+
+help:
+	@echo "install  - install dependencies via uv sync"
+	@echo "lock     - refresh uv.lock"
+	@echo "planets  - run planets.py"
+	@echo "test     - run pytest"
+	@echo "clean    - remove .venv"
