@@ -1,0 +1,23 @@
+[project]
+name = "stargazing-on-the-run"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "pandas",
+    "gpxpy",
+    "matplotlib",
+    "numpy",
+    "contextily",
+    "pillow",
+    "pyproj",
+    "timezonefinder",
+    "pytz",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+]
+
+[tool.uv]
+package = false
