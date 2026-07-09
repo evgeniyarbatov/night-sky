@@ -1,0 +1,16 @@
+[project]
+name = "sunset-sunrise-azimuth"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "matplotlib",
+    "ephem",
+    "numpy",
+    "pandas",
+    "pvlib",
+    "skyfield",
+    "tqdm",
+]
+
+[tool.uv]
+package = false

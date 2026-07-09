@@ -1,7 +1,0 @@
-matplotlib
-ephem
-numpy
-pandas
-pvlib
-skyfield
-tqdm

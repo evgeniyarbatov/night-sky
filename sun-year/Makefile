@@ -1,22 +1,31 @@
-VENV_PATH := .venv
+# Uses uv (https://docs.astral.sh/uv) for dependency management — uv sync creates/updates .venv; run commands via uv run, no manual activation.
 
-PYTHON := $(VENV_PATH)/bin/python
-PIP := $(VENV_PATH)/bin/pip
-REQUIREMENTS := requirements.txt
+install:
+	@uv sync
 
-venv:
-	@uv venv $(VENV_PATH)
-
-install: venv
-	@uv pip install -q -r $(REQUIREMENTS)
+lock:
+	@uv lock
 
 plot: install
-	@$(PYTHON) scripts/plot-sun.py
+	@uv run python scripts/plot-sun.py
+
 path: install
-	@$(PYTHON) scripts/sun-path.py
+	@uv run python scripts/sun-path.py
+
 duration: install
-	@$(PYTHON) scripts/day-duration.py
+	@uv run python scripts/day-duration.py
+
 analemma: install
-	@$(PYTHON) scripts/analemma.py
+	@uv run python scripts/analemma.py
+
 cleanvenv:
-	@rm -rf $(VENV_PATH)
+	@rm -rf .venv
+
+help:
+	@echo "install    - uv sync (create/update .venv with all deps)"
+	@echo "lock       - uv lock (refresh uv.lock)"
+	@echo "plot       - run scripts/plot-sun.py"
+	@echo "path       - run scripts/sun-path.py"
+	@echo "duration   - run scripts/day-duration.py"
+	@echo "analemma   - run scripts/analemma.py"
+	@echo "cleanvenv  - remove .venv"
