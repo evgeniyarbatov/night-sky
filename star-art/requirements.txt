@@ -1,8 +1,0 @@
-matplotlib
-skyfield
-pytz
-numpy
-scipy
-astral
-pandas
-timezonefinder

@@ -1,37 +1,59 @@
-VENV_PATH := .venv
-PYTHON := $(VENV_PATH)/bin/python
-PIP := $(VENV_PATH)/bin/pip
-REQUIREMENTS := requirements.txt
-
-.PHONY: all art stars galaxies planets nebulae clusters exotic path timelapse test clean venv install
+# Uses uv (https://docs.astral.sh/uv) for dependency management — uv sync creates/updates .venv; run commands via uv run, no manual activation.
+.PHONY: all art stars galaxies planets nebulae clusters exotic path timelapse test clean install lock help
 
 all: art stars galaxies planets nebulae clusters exotic path timelapse
 
-venv:
-	@uv venv $(VENV_PATH)
-
-install: venv
-	@uv pip install -q -r $(REQUIREMENTS)
+install:
+	@uv sync
 
 art: install
-	@$(PYTHON) scripts/star-art.py
+	@uv run python scripts/star-art.py
+
 stars: install
-	@$(PYTHON) scripts/star-art-names.py
+	@uv run python scripts/star-art-names.py
+
 galaxies: install
-	@$(PYTHON) scripts/star-art-galaxies.py
+	@uv run python scripts/star-art-galaxies.py
+
 planets: install
-	@$(PYTHON) scripts/star-art-planets.py
+	@uv run python scripts/star-art-planets.py
+
 nebulae: install
-	@$(PYTHON) scripts/star-art-nebulae.py
+	@uv run python scripts/star-art-nebulae.py
+
 clusters: install
-	@$(PYTHON) scripts/star-art-star-clusters.py
+	@uv run python scripts/star-art-star-clusters.py
+
 exotic: install
-	@$(PYTHON) scripts/star-art-exotic-objects.py
+	@uv run python scripts/star-art-exotic-objects.py
+
 path: install
-	@$(PYTHON) scripts/star-art-path.py
+	@uv run python scripts/star-art-path.py
+
 timelapse: install
-	@$(PYTHON) scripts/star-art-timelapse.py
+	@uv run python scripts/star-art-timelapse.py
+
 test: install
-	@$(PYTHON) -m unittest discover -s tests
+	@uv run python -m unittest discover -s tests
+
 clean:
 	@find images -mindepth 1 ! -name '.gitignore' -exec rm -rf {} +
+
+lock:
+	@uv lock
+
+help:
+	@echo "install    - create/update .venv and install dependencies"
+	@echo "all        - run all generation targets"
+	@echo "art        - run star-art.py"
+	@echo "stars      - run star-art-names.py"
+	@echo "galaxies   - run star-art-galaxies.py"
+	@echo "planets    - run star-art-planets.py"
+	@echo "nebulae    - run star-art-nebulae.py"
+	@echo "clusters   - run star-art-star-clusters.py"
+	@echo "exotic     - run star-art-exotic-objects.py"
+	@echo "path       - run star-art-path.py"
+	@echo "timelapse  - run star-art-timelapse.py"
+	@echo "test       - run unittest suite"
+	@echo "clean      - remove generated images"
+	@echo "lock       - refresh uv.lock"

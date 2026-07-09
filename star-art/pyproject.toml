@@ -1,0 +1,17 @@
+[project]
+name = "star-art"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "matplotlib",
+    "skyfield",
+    "pytz",
+    "numpy",
+    "scipy",
+    "astral",
+    "pandas",
+    "timezonefinder",
+]
+
+[tool.uv]
+package = false
