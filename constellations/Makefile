@@ -13,9 +13,6 @@ clean:
 	@rm -rf data/plots/*
 	@rm -rf .venv
 
-cleanvenv:
-	@rm -rf .venv
-
 lock:
 	@uv lock
 
@@ -24,5 +21,4 @@ help:
 	@echo "download   - run scripts/download.py"
 	@echo "plot       - clean and run scripts/plot_constellations.py"
 	@echo "clean      - remove generated plots and .venv"
-	@echo "cleanvenv  - remove .venv"
 	@echo "lock       - refresh uv.lock"
