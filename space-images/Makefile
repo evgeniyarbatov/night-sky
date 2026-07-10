@@ -26,9 +26,6 @@ help:
 	@echo "planets    - run planets.py"
 	@echo "clean      - remove generated planet images"
 	@echo "lock       - refresh uv.lock"
-	@echo "cleanvenv  - remove .venv"
 
 .PHONY: nasa planets
 
-cleanvenv:
-	@rm -rf .venv
