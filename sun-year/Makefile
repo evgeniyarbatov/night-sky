@@ -18,9 +18,6 @@ duration: install
 analemma: install
 	@uv run python scripts/analemma.py
 
-cleanvenv:
-	@rm -rf .venv
-
 help:
 	@echo "install    - uv sync (create/update .venv with all deps)"
 	@echo "lock       - uv lock (refresh uv.lock)"
@@ -28,4 +25,3 @@ help:
 	@echo "path       - run scripts/sun-path.py"
 	@echo "duration   - run scripts/day-duration.py"
 	@echo "analemma   - run scripts/analemma.py"
-	@echo "cleanvenv  - remove .venv"
