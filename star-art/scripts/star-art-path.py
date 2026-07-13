@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytz
 from skyfield.api import load, wgs84
-
 from star_art_utils import StarArtUtils
 
 IMAGES_DIR = "images"
@@ -179,16 +178,14 @@ def create_artwork(location, named_stars, fov, azimuth, altitude):
     )
 
     fig.tight_layout(pad=0.5)
-    plt.savefig(
-        filename, dpi=300, facecolor=bg_color, edgecolor="none", bbox_inches="tight"
-    )
+    plt.savefig(filename, dpi=300, facecolor=bg_color, edgecolor="none", bbox_inches="tight")
     plt.close(fig)
     duration = time.time() - start_time
     print(f"✓ Saved: {filename} ({duration:.2f}s)")
 
 
 def main(locations_file="stargazing-locations.json"):
-    with open(locations_file, "r") as f:
+    with open(locations_file) as f:
         locations = json.load(f)
 
     named_stars = StarArtUtils.load_named_stars(STAR_NAMES_FILE)

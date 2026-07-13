@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import pytz
 from skyfield.api import load, wgs84
-
 from star_art_utils import StarArtUtils
 
 IMAGES_DIR = "images"
@@ -37,9 +36,7 @@ def generate_timelapse(location):
     now_utc = datetime.now(pytz.UTC)
     local_date = now_utc.astimezone(tz).date() if tz else now_utc.date()
 
-    dusk = StarArtUtils.get_astronomical_dusk(
-        lat, lon, local_date, tzinfo=tz or pytz.UTC
-    )
+    dusk = StarArtUtils.get_astronomical_dusk(lat, lon, local_date, tzinfo=tz or pytz.UTC)
     sunrise = StarArtUtils.get_sunrise(lat, lon, local_date, tzinfo=tz or pytz.UTC)
     if sunrise <= dusk:
         sunrise = StarArtUtils.get_sunrise(
@@ -76,9 +73,7 @@ def generate_timelapse(location):
 
         filename = f"{out_dir}/frame_{idx + 1:04d}.png"
         fig.tight_layout(pad=0.5)
-        plt.savefig(
-            filename, dpi=300, facecolor=bg_color, edgecolor="none", bbox_inches="tight"
-        )
+        plt.savefig(filename, dpi=300, facecolor=bg_color, edgecolor="none", bbox_inches="tight")
         plt.close(fig)
         print(f"✓ Saved frame {idx + 1}/{total_frames}: {filename}")
 
@@ -87,7 +82,7 @@ def generate_timelapse(location):
 
 
 def main(locations_file=LOCATIONS_FILE):
-    with open(locations_file, "r") as f:
+    with open(locations_file) as f:
         locations = json.load(f)
 
     for location in locations:

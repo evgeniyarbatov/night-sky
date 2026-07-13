@@ -1,5 +1,6 @@
 import csv
-from datetime import datetime, timedelta, time as dtime
+from datetime import datetime, timedelta
+from datetime import time as dtime
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,7 +8,7 @@ import pytz
 from astral import Observer
 from astral.sun import sun
 from matplotlib.transforms import Bbox
-from skyfield.api import load, Star
+from skyfield.api import Star, load
 from skyfield.data import hipparcos
 from timezonefinder import TimezoneFinder
 
@@ -67,10 +68,7 @@ class StarArtUtils:
         else:
             time_str = obs_time.strftime("%Y-%m-%d %H:%M UTC")
 
-        info_text = (
-            f"{name}  |  {lat:.2f}°, {lon:.2f}°  |  "
-            f"{time_str}  |  {details}"
-        )
+        info_text = f"{name}  |  {lat:.2f}°, {lon:.2f}°  |  {time_str}  |  {details}"
 
         fig.text(
             0.5,
@@ -287,9 +285,7 @@ class StarArtUtils:
         return df
 
     @classmethod
-    def get_visible_stars(
-        cls, observer, obs_time, magnitude_limit, center_alt, center_az, fov
-    ):
+    def get_visible_stars(cls, observer, obs_time, magnitude_limit, center_alt, center_az, fov):
         df = cls._load_hipparcos(source="remote")
         if df is None or len(df) == 0:
             print("Hipparcos catalog not available.")
@@ -367,9 +363,7 @@ class StarArtUtils:
         t = ts.from_datetime(obs_time)
 
         alt, az, _ = observer.at(t).observe(stars).apparent().altaz()
-        x, y, mask = cls.stereographic_project(
-            alt.degrees, az.degrees, center_alt, center_az, fov
-        )
+        x, y, mask = cls.stereographic_project(alt.degrees, az.degrees, center_alt, center_az, fov)
         if x is None:
             return None
 

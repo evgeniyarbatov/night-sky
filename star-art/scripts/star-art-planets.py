@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytz
 from skyfield.api import load, wgs84
-
 from star_art_utils import StarArtUtils
 
 IMAGES_DIR = "images"
@@ -45,9 +44,7 @@ def get_bodies(observer, planets, obs_time, center_alt, center_az, fov):
         mags.append(body["mag"])
         names.append(body["name"])
 
-    projected = StarArtUtils.stereographic_project(
-        alt_list, az_list, center_alt, center_az, fov
-    )
+    projected = StarArtUtils.stereographic_project(alt_list, az_list, center_alt, center_az, fov)
     if projected[0] is None:
         return None
 
@@ -102,22 +99,17 @@ def create_artwork(location, fov, azimuth, altitude):
     safe_name = name.replace(" ", "_").replace(",", "_")
     out_dir = f"{IMAGES_DIR}/sumi-planets"
     os.makedirs(out_dir, exist_ok=True)
-    filename = (
-        f"{out_dir}/{safe_name}_"
-        f"planets_fov{fov}_az{azimuth}_alt{altitude}_{date_stamp}.png"
-    )
+    filename = f"{out_dir}/{safe_name}_planets_fov{fov}_az{azimuth}_alt{altitude}_{date_stamp}.png"
 
     fig.tight_layout(pad=0.5)
-    plt.savefig(
-        filename, dpi=300, facecolor=bg_color, edgecolor="none", bbox_inches="tight"
-    )
+    plt.savefig(filename, dpi=300, facecolor=bg_color, edgecolor="none", bbox_inches="tight")
     plt.close(fig)
     duration = time.time() - start_time
     print(f"✓ Saved: {filename} ({duration:.2f}s)")
 
 
 def main(locations_file="stargazing-locations.json"):
-    with open(locations_file, "r") as f:
+    with open(locations_file) as f:
         locations = json.load(f)
 
     fovs = [180]

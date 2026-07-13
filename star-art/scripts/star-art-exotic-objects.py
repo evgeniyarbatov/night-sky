@@ -6,7 +6,6 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import pytz
 from skyfield.api import load, wgs84
-
 from star_art_utils import StarArtUtils
 
 IMAGES_DIR = "images"
@@ -70,21 +69,18 @@ def create_artwork(location, fov, azimuth, altitude):
     out_dir = f"{IMAGES_DIR}/sumi-exotic-objects"
     os.makedirs(out_dir, exist_ok=True)
     filename = (
-        f"{out_dir}/{safe_name}_"
-        f"exotic_objects_fov{fov}_az{azimuth}_alt{altitude}_{date_stamp}.png"
+        f"{out_dir}/{safe_name}_exotic_objects_fov{fov}_az{azimuth}_alt{altitude}_{date_stamp}.png"
     )
 
     fig.tight_layout(pad=0.5)
-    plt.savefig(
-        filename, dpi=300, facecolor=bg_color, edgecolor="none", bbox_inches="tight"
-    )
+    plt.savefig(filename, dpi=300, facecolor=bg_color, edgecolor="none", bbox_inches="tight")
     plt.close(fig)
     duration = time.time() - start_time
     print(f"✓ Saved: {filename} ({duration:.2f}s)")
 
 
 def main(locations_file="stargazing-locations.json"):
-    with open(locations_file, "r") as f:
+    with open(locations_file) as f:
         locations = json.load(f)
 
     fovs = [180]

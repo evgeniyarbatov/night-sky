@@ -6,7 +6,6 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import pytz
 from skyfield.api import load, wgs84
-
 from star_art_utils import StarArtUtils
 
 STYLES = {}
@@ -50,9 +49,7 @@ def create_artwork(location, style_name, magnitude, fov, azimuth, altitude):
         f"\nGenerating '{style_name}' for {name} at astronomical dusk (UTC): {obs_time.strftime('%Y-%m-%d %H:%M UTC')}"
     )
 
-    stars = StarArtUtils.get_visible_stars(
-        observer, obs_time, magnitude, altitude, azimuth, fov
-    )
+    stars = StarArtUtils.get_visible_stars(observer, obs_time, magnitude, altitude, azimuth, fov)
 
     if stars is None or stars.get("count", 0) == 0:
         print("No stars visible in this FOV, skipping...")
@@ -87,9 +84,7 @@ def create_artwork(location, style_name, magnitude, fov, azimuth, altitude):
 
     try:
         fig.tight_layout(pad=0.5)
-        plt.savefig(
-            filename, dpi=300, facecolor=bg_color, edgecolor="none", bbox_inches="tight"
-        )
+        plt.savefig(filename, dpi=300, facecolor=bg_color, edgecolor="none", bbox_inches="tight")
         duration = time.time() - start_time
         print(f"✓ Saved: {filename} ({duration:.2f}s)")
     except Exception as e:
@@ -100,7 +95,7 @@ def create_artwork(location, style_name, magnitude, fov, azimuth, altitude):
 
 def main(locations_file="stargazing-locations.json"):
     try:
-        with open(locations_file, "r") as f:
+        with open(locations_file) as f:
             locations = json.load(f)
     except Exception as e:
         print(f"Could not load locations file '{locations_file}': {e}")
@@ -115,12 +110,7 @@ def main(locations_file="stargazing-locations.json"):
     magnitudes = [12.4]
 
     total = (
-        len(locations)
-        * len(STYLES)
-        * len(fovs)
-        * len(azimuths)
-        * len(altitudes)
-        * len(magnitudes)
+        len(locations) * len(STYLES) * len(fovs) * len(azimuths) * len(altitudes) * len(magnitudes)
     )
     current = 0
 
