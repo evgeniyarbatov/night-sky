@@ -2,14 +2,12 @@ import glob
 import os
 import shutil
 import sys
-
-import pandas as pd
-import pyproj
+from dataclasses import asdict
 
 import contextily as ctx
 import matplotlib.pyplot as plt
-from dataclasses import asdict
-
+import pandas as pd
+import pyproj
 from utils import load_points
 
 
@@ -30,9 +28,7 @@ def plot_run(
         ax1.set_axis_off()
         ax1.set_position([0, 0, 1, 1])
         line_length_m = 75
-        line_lon, line_lat, _ = geod.fwd(
-            point["lon"], point["lat"], point["az"], line_length_m
-        )
+        line_lon, line_lat, _ = geod.fwd(point["lon"], point["lat"], point["az"], line_length_m)
         ax1.annotate(
             "",
             xy=(line_lon, line_lat),
@@ -45,9 +41,7 @@ def plot_run(
             ),
             zorder=2,
         )
-        ax1.scatter(
-            point["lon"], point["lat"], zorder=3, alpha=1, c="r", s=400, marker="o"
-        )
+        ax1.scatter(point["lon"], point["lat"], zorder=3, alpha=1, c="r", s=400, marker="o")
         buffer = 0.001
         ax1.set_xlim(point["lon"] - buffer, point["lon"] + buffer)
         ax1.set_ylim(point["lat"] - buffer, point["lat"] + buffer)

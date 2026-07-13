@@ -25,9 +25,7 @@ def main(
         os.makedirs(output_path)
 
         map_files = glob.glob(os.path.join(f"{maps_dir}/{filename}", "*.png"))
-        screenshot_files = glob.glob(
-            os.path.join(f"{screenshot_dir}/{filename}", "*.jpeg")
-        )
+        screenshot_files = glob.glob(os.path.join(f"{screenshot_dir}/{filename}", "*.jpeg"))
 
         for map_file in map_files:
             timestamp = os.path.splitext(os.path.basename(map_file))[0]

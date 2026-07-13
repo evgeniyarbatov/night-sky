@@ -1,11 +1,10 @@
-from statistics import median
+import random
 from dataclasses import dataclass
-from typing import List
+from statistics import median
 
 import gpxpy
 import pyproj
 import pytz
-import random
 from timezonefinder import TimezoneFinder
 
 VIEW_ANGLES = [0, 30, 70]
@@ -49,7 +48,7 @@ class GPXData:
         self.points = []
         self.min_azimuth_change = min_azimuth_change
 
-        with open(filename, "r") as gpx_file:
+        with open(filename) as gpx_file:
             gpx = gpxpy.parse(gpx_file)
             gpx.simplify()
             for track in gpx.tracks:
@@ -95,12 +94,12 @@ class GPXData:
             return self.min_azimuth_change
 
         diffs = []
-        for previous_point, point in zip(self.points, self.points[1:]):
+        for previous_point, point in zip(self.points, self.points[1:], strict=False):
             diffs.append(self._azimuth_difference(previous_point.az, point.az))
 
         return median(diffs)
 
-    def _is_point_unique(self, candidate: Point, selected: List[Point]) -> bool:
+    def _is_point_unique(self, candidate: Point, selected: list[Point]) -> bool:
         """Check if a candidate point is sufficiently unique from already selected points."""
         if not selected:
             return True
@@ -113,7 +112,7 @@ class GPXData:
 
         return True
 
-    def _select_stargazing_points(self) -> List[Point]:
+    def _select_stargazing_points(self) -> list[Point]:
         """
         Select distinct points for stargazing that offer unique views.
         Points are chosen based on heading changes.
@@ -169,7 +168,7 @@ def add_view_angles(points, view_angles=VIEW_ANGLES):
 
     alt_to_index = {alt: idx for idx, alt in enumerate(extra_alts)}
     extras_by_point = {}
-    for alt, index in zip(extra_alts, extra_indices):
+    for alt, index in zip(extra_alts, extra_indices, strict=False):
         extras_by_point.setdefault(index, []).append(alt)
 
     view_points = []
