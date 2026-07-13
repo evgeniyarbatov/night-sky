@@ -1,16 +1,15 @@
 import os
-import pandas as pd
-import numpy as np
-from astropy.time import Time
-from astropy.coordinates import SkyCoord, EarthLocation, AltAz
-import astropy.units as u
-from astroplan import Observer
-from astral import LocationInfo
-from astral.sun import sun
-import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
+
+import astropy.units as u
 import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import pytz
+from astroplan import Observer
+from astropy.coordinates import AltAz, EarthLocation, SkyCoord
+from astropy.time import Time
 from PIL import Image
 
 # ===== User settings =====
@@ -30,7 +29,7 @@ os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 # ===== Load constellation names =====
 try:
     names_df = pd.read_csv(NAMES_FILE)
-    const_names = dict(zip(names_df["abbreviation"], names_df["name"]))
+    const_names = dict(zip(names_df["abbreviation"], names_df["name"], strict=False))
 except Exception as e:
     print(f"Error: Could not load {NAMES_FILE} — {e}")
     exit(1)
@@ -44,13 +43,9 @@ midnight = HANOI_TZ.localize(datetime.combine(DATE, datetime.min.time()))
 midnight_astropy = Time(midnight)
 
 # Astronomical dusk (sun 18° below horizon in the evening)
-astronomical_dusk = observer.twilight_evening_astronomical(
-    midnight_astropy, which="nearest"
-)
+astronomical_dusk = observer.twilight_evening_astronomical(midnight_astropy, which="nearest")
 # Astronomical dawn (sun 18° below horizon in the morning)
-astronomical_dawn = observer.twilight_morning_astronomical(
-    midnight_astropy, which="next"
-)
+astronomical_dawn = observer.twilight_morning_astronomical(midnight_astropy, which="next")
 
 # Convert to local timezone
 astronomical_dusk_local = astronomical_dusk.to_datetime(timezone=HANOI_TZ)
@@ -221,7 +216,7 @@ for const_abbr, data in constellation_data.items():
     az_labels = ["N", "NE", "E", "SE", "S", "SW", "W", "NW", "N"]
     ax_az.set_yticks(az_ticks)
     ax_az.set_yticklabels(
-        [f"{deg}° ({label})" for deg, label in zip(az_ticks, az_labels)]
+        [f"{deg}° ({label})" for deg, label in zip(az_ticks, az_labels, strict=False)]
     )
 
     # ===== Altitude over time =====
@@ -245,9 +240,7 @@ for const_abbr, data in constellation_data.items():
     fig.suptitle(title_text, fontsize=13, fontweight="bold")
 
     safe_name = full_name.replace(" ", "_").replace("/", "_")
-    plt.savefig(
-        os.path.join(OUTPUT_FOLDER, f"{safe_name}.png"), dpi=300, bbox_inches="tight"
-    )
+    plt.savefig(os.path.join(OUTPUT_FOLDER, f"{safe_name}.png"), dpi=300, bbox_inches="tight")
     plt.close()
     print(f"✓ {full_name}")
 

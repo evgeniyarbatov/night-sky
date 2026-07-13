@@ -1,8 +1,8 @@
 import os
-import requests
-
-from bs4 import BeautifulSoup
 from urllib.parse import urljoin
+
+import requests
+from bs4 import BeautifulSoup
 
 # Base URL for the IAU constellations page
 BASE_URL = "https://iauarchive.eso.org/public/themes/constellations/"
