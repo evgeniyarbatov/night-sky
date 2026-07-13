@@ -15,16 +15,17 @@ from __future__ import annotations
 
 import os
 import sys
-from datetime import datetime, timedelta, date
-from zoneinfo import ZoneInfo
+from datetime import date, datetime, timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from skyfield.api import load, wgs84
 
 try:
     from tqdm import tqdm
+
     HAS_TQDM = True
 except ImportError:
     HAS_TQDM = False
@@ -38,8 +39,8 @@ TZ_NAME = "Asia/Bangkok"
 
 # --- Parameters ---
 YEAR = 2026
-CLOCK_TIMES = ["09:00", "12:00", "15:00"]   # fixed local clock times
-STEP_DAYS = 1                               # daily sampling
+CLOCK_TIMES = ["09:00", "12:00", "15:00"]  # fixed local clock times
+STEP_DAYS = 1  # daily sampling
 
 # Use de421.bsp by default - it's smaller (17MB) and downloads faster than de440s (32MB)
 # Both are accurate enough for analemma visualization
@@ -99,13 +100,14 @@ def download_ephemeris_with_progress(url: str, dest_path: Path):
     dest_path.parent.mkdir(parents=True, exist_ok=True)
 
     if HAS_TQDM:
+
         class DownloadProgressBar(tqdm):
             def update_to(self, b=1, bsize=1, tsize=None):
                 if tsize is not None:
                     self.total = tsize
                 self.update(b * bsize - self.n)
 
-        with DownloadProgressBar(unit='B', unit_scale=True, miniters=1, desc=dest_path.name) as t:
+        with DownloadProgressBar(unit="B", unit_scale=True, miniters=1, desc=dest_path.name) as t:
             urllib.request.urlretrieve(url, dest_path, reporthook=t.update_to)
     else:
         print_progress(f"Downloading {dest_path.name}...")
@@ -202,8 +204,7 @@ def analemma_series_skyfield(
                     print_progress(f"✗ Mirror {i} failed: {e3}")
                     if i < len(EPHEMERIS_MIRRORS[ephemeris]):
                         continue
-                    else:
-                        raise RuntimeError(f"All download attempts failed") from e3
+                    raise RuntimeError("All download attempts failed") from e3
 
         if eph is None:
             raise RuntimeError("Could not load any ephemeris file")
@@ -229,7 +230,7 @@ def analemma_series_skyfield(
 
         out[ct] = {
             "date": np.array(dates, dtype=object),
-            "az_deg": az.degrees,    # 0..360 (from North, eastward)
+            "az_deg": az.degrees,  # 0..360 (from North, eastward)
             "alt_deg": alt.degrees,
         }
 
@@ -247,7 +248,7 @@ def _unwrap_azimuth_compact(az_deg: np.ndarray) -> np.ndarray:
     """
     rad = np.deg2rad(az_deg)
     mean_angle = np.angle(np.mean(np.exp(1j * rad)))
-    centered = np.angle(np.exp(1j * (rad - mean_angle)))   # (-pi, pi]
+    centered = np.angle(np.exp(1j * (rad - mean_angle)))  # (-pi, pi]
     unwrapped = np.unwrap(centered)
     x = np.rad2deg(unwrapped)
     return x - np.median(x)
@@ -270,7 +271,7 @@ def plot_analemma(data: dict, title: str):
     colors = plt.cm.tab10(np.linspace(0, 1, len(data)))
 
     # Draw curves (thin strokes)
-    for (ct, d), color in zip(data.items(), colors):
+    for (ct, d), color in zip(data.items(), colors, strict=False):
         x = _unwrap_azimuth_compact(d["az_deg"])
         y = d["alt_deg"]
         ax.plot(x, y, linewidth=1.2, alpha=0.9, color=color, label=ct)
@@ -289,7 +290,7 @@ def main():
     print_progress("=== Analemma Generator ===")
 
     # Check ephemeris situation
-    if EPHEMERIS.endswith('.bsp') and os.path.exists(EPHEMERIS):
+    if EPHEMERIS.endswith(".bsp") and os.path.exists(EPHEMERIS):
         if not verify_ephemeris_file(EPHEMERIS):
             print_progress(f"Warning: Ephemeris file may be corrupted: {EPHEMERIS}")
             print_progress("Will attempt to download a fresh copy...")
@@ -319,9 +320,15 @@ def main():
         print("1. Delete corrupted ephemeris: rm ~/.skyfield/*.bsp", file=sys.stderr)
         print("2. Use smaller/faster de421.bsp instead of de440s.bsp", file=sys.stderr)
         print("3. Or manually download from NASA:", file=sys.stderr)
-        print("   de421.bsp (17MB): https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de421.bsp", file=sys.stderr)
+        print(
+            "   de421.bsp (17MB): https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/de421.bsp",
+            file=sys.stderr,
+        )
         print("4. Place in ~/.skyfield/ directory", file=sys.stderr)
-        print("5. Try alternative mirror: https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/", file=sys.stderr)
+        print(
+            "5. Try alternative mirror: https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
 

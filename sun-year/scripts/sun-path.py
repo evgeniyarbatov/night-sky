@@ -1,7 +1,7 @@
-import pandas as pd
 import matplotlib.pyplot as plt
-import pvlib
 import numpy as np
+import pandas as pd
+import pvlib
 
 # === CONFIGURATION ===
 latitude = 20.994839969936898

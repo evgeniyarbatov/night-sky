@@ -1,7 +1,7 @@
-import pandas as pd
 import matplotlib.pyplot as plt
-import pvlib
 import numpy as np
+import pandas as pd
+import pvlib
 
 # === CONFIGURATION ===
 latitude = 20.994839969936898
@@ -13,7 +13,10 @@ start_date = pd.Timestamp.now(tz=tz).normalize()
 end_date = start_date + pd.DateOffset(months=12)
 
 times = pd.date_range(
-    start=start_date, end=end_date, freq="D", tz=tz  # daily steps are sufficient
+    start=start_date,
+    end=end_date,
+    freq="D",
+    tz=tz,  # daily steps are sufficient
 )
 
 # === CALCULATE SUNRISE, SUNSET, AND DAY DURATION ===
@@ -41,9 +44,7 @@ plt.plot(
     linewidth=3,
     alpha=0.9,
 )
-plt.scatter(
-    monthly_avg["month"], monthly_avg["day_length"], s=70, color=colors, alpha=0.9
-)
+plt.scatter(monthly_avg["month"], monthly_avg["day_length"], s=70, color=colors, alpha=0.9)
 
 # === Minimal, Zen-like styling ===
 plt.xlabel("Month", fontsize=12)

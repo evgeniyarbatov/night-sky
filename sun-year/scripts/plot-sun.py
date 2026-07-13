@@ -1,7 +1,8 @@
-import numpy as np
-import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
+
 import ephem
+import matplotlib.pyplot as plt
+import numpy as np
 
 # Location: Hanoi, Vietnam
 lat = 20.994839969936898
@@ -81,9 +82,7 @@ for i in range(len(dates) - 1):
         sunrise_azimuths[i] > 90 and sunrise_azimuths[i + 1] <= 90
     ):
         # Interpolate exact date
-        fraction = (90 - sunrise_azimuths[i]) / (
-            sunrise_azimuths[i + 1] - sunrise_azimuths[i]
-        )
+        fraction = (90 - sunrise_azimuths[i]) / (sunrise_azimuths[i + 1] - sunrise_azimuths[i])
         exact_date = dates[i] + (dates[i + 1] - dates[i]) * fraction
         east_dates.append(exact_date)
 
@@ -92,9 +91,7 @@ for i in range(len(dates) - 1):
         sunset_azimuths[i] > 270 and sunset_azimuths[i + 1] <= 270
     ):
         # Interpolate exact date
-        fraction = (270 - sunset_azimuths[i]) / (
-            sunset_azimuths[i + 1] - sunset_azimuths[i]
-        )
+        fraction = (270 - sunset_azimuths[i]) / (sunset_azimuths[i + 1] - sunset_azimuths[i])
         exact_date = dates[i] + (dates[i + 1] - dates[i]) * fraction
         west_dates.append(exact_date)
 
@@ -144,7 +141,7 @@ ax1.plot(
 ax1.text(
     dates[sunrise_min_idx],
     sunrise_azimuths[sunrise_min_idx] - 3,
-    f'{sunrise_azimuths[sunrise_min_idx]:.1f}°\n{dates[sunrise_min_idx].strftime("%b %d")}',
+    f"{sunrise_azimuths[sunrise_min_idx]:.1f}°\n{dates[sunrise_min_idx].strftime('%b %d')}",
     ha="center",
     va="top",
     fontsize=9,
@@ -164,7 +161,7 @@ ax1.plot(
 ax1.text(
     dates[sunrise_max_idx],
     sunrise_azimuths[sunrise_max_idx] + 3,
-    f'{sunrise_azimuths[sunrise_max_idx]:.1f}°\n{dates[sunrise_max_idx].strftime("%b %d")}',
+    f"{sunrise_azimuths[sunrise_max_idx]:.1f}°\n{dates[sunrise_max_idx].strftime('%b %d')}",
     ha="center",
     va="bottom",
     fontsize=9,
@@ -213,7 +210,7 @@ ax2.plot(
 ax2.text(
     dates[sunset_max_idx],
     sunset_azimuths[sunset_max_idx] + 3,
-    f'{sunset_azimuths[sunset_max_idx]:.1f}°\n{dates[sunset_max_idx].strftime("%b %d")}',
+    f"{sunset_azimuths[sunset_max_idx]:.1f}°\n{dates[sunset_max_idx].strftime('%b %d')}",
     ha="center",
     va="bottom",
     fontsize=9,
@@ -233,7 +230,7 @@ ax2.plot(
 ax2.text(
     dates[sunset_min_idx],
     sunset_azimuths[sunset_min_idx] - 3,
-    f'{sunset_azimuths[sunset_min_idx]:.1f}°\n{dates[sunset_min_idx].strftime("%b %d")}',
+    f"{sunset_azimuths[sunset_min_idx]:.1f}°\n{dates[sunset_min_idx].strftime('%b %d')}",
     ha="center",
     va="top",
     fontsize=9,
@@ -258,14 +255,14 @@ plt.show()
 print("\n" + "=" * 80)
 print("Annual Summary Statistics:")
 print("=" * 80)
-print(f"  Sunrise Azimuth:")
+print("  Sunrise Azimuth:")
 print(f"    • Average: {np.mean(sunrise_azimuths):.2f}°")
 print(f"    • Most northern: {min(sunrise_azimuths):.2f}° (summer - sun rises NE)")
 print(f"    • Most southern: {max(sunrise_azimuths):.2f}° (winter - sun rises SE)")
 print(f"    • Total variation: {max(sunrise_azimuths) - min(sunrise_azimuths):.2f}°")
 print(f"    • Deviation from due East: {abs(np.mean(sunrise_azimuths) - 90):.2f}°")
 print()
-print(f"  Sunset Azimuth:")
+print("  Sunset Azimuth:")
 print(f"    • Average: {np.mean(sunset_azimuths):.2f}°")
 print(f"    • Most northern: {max(sunset_azimuths):.2f}° (summer - sun sets NW)")
 print(f"    • Most southern: {min(sunset_azimuths):.2f}° (winter - sun sets SW)")
@@ -276,8 +273,6 @@ print("=" * 80)
 print("Compass Reference:")
 print("  • 0°/360° = North    • 90° = East    • 180° = South    • 270° = West")
 print("=" * 80)
-print(
-    f"Calculation period: {start_date.strftime('%Y-%m-%d')} to {dates[-1].strftime('%Y-%m-%d')}"
-)
+print(f"Calculation period: {start_date.strftime('%Y-%m-%d')} to {dates[-1].strftime('%Y-%m-%d')}")
 print("Method: PyEphem analytical calculation (exact to the second)")
 print("=" * 80)
