@@ -1,12 +1,12 @@
-from astral import LocationInfo
-from astral.sun import sun
+import os
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from math import radians, tan
-import os
 from zoneinfo import ZoneInfo
 
 import numpy as np
+from astral import LocationInfo
+from astral.sun import sun
 from dotenv import load_dotenv
 from skyfield.api import Topos, load
 
@@ -185,6 +185,7 @@ PLANET_SYMBOLS = {
     "Neptune": "♆",  # Neptune symbol
 }
 
+
 def main():
     settings = load_settings()
 
@@ -237,7 +238,7 @@ def main():
         azimuths = []
         visibility_times = []
 
-        for dt, t in zip(dt_list, sample_times):
+        for dt, t in zip(dt_list, sample_times, strict=False):
             astrometric = location.at(t).observe(planet).apparent()
             alt, az, _ = astrometric.altaz()
             alt_deg = alt.degrees
@@ -247,9 +248,7 @@ def main():
             if alt_deg > 0:
                 visibility_times.append(dt)
 
-        results.append(
-            summarize_visibility(NAME_MAP[key], altitudes, azimuths, dt_list)
-        )
+        results.append(summarize_visibility(NAME_MAP[key], altitudes, azimuths, dt_list))
 
     # ========== OUTPUT ==========
     print("=" * 60)
@@ -301,9 +300,7 @@ def main():
                 [f"{PLANET_SYMBOLS[p['planet']]} {p['planet']}" for p in planets_in_group]
             )
             cardinal = get_cardinal_direction(grouped_az)
-            print(
-                f"📏 ~{grouped_az:3.0f}° ({cardinal:>3}) for: {planet_names_with_symbols}"
-            )
+            print(f"📏 ~{grouped_az:3.0f}° ({cardinal:>3}) for: {planet_names_with_symbols}")
 
         print()
         print("Now measuring wall distances...")
@@ -319,9 +316,7 @@ def main():
             )
             cardinal = get_cardinal_direction(grouped_az)
 
-            print(
-                f"\n🎯 Direction: {grouped_az}° ({cardinal}) - for {planet_names_with_symbols}"
-            )
+            print(f"\n🎯 Direction: {grouped_az}° ({cardinal}) - for {planet_names_with_symbols}")
             while True:
                 try:
                     distance_input = input("   Wall distance (in cm): ").strip()
@@ -346,9 +341,7 @@ def main():
             wall_distance_cm, closest_direction = get_wall_distance_for_azimuth(
                 r["avg_az"], wall_distances
             )
-            vertical_offset_cm = compute_wall_projection_height(
-                r["avg_alt"], wall_distance_cm
-            )
+            vertical_offset_cm = compute_wall_projection_height(r["avg_alt"], wall_distance_cm)
             cardinal = get_cardinal_direction(r["avg_az"])
             symbol = PLANET_SYMBOLS[r["planet"]]
 
@@ -356,9 +349,7 @@ def main():
             print(
                 f"   Position: {r['avg_alt']:5.1f}° altitude, {r['avg_az']:5.1f}° azimuth ({cardinal})"
             )
-            print(
-                f"   Using wall: {wall_distance_cm:.0f} cm at ~{closest_direction:.0f}°"
-            )
+            print(f"   Using wall: {wall_distance_cm:.0f} cm at ~{closest_direction:.0f}°")
             print(f"   📐 Wall projection height: {vertical_offset_cm:.1f} cm")
             print(
                 f"   ⏰ Visible: {r['rise_time'].strftime('%H:%M')} to {r['set_time'].strftime('%H:%M')}"
@@ -369,9 +360,7 @@ def main():
         print("--- NON-VISIBLE PLANETS ---")
         for r in non_visible_planets:
             symbol = PLANET_SYMBOLS[r["planet"]]
-            print(
-                f"⭕ {symbol} {r['planet']:>8}: Not visible between sunset and sunrise"
-            )
+            print(f"⭕ {symbol} {r['planet']:>8}: Not visible between sunset and sunrise")
 
     print()
     print("=" * 60)
