@@ -7,10 +7,11 @@ Downloads images from:
 2. NASA Image and Video Library (random space object search)
 """
 
-import requests
-from datetime import datetime, timedelta
 import random
+from datetime import datetime, timedelta
 from pathlib import Path
+
+import requests
 
 
 class SpaceImageDownloader:
@@ -74,9 +75,7 @@ class SpaceImageDownloader:
                 filepath = self.download_dir / filename
 
                 print(f"APOD: {data['title']} ({data['date']})")
-                print(
-                    f"Description: {data.get('explanation', 'No description')[:100]}..."
-                )
+                print(f"Description: {data.get('explanation', 'No description')[:100]}...")
 
                 # Save description to markdown file
                 description_filename = f"apod_{date_str}_{title}.md"
@@ -88,10 +87,9 @@ class SpaceImageDownloader:
                 print(f"✓ Saved description: {description_filepath}")
 
                 return self.download_image(image_url, filepath)
-            else:
-                print(f"APOD for {date_str} is a video, trying another random date...")
-                # Try again with a different random date
-                return self.download_apod()
+            print(f"APOD for {date_str} is a video, trying another random date...")
+            # Try again with a different random date
+            return self.download_apod()
 
         except Exception as e:
             print(f"Failed to fetch APOD: {e}")
@@ -159,9 +157,7 @@ class SpaceImageDownloader:
 
             print(f"NASA Library: {image_data.get('title', 'Unknown')}")
             print(f"Search term: {search_term}")
-            print(
-                f"Description: {image_data.get('description', 'No description')[:100]}..."
-            )
+            print(f"Description: {image_data.get('description', 'No description')[:100]}...")
 
             # Save description to markdown file
             description_filename = f"nasa_library_{search_term}_{timestamp}.md"

@@ -28,4 +28,3 @@ help:
 	@echo "lock       - refresh uv.lock"
 
 .PHONY: nasa planets
-

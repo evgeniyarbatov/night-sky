@@ -6,11 +6,12 @@ Downloads up to 20 planet images for each planet from the NASA Image and Video L
 Includes retry logic, better filtering, and multi-page search.
 """
 
-import requests
-import time
 import random
+import time
 from datetime import datetime
 from pathlib import Path
+
+import requests
 
 
 class PlanetImageDownloader:
@@ -215,9 +216,7 @@ class PlanetImageDownloader:
                 print(f"   ✗ Error processing image: {e}")
                 continue
 
-        print(
-            f"   ✅ Successfully downloaded {count}/{max_images} images for {planet_name}"
-        )
+        print(f"   ✅ Successfully downloaded {count}/{max_images} images for {planet_name}")
         return count > 0
 
     def download_all(self):
