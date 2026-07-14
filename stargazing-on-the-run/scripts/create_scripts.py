@@ -3,7 +3,7 @@ import os
 import shutil
 import sys
 
-from utils import load_points
+from scripts.utils import Point, load_points
 
 
 class StellariumScript:
@@ -73,11 +73,11 @@ points.forEach(
 core.quitStellarium();
     """
 
-    def __init__(self, points, screenshot_dir):
+    def __init__(self, points: list[Point], screenshot_dir: str) -> None:
         self.points = points
         self.screenshot_dir = screenshot_dir
 
-    def create_script(self, filename):
+    def create_script(self, filename: str) -> None:
         script = self.SCRIPT
         script = script.replace(
             "$POINTS$",
@@ -92,7 +92,7 @@ core.quitStellarium();
             file.write(script)
 
 
-def main(gpx_dir, stellarium_dir, screenshot_dir):
+def main(gpx_dir: str, stellarium_dir: str, screenshot_dir: str) -> None:
     gpx_files = glob.glob(os.path.join(gpx_dir, "*.gpx"))
     if not gpx_files:
         print(f"No GPX files found in {gpx_dir}")

@@ -18,3 +18,15 @@ repos:
     rev: v1.15.0
     hooks:
       - id: mypy
+        additional_dependencies:
+          - pandas==3.0.3
+          - pandas-stubs==3.0.3.260530
+          - gpxpy==1.6.2
+          - matplotlib==3.11.0
+          - numpy==2.4.6
+          - contextily==1.7.0
+          - pillow==12.3.0
+          - pyproj==3.7.2
+          - timezonefinder==8.2.4
+          - pytz==2026.2
+          - types-pytz==2026.2.0.20260518

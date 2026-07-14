@@ -8,13 +8,14 @@ import contextily as ctx
 import matplotlib.pyplot as plt
 import pandas as pd
 import pyproj
-from utils import load_points
+
+from scripts.utils import Point, load_points
 
 
 def plot_run(
-    points,
-    maps_dir,
-):
+    points: list[Point],
+    maps_dir: str,
+) -> None:
     points_df = pd.DataFrame.from_records([asdict(p) for p in points])
     geod = pyproj.Geod(ellps="WGS84")
 
@@ -26,19 +27,19 @@ def plot_run(
         ax1 = fig.add_subplot(1, 1, 1)
         ax1.set_aspect("equal", adjustable="box")
         ax1.set_axis_off()
-        ax1.set_position([0, 0, 1, 1])
+        ax1.set_position((0.0, 0.0, 1.0, 1.0))
         line_length_m = 75
         line_lon, line_lat, _ = geod.fwd(point["lon"], point["lat"], point["az"], line_length_m)
         ax1.annotate(
             "",
             xy=(line_lon, line_lat),
             xytext=(point["lon"], point["lat"]),
-            arrowprops=dict(
-                arrowstyle="-|>",
-                color="b",
-                linewidth=4,
-                mutation_scale=28,
-            ),
+            arrowprops={
+                "arrowstyle": "-|>",
+                "color": "b",
+                "linewidth": 4,
+                "mutation_scale": 28,
+            },
             zorder=2,
         )
         ax1.scatter(point["lon"], point["lat"], zorder=3, alpha=1, c="r", s=400, marker="o")
@@ -63,9 +64,9 @@ def plot_run(
 
 
 def main(
-    gpx_dir,
-    maps_dir,
-):
+    gpx_dir: str,
+    maps_dir: str,
+) -> None:
     shutil.rmtree(maps_dir, ignore_errors=True)
     os.makedirs(maps_dir, exist_ok=True)
 

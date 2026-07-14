@@ -7,13 +7,13 @@ import pyproj
 import pytz
 from timezonefinder import TimezoneFinder
 
-VIEW_ANGLES = [0, 30, 70]
+VIEW_ANGLES: list[float] = [0, 30, 70]
 FOV_MIN = 10.0
 FOV_MAX = 60.0
 FOV_ZOOM_PROBABILITY = 0.4
 
 
-def get_timezone_from_points(points):
+def get_timezone_from_points(points: "list[Point]") -> str:
     """Compute timezone from median latitude and longitude of points."""
     if not points:
         return "UTC"  # fallback if no points
@@ -41,11 +41,11 @@ class Point:
 class GPXData:
     def __init__(
         self,
-        filename,
-        timezone,
-        min_azimuth_change=30.0,  # Minimum heading change in degrees
-    ):
-        self.points = []
+        filename: str,
+        timezone: str,
+        min_azimuth_change: float = 30.0,  # Minimum heading change in degrees
+    ) -> None:
+        self.points: list[Point] = []
         self.min_azimuth_change = min_azimuth_change
 
         with open(filename) as gpx_file:
@@ -64,6 +64,9 @@ class GPXData:
                         )[0]
                         if fwd_azimuth < 0:
                             fwd_azimuth += 360
+                        if point.time is None:
+                            msg = f"GPX point in {filename} is missing a timestamp"
+                            raise ValueError(msg)
                         dt = point.time.replace(tzinfo=pytz.UTC)
                         local_time = dt.astimezone(pytz.timezone(timezone))
                         self.points.append(
@@ -131,23 +134,24 @@ class GPXData:
                 stargazing_points.append(point)
 
         # Always include the last point if it's not already included
-        if self.points[-1] not in stargazing_points:
-            if self._is_point_unique(self.points[-1], stargazing_points):
-                stargazing_points.append(self.points[-1])
+        if self.points[-1] not in stargazing_points and self._is_point_unique(
+            self.points[-1], stargazing_points
+        ):
+            stargazing_points.append(self.points[-1])
 
         return stargazing_points
 
-    def get_points(self):
+    def get_points(self) -> list[Point]:
         """Get selected stargazing points with unique views."""
         return self.points
 
 
-def add_view_angles(points, view_angles=VIEW_ANGLES):
+def add_view_angles(points: list[Point], view_angles: list[float] = VIEW_ANGLES) -> list[Point]:
     if not points:
         return []
 
-    unique_view_angles = []
-    seen = set()
+    unique_view_angles: list[float] = []
+    seen: set[float] = set()
     for alt in view_angles:
         if alt not in seen:
             unique_view_angles.append(alt)
@@ -156,7 +160,7 @@ def add_view_angles(points, view_angles=VIEW_ANGLES):
     zero_alt = 0.0
     extra_alts = [alt for alt in unique_view_angles if alt != zero_alt]
 
-    extra_indices = []
+    extra_indices: list[int] = []
     if extra_alts:
         if len(points) == 1:
             extra_indices = [0 for _ in extra_alts]
@@ -167,11 +171,11 @@ def add_view_angles(points, view_angles=VIEW_ANGLES):
             extra_indices = [round(i * step) for i in range(len(extra_alts))]
 
     alt_to_index = {alt: idx for idx, alt in enumerate(extra_alts)}
-    extras_by_point = {}
+    extras_by_point: dict[int, list[float]] = {}
     for alt, index in zip(extra_alts, extra_indices, strict=False):
         extras_by_point.setdefault(index, []).append(alt)
 
-    view_points = []
+    view_points: list[Point] = []
     for idx, point in enumerate(points):
         fov = random_fov()
         view_points.append(
@@ -203,13 +207,13 @@ def add_view_angles(points, view_angles=VIEW_ANGLES):
     return view_points
 
 
-def load_points(gpx_file):
+def load_points(gpx_file: str) -> list[Point]:
     points_for_timezone = GPXData(gpx_file, timezone="UTC").get_points()
     timezone = get_timezone_from_points(points_for_timezone)
     return GPXData(gpx_file, timezone).get_points()
 
 
-def random_fov():
-    if random.random() < FOV_ZOOM_PROBABILITY:
-        return random.uniform(FOV_MIN, FOV_MAX)
+def random_fov() -> float:
+    if random.random() < FOV_ZOOM_PROBABILITY:  # noqa: S311 -- non-cryptographic map styling
+        return random.uniform(FOV_MIN, FOV_MAX)  # noqa: S311 -- non-cryptographic map styling
     return FOV_MAX

@@ -7,7 +7,7 @@ GPX_DEST_DIR = "data/gpx"
 NUMBER_OF_GPX = 1
 
 
-def _gpx_files_in(path):
+def _gpx_files_in(path: str) -> list[str]:
     matches = []
     for root, _, files in os.walk(path):
         for filename in files:
@@ -16,7 +16,7 @@ def _gpx_files_in(path):
     return matches
 
 
-def main():
+def main() -> None:
     shutil.rmtree(GPX_DEST_DIR, ignore_errors=True)
     os.makedirs(GPX_DEST_DIR, exist_ok=True)
 

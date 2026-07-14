@@ -7,11 +7,11 @@ from PIL import Image
 
 
 def main(
-    gpx_dir,
-    screenshot_dir,
-    maps_dir,
-    output_dir,
-):
+    gpx_dir: str,
+    screenshot_dir: str,
+    maps_dir: str,
+    output_dir: str,
+) -> None:
     shutil.rmtree(output_dir, ignore_errors=True)
     os.makedirs(output_dir, exist_ok=True)
 
@@ -32,8 +32,8 @@ def main(
             screenshot_file = [s for s in screenshot_files if timestamp in s][0]
 
             with open(screenshot_file, "rb") as s, open(map_file, "rb") as m:
-                im1 = Image.open(s)
-                im2 = Image.open(m)
+                im1: Image.Image = Image.open(s)
+                im2: Image.Image = Image.open(m)
 
                 max_height = im1.height * 0.25
                 if im2.height > max_height:

@@ -6,7 +6,7 @@ gpx: install
 	@uv run python scripts/gpx.py
 
 stellarium-scripts: install
-	@uv run python scripts/create-scripts.py \
+	@uv run python -m scripts.create_scripts \
 	data/gpx \
 	data/scripts \
 	data/screenshots
@@ -18,7 +18,7 @@ screenshots:
 	done
 
 maps: install
-	@uv run python scripts/make-maps.py \
+	@uv run python -m scripts.make_maps \
 	data/gpx \
 	data/maps
 
@@ -57,9 +57,9 @@ lock:
 help:
 	@echo "install              - create/update .venv and install dependencies"
 	@echo "gpx                  - run gpx.py"
-	@echo "stellarium-scripts   - run create-scripts.py"
+	@echo "stellarium-scripts   - run create_scripts.py"
 	@echo "screenshots          - run stellarium startup scripts"
-	@echo "maps                 - run make-maps.py"
+	@echo "maps                 - run make_maps.py"
 	@echo "merge                - run merge.py"
 	@echo "video                - build videos from screenshots-with-maps"
 	@echo "test                 - run pytest"
