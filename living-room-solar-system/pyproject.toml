@@ -11,6 +11,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "mypy==1.15.0",
     "pytest",
 ]
 
@@ -37,3 +38,7 @@ python_version = "3.11"
 strict = true
 warn_return_any = true
 warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = "skyfield.*"
+ignore_missing_imports = true

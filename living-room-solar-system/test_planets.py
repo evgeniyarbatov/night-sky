@@ -5,7 +5,7 @@ import pytest
 import planets
 
 
-def test_load_settings_success(monkeypatch):
+def test_load_settings_success(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("CITY_NAME", "Hanoi")
     monkeypatch.setenv("COUNTRY", "Vietnam")
     monkeypatch.setenv("LATITUDE", "20.5")
@@ -25,7 +25,7 @@ def test_load_settings_success(monkeypatch):
     assert settings.elevation_m == 12.3
 
 
-def test_load_settings_missing(monkeypatch):
+def test_load_settings_missing(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("CITY_NAME", raising=False)
     monkeypatch.setenv("COUNTRY", "Vietnam")
     monkeypatch.setenv("LATITUDE", "20.5")
@@ -38,7 +38,7 @@ def test_load_settings_missing(monkeypatch):
         planets.load_settings(load_dotenv_file=False)
 
 
-def test_load_settings_invalid_interval(monkeypatch):
+def test_load_settings_invalid_interval(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("CITY_NAME", "Hanoi")
     monkeypatch.setenv("COUNTRY", "Vietnam")
     monkeypatch.setenv("LATITUDE", "20.5")
@@ -51,7 +51,7 @@ def test_load_settings_invalid_interval(monkeypatch):
         planets.load_settings(load_dotenv_file=False)
 
 
-def test_load_settings_missing_country(monkeypatch):
+def test_load_settings_missing_country(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("CITY_NAME", "Hanoi")
     monkeypatch.delenv("COUNTRY", raising=False)
     monkeypatch.setenv("LATITUDE", "20.5")
@@ -64,15 +64,15 @@ def test_load_settings_missing_country(monkeypatch):
         planets.load_settings(load_dotenv_file=False)
 
 
-def test_get_wall_distance_for_azimuth_wrap():
-    wall_distances = {0: 100, 90: 200, 270: 300}
+def test_get_wall_distance_for_azimuth_wrap() -> None:
+    wall_distances: dict[int, float] = {0: 100.0, 90: 200.0, 270: 300.0}
     distance, direction = planets.get_wall_distance_for_azimuth(350, wall_distances)
 
     assert direction == 0
     assert distance == 100
 
 
-def test_get_cardinal_direction_boundaries():
+def test_get_cardinal_direction_boundaries() -> None:
     assert planets.get_cardinal_direction(0) == "North"
     assert planets.get_cardinal_direction(22.5) == "NNE"
     assert planets.get_cardinal_direction(45) == "NE"
@@ -80,13 +80,24 @@ def test_get_cardinal_direction_boundaries():
     assert planets.get_cardinal_direction(360) == "North"
 
 
-def test_group_visible_planets_by_azimuth():
+def _visibility_summary(avg_az: float) -> planets.VisibilitySummary:
+    return {
+        "planet": "Test",
+        "visible": True,
+        "avg_alt": 10.0,
+        "avg_az": avg_az,
+        "rise_time": None,
+        "set_time": None,
+    }
+
+
+def test_group_visible_planets_by_azimuth() -> None:
     visible_planets = [
-        {"avg_az": 7},
-        {"avg_az": 14},
-        {"avg_az": 359},
-        {"avg_az": 360},
-        {"avg_az": 181},
+        _visibility_summary(7),
+        _visibility_summary(14),
+        _visibility_summary(359),
+        _visibility_summary(360),
+        _visibility_summary(181),
     ]
 
     groups = planets.group_visible_planets_by_azimuth(visible_planets)
@@ -97,7 +108,7 @@ def test_group_visible_planets_by_azimuth():
     assert len(groups[180]) == 1
 
 
-def test_summarize_visibility_visible_case():
+def test_summarize_visibility_visible_case() -> None:
     times = [
         dt.datetime(2024, 1, 1, 18, 0),
         dt.datetime(2024, 1, 1, 19, 0),
@@ -115,7 +126,7 @@ def test_summarize_visibility_visible_case():
     assert summary["set_time"] == times[2]
 
 
-def test_summarize_visibility_not_visible():
+def test_summarize_visibility_not_visible() -> None:
     times = [
         dt.datetime(2024, 1, 1, 18, 0),
         dt.datetime(2024, 1, 1, 19, 0),
@@ -132,7 +143,7 @@ def test_summarize_visibility_not_visible():
     assert summary["set_time"] is None
 
 
-def test_compute_wall_projection_height():
+def test_compute_wall_projection_height() -> None:
     height = planets.compute_wall_projection_height(45.0, 100.0)
 
     assert height == pytest.approx(100.0)

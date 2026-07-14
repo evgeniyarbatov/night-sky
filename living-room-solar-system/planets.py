@@ -2,6 +2,7 @@ import os
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from math import radians, tan
+from typing import TypedDict
 from zoneinfo import ZoneInfo
 
 import numpy as np
@@ -22,28 +23,37 @@ class Settings:
     elevation_m: float
 
 
-def _require_env(name):
+class VisibilitySummary(TypedDict):
+    planet: str
+    visible: bool
+    avg_alt: float | None
+    avg_az: float | None
+    rise_time: datetime | None
+    set_time: datetime | None
+
+
+def _require_env(name: str) -> str:
     value = os.getenv(name)
     if value is None or value.strip() == "":
         raise ValueError(f"Missing required setting: {name}")
     return value
 
 
-def _env_float(name):
+def _env_float(name: str) -> float:
     try:
         return float(_require_env(name))
     except ValueError as exc:
         raise ValueError(f"Invalid float for {name}") from exc
 
 
-def _env_int(name):
+def _env_int(name: str) -> int:
     try:
         return int(_require_env(name))
     except ValueError as exc:
         raise ValueError(f"Invalid int for {name}") from exc
 
 
-def load_settings(load_dotenv_file=True):
+def load_settings(load_dotenv_file: bool = True) -> Settings:
     if load_dotenv_file:
         load_dotenv()
 
@@ -62,27 +72,22 @@ def load_settings(load_dotenv_file=True):
     )
 
 
-def get_wall_distance_for_azimuth(azimuth_deg, wall_distances):
+def get_wall_distance_for_azimuth(
+    azimuth_deg: float, wall_distances: dict[int, float]
+) -> tuple[float, int]:
     """
     Get wall distance for a given azimuth based on the closest direction.
     """
-    min_diff = 360
-    closest_direction = None
 
-    for direction, distance in wall_distances.items():
-        # Calculate angular difference (accounting for circular nature of degrees)
+    def angular_diff(direction: int) -> float:
         diff = abs(azimuth_deg - direction)
-        if diff > 180:
-            diff = 360 - diff
+        return 360 - diff if diff > 180 else diff
 
-        if diff < min_diff:
-            min_diff = diff
-            closest_direction = direction
-
+    closest_direction = min(wall_distances, key=angular_diff)
     return wall_distances[closest_direction], closest_direction
 
 
-def get_cardinal_direction(azimuth):
+def get_cardinal_direction(azimuth: float) -> str:
     """Convert azimuth to cardinal direction description."""
     directions = [
         (0, "North"),
@@ -110,28 +115,39 @@ def get_cardinal_direction(azimuth):
     return "North"
 
 
-def group_visible_planets_by_azimuth(visible_planets):
-    azimuth_groups = {}
+def group_visible_planets_by_azimuth(
+    visible_planets: list[VisibilitySummary],
+) -> dict[int, list[VisibilitySummary]]:
+    azimuth_groups: dict[int, list[VisibilitySummary]] = {}
     for r in visible_planets:
         az = r["avg_az"]
+        assert az is not None
         # Round to nearest 15 degrees for grouping
         rounded_az = round(az / 15) * 15
         if rounded_az >= 360:
             rounded_az = 0
-        if rounded_az not in azimuth_groups:
-            azimuth_groups[rounded_az] = []
-        azimuth_groups[rounded_az].append(r)
+        azimuth_groups.setdefault(rounded_az, []).append(r)
     return azimuth_groups
 
 
-def summarize_visibility(planet_name, altitudes, azimuths, times):
+def summarize_visibility(
+    planet_name: str,
+    altitudes: list[float],
+    azimuths: list[float],
+    times: list[datetime],
+) -> VisibilitySummary:
     visible_altitudes = [a for a in altitudes if a > 0]
     visible_azimuths = [azimuths[i] for i, a in enumerate(altitudes) if a > 0]
     visibility_times = [times[i] for i, a in enumerate(altitudes) if a > 0]
 
+    avg_alt: float | None
+    avg_az: float | None
+    rise_time: datetime | None
+    set_time: datetime | None
+
     if visible_altitudes:
-        avg_alt = np.mean(visible_altitudes)
-        avg_az = np.mean(visible_azimuths)
+        avg_alt = float(np.mean(visible_altitudes))
+        avg_az = float(np.mean(visible_azimuths))
         rise_time = visibility_times[0]
         set_time = visibility_times[-1]
     else:
@@ -148,7 +164,7 @@ def summarize_visibility(planet_name, altitudes, azimuths, times):
     }
 
 
-def compute_wall_projection_height(altitude_deg, wall_distance_cm):
+def compute_wall_projection_height(altitude_deg: float, wall_distance_cm: float) -> float:
     return tan(radians(altitude_deg)) * wall_distance_cm
 
 
@@ -186,7 +202,7 @@ PLANET_SYMBOLS = {
 }
 
 
-def main():
+def main() -> None:
     settings = load_settings()
 
     # Load ephemeris and timescale
@@ -273,6 +289,9 @@ def main():
         print()
 
         for r in visible_planets:
+            assert r["avg_az"] is not None
+            assert r["rise_time"] is not None
+            assert r["set_time"] is not None
             cardinal = get_cardinal_direction(r["avg_az"])
             symbol = PLANET_SYMBOLS[r["planet"]]
             print(
@@ -307,7 +326,7 @@ def main():
         print("-" * 40)
 
         # Get wall distances
-        wall_distances = {}
+        wall_distances: dict[int, float] = {}
 
         for grouped_az in sorted(azimuth_groups.keys()):
             planets_in_group = azimuth_groups[grouped_az]
@@ -337,6 +356,10 @@ def main():
         print("=" * 60)
 
         for r in visible_planets:
+            assert r["avg_az"] is not None
+            assert r["avg_alt"] is not None
+            assert r["rise_time"] is not None
+            assert r["set_time"] is not None
             # Find closest wall distance
             wall_distance_cm, closest_direction = get_wall_distance_for_azimuth(
                 r["avg_az"], wall_distances
