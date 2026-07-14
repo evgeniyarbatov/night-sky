@@ -2,6 +2,7 @@ import json
 import os
 import time
 from datetime import datetime
+from typing import Any
 
 import matplotlib.pyplot as plt
 import pytz
@@ -28,7 +29,7 @@ NEBULAE = [
 os.makedirs(IMAGES_DIR, exist_ok=True)
 
 
-def create_artwork(location, fov, azimuth, altitude):
+def create_artwork(location: dict[str, Any], fov: float, azimuth: float, altitude: float) -> None:
     start_time = time.time()
 
     planets = load("de421.bsp")
@@ -77,7 +78,7 @@ def create_artwork(location, fov, azimuth, altitude):
     print(f"✓ Saved: {filename} ({duration:.2f}s)")
 
 
-def main(locations_file="stargazing-locations.json"):
+def main(locations_file: str = "stargazing-locations.json") -> None:
     with open(locations_file) as f:
         locations = json.load(f)
 

@@ -1,13 +1,18 @@
 import csv
 from datetime import datetime, timedelta
 from datetime import time as dtime
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pytz
 from astral import Observer
 from astral.sun import sun
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
+from matplotlib.patches import Circle
 from matplotlib.transforms import Bbox
+from numpy.typing import NDArray
 from skyfield.api import Star, load
 from skyfield.data import hipparcos
 from timezonefinder import TimezoneFinder
@@ -15,10 +20,10 @@ from timezonefinder import TimezoneFinder
 
 class StarArtUtils:
     _TF = TimezoneFinder()
-    _HIPPARCOS_CACHE = {}
+    _HIPPARCOS_CACHE: dict[tuple[str, str | None], Any] = {}
 
     @staticmethod
-    def _get_luminance(color):
+    def _get_luminance(color: str) -> float:
         if color.startswith("#"):
             hex_color = color.lstrip("#")
             if len(hex_color) == 6:
@@ -44,7 +49,14 @@ class StarArtUtils:
         return 0.299 * r + 0.587 * g + 0.114 * b
 
     @classmethod
-    def add_info_text(cls, fig, location, obs_time, details, bg_color):
+    def add_info_text(
+        cls,
+        fig: Figure,
+        location: dict[str, Any] | str,
+        obs_time: datetime,
+        details: str,
+        bg_color: str,
+    ) -> None:
         luminance = cls._get_luminance(bg_color)
         text_color = "black" if luminance > 128 else "white"
 
@@ -82,7 +94,7 @@ class StarArtUtils:
         )
 
     @classmethod
-    def get_timezone(cls, lat, lon):
+    def get_timezone(cls, lat: float, lon: float) -> Any:
         tz_name = cls._TF.timezone_at(lat=lat, lng=lon)
         if tz_name:
             try:
@@ -92,7 +104,9 @@ class StarArtUtils:
         return None
 
     @staticmethod
-    def stereographic_project(alt, az, center_alt, center_az, fov):
+    def stereographic_project(
+        alt: Any, az: Any, center_alt: float, center_az: float, fov: float
+    ) -> tuple[NDArray[np.float64] | None, NDArray[np.float64] | None, NDArray[np.bool_]]:
         alt = np.asarray(alt, dtype=float)
         az = np.asarray(az, dtype=float)
 
@@ -131,7 +145,9 @@ class StarArtUtils:
         return x, y, mask
 
     @staticmethod
-    def get_astronomical_dusk(lat, lon, date, tzinfo=pytz.UTC):
+    def get_astronomical_dusk(
+        lat: float, lon: float, date: Any, tzinfo: Any = pytz.UTC
+    ) -> datetime:
         try:
             observer = Observer(latitude=float(lat), longitude=float(lon), elevation=0)
             s = sun(observer, date=date, tzinfo=tzinfo)
@@ -149,7 +165,7 @@ class StarArtUtils:
             return datetime.now(tz_fallback)
 
     @staticmethod
-    def get_sunrise(lat, lon, date, tzinfo=pytz.UTC):
+    def get_sunrise(lat: float, lon: float, date: Any, tzinfo: Any = pytz.UTC) -> datetime:
         try:
             observer = Observer(latitude=float(lat), longitude=float(lon), elevation=0)
             s = sun(observer, date=date, tzinfo=tzinfo)
@@ -165,10 +181,11 @@ class StarArtUtils:
             return datetime.now(tz_fallback)
 
     @staticmethod
-    def place_labels(ax, objects, color="#1a1a1a"):
+    def place_labels(ax: Axes, objects: dict[str, Any], color: str = "#1a1a1a") -> None:
         fig = ax.figure
         fig.canvas.draw()
-        renderer = fig.canvas.get_renderer()
+        # get_renderer() is backend-specific and not declared on the abstract FigureCanvasBase stub.
+        renderer = fig.canvas.get_renderer()  # type: ignore[attr-defined]
         inv = ax.transData.inverted()
 
         obj_xy = np.column_stack([objects["x"], objects["y"]])
@@ -177,9 +194,9 @@ class StarArtUtils:
         max_obj_y = np.max(obj_disp[:, 1])
 
         order = np.argsort(objects["mag"])
-        placed_bboxes = []
+        placed_bboxes: list[Bbox] = []
 
-        font = {
+        font: dict[str, Any] = {
             "fontsize": 7,
             "family": "monospace",
             "color": color,
@@ -253,8 +270,8 @@ class StarArtUtils:
                     fallback_y -= h + fallback_gap
 
     @staticmethod
-    def load_named_stars(csv_path):
-        stars = []
+    def load_named_stars(csv_path: str) -> list[dict[str, Any]]:
+        stars: list[dict[str, Any]] = []
         with open(csv_path, newline="") as f:
             reader = csv.DictReader(f)
             for row in reader:
@@ -262,7 +279,7 @@ class StarArtUtils:
         return stars
 
     @classmethod
-    def _load_hipparcos(cls, source="remote", hipparcos_file=None):
+    def _load_hipparcos(cls, source: str = "remote", hipparcos_file: str | None = None) -> Any:
         cache_key = (source, hipparcos_file)
         if cache_key in cls._HIPPARCOS_CACHE:
             return cls._HIPPARCOS_CACHE[cache_key]
@@ -271,6 +288,8 @@ class StarArtUtils:
             if source == "remote":
                 with load.open(hipparcos.URL) as f:
                     df = hipparcos.load_dataframe(f)
+            elif hipparcos_file is None:
+                raise ValueError("hipparcos_file is required when source is not 'remote'")
             else:
                 with open(hipparcos_file, "rb") as f:
                     df = hipparcos.load_dataframe(f)
@@ -285,7 +304,15 @@ class StarArtUtils:
         return df
 
     @classmethod
-    def get_visible_stars(cls, observer, obs_time, magnitude_limit, center_alt, center_az, fov):
+    def get_visible_stars(
+        cls,
+        observer: Any,
+        obs_time: datetime,
+        magnitude_limit: float,
+        center_alt: float,
+        center_az: float,
+        fov: float,
+    ) -> dict[str, Any] | None:
         df = cls._load_hipparcos(source="remote")
         if df is None or len(df) == 0:
             print("Hipparcos catalog not available.")
@@ -318,7 +345,7 @@ class StarArtUtils:
 
         x, y, mask = cls.stereographic_project(alt_deg, az_deg, center_alt, center_az, fov)
 
-        if x is None:
+        if x is None or y is None:
             return None
 
         mags = np.asarray(visible_df["magnitude"].values)
@@ -335,14 +362,14 @@ class StarArtUtils:
     @classmethod
     def get_named_stars(
         cls,
-        observer,
-        obs_time,
-        named_stars,
-        center_alt,
-        center_az,
-        fov,
-        hipparcos_file,
-    ):
+        observer: Any,
+        obs_time: datetime,
+        named_stars: list[dict[str, Any]],
+        center_alt: float,
+        center_az: float,
+        fov: float,
+        hipparcos_file: str,
+    ) -> dict[str, Any] | None:
         df = cls._load_hipparcos(source="local", hipparcos_file=hipparcos_file)
         if df is None or len(df) == 0:
             print("Hipparcos catalog not available.")
@@ -364,7 +391,7 @@ class StarArtUtils:
 
         alt, az, _ = observer.at(t).observe(stars).apparent().altaz()
         x, y, mask = cls.stereographic_project(alt.degrees, az.degrees, center_alt, center_az, fov)
-        if x is None:
+        if x is None or y is None:
             return None
 
         mags = np.asarray(df_ordered["magnitude"].values)
@@ -379,7 +406,14 @@ class StarArtUtils:
         }
 
     @staticmethod
-    def get_objects_by_ra_dec(observer, obs_time, objects, center_alt, center_az, fov):
+    def get_objects_by_ra_dec(
+        observer: Any,
+        obs_time: datetime,
+        objects: list[dict[str, Any]],
+        center_alt: float,
+        center_az: float,
+        fov: float,
+    ) -> dict[str, Any] | None:
         alt_list = []
         az_list = []
         mags = []
@@ -401,22 +435,22 @@ class StarArtUtils:
         x, y, mask = StarArtUtils.stereographic_project(
             alt_list, az_list, center_alt, center_az, fov
         )
-        if x is None:
+        if x is None or y is None:
             return None
 
-        mags = np.asarray(mags)
-        names = np.asarray(names)
+        mags_arr = np.asarray(mags)
+        names_arr = np.asarray(names)
 
         return {
             "x": x[mask],
             "y": y[mask],
-            "mag": mags[mask],
-            "name": names[mask],
+            "mag": mags_arr[mask],
+            "name": names_arr[mask],
             "count": int(np.sum(mask)),
         }
 
     @staticmethod
-    def sumi_star_style(stars, fov):
+    def sumi_star_style(stars: dict[str, Any] | None, fov: float) -> tuple[Figure | None, str]:
         if stars is None or stars.get("count", 0) == 0:
             return None, "white"
 
@@ -436,13 +470,13 @@ class StarArtUtils:
         ax.set_ylim(-r_max, r_max)
         ax.axis("off")
 
-        circle = plt.Circle((0, 0), r_max, color="#1a1a1a", fill=False, linewidth=0.25)
+        circle = Circle((0, 0), r_max, color="#1a1a1a", fill=False, linewidth=0.25)
         ax.add_patch(circle)
 
         return fig, "#fdfdf9"
 
     @staticmethod
-    def sumi_object_style(objects):
+    def sumi_object_style(objects: dict[str, Any] | None) -> tuple[Figure | None, str]:
         if objects is None or objects.get("count", 0) == 0:
             return None, "white"
 
@@ -466,7 +500,7 @@ class StarArtUtils:
         ax.set_ylim(-r_max, r_max)
         ax.axis("off")
 
-        circle = plt.Circle((0, 0), r_max, color="#1a1a1a", fill=False, linewidth=0.25)
+        circle = Circle((0, 0), r_max, color="#1a1a1a", fill=False, linewidth=0.25)
         ax.add_patch(circle)
 
         return fig, "#fdfdf9"

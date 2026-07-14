@@ -36,3 +36,16 @@ python_version = "3.11"
 strict = true
 warn_return_any = true
 warn_unused_ignores = true
+mypy_path = "scripts"
+explicit_package_bases = true
+
+[[tool.mypy.overrides]]
+module = "skyfield.*"
+ignore_missing_imports = true
+
+[dependency-groups]
+dev = [
+    "mypy>=2.3.0",
+    "ruff>=0.15.21",
+    "types-pytz>=2026.2.0.20260518",
+]

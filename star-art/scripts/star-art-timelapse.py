@@ -2,6 +2,7 @@ import json
 import os
 import time
 from datetime import datetime, timedelta
+from typing import Any
 
 import matplotlib.pyplot as plt
 import pytz
@@ -20,7 +21,7 @@ ALTITUDE = 90
 os.makedirs(IMAGES_DIR, exist_ok=True)
 
 
-def generate_timelapse(location):
+def generate_timelapse(location: dict[str, Any]) -> None:
     start_time = time.time()
 
     planets = load("de421.bsp")
@@ -81,7 +82,7 @@ def generate_timelapse(location):
     print(f"\n✓ Timelapse frames saved to {out_dir} ({duration:.2f}s)")
 
 
-def main(locations_file=LOCATIONS_FILE):
+def main(locations_file: str = LOCATIONS_FILE) -> None:
     with open(locations_file) as f:
         locations = json.load(f)
 

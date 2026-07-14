@@ -1,23 +1,28 @@
 import json
 import os
 import time
+from collections.abc import Callable
 from datetime import datetime
+from typing import Any
 
 import matplotlib.pyplot as plt
 import pytz
+from matplotlib.figure import Figure
 from skyfield.api import load, wgs84
 from star_art_utils import StarArtUtils
 
-STYLES = {}
+StyleFunc = Callable[[dict[str, Any], float], tuple[Figure | None, str]]
+
+STYLES: dict[str, StyleFunc] = {}
 IMAGES_DIR = "images"
 
 os.makedirs(IMAGES_DIR, exist_ok=True)
 
 
-def style(name):
+def style(name: str) -> Callable[[StyleFunc], StyleFunc]:
     """Decorator to register a style function"""
 
-    def decorator(func):
+    def decorator(func: StyleFunc) -> StyleFunc:
         STYLES[name] = func
         return func
 
@@ -25,11 +30,18 @@ def style(name):
 
 
 @style("sumi")
-def sumi_style(stars, fov):
+def sumi_style(stars: dict[str, Any], fov: float) -> tuple[Figure | None, str]:
     return StarArtUtils.sumi_star_style(stars, fov)
 
 
-def create_artwork(location, style_name, magnitude, fov, azimuth, altitude):
+def create_artwork(
+    location: dict[str, Any],
+    style_name: str,
+    magnitude: float,
+    fov: float,
+    azimuth: float,
+    altitude: float,
+) -> None:
     """Create star map artwork for a single location and parameter set."""
     start_time = time.time()
 
@@ -93,7 +105,7 @@ def create_artwork(location, style_name, magnitude, fov, azimuth, altitude):
         plt.close(fig)
 
 
-def main(locations_file="stargazing-locations.json"):
+def main(locations_file: str = "stargazing-locations.json") -> None:
     try:
         with open(locations_file) as f:
             locations = json.load(f)

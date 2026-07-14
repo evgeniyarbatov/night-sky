@@ -2,10 +2,14 @@ import json
 import os
 import time
 from datetime import datetime
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pytz
+from matplotlib.figure import Figure
+from matplotlib.patches import Circle
+from numpy.typing import NDArray
 from skyfield.api import load, wgs84
 from star_art_utils import StarArtUtils
 
@@ -16,13 +20,15 @@ HIPPARCOS_FILE = "hip_main.dat"
 os.makedirs(IMAGES_DIR, exist_ok=True)
 
 
-def _path_length(points, order):
+def _path_length(points: NDArray[np.float64], order: NDArray[np.intp]) -> float:
     p = points[order]
     d = p[1:] - p[:-1]
     return float(np.sum(np.hypot(d[:, 0], d[:, 1])))
 
 
-def _two_opt(points, order, max_passes=6):
+def _two_opt(
+    points: NDArray[np.float64], order: NDArray[np.intp], max_passes: int = 6
+) -> NDArray[np.intp]:
     n = len(order)
     if n < 4:
         return order
@@ -46,20 +52,17 @@ def _two_opt(points, order, max_passes=6):
     return best
 
 
-def compute_shortest_visit_order(x, y, mag=None):
+def compute_shortest_visit_order(x: Any, y: Any, mag: Any = None) -> NDArray[np.intp]:
     points = np.column_stack([np.asarray(x, float), np.asarray(y, float)])
     n = len(points)
     if n <= 1:
         return np.arange(n, dtype=int)
 
-    if mag is not None and len(mag) == n:
-        start = int(np.argmin(mag))
-    else:
-        start = 0
+    start = int(np.argmin(mag)) if mag is not None and len(mag) == n else 0
 
     remaining = set(range(n))
     remaining.remove(start)
-    order = [start]
+    visit_order = [start]
     cur = start
 
     while remaining:
@@ -67,16 +70,15 @@ def compute_shortest_visit_order(x, y, mag=None):
         dx = points[rem, 0] - points[cur, 0]
         dy = points[rem, 1] - points[cur, 1]
         j = int(rem[np.argmin(dx * dx + dy * dy)])
-        order.append(j)
+        visit_order.append(j)
         remaining.remove(j)
         cur = j
 
-    order = np.array(order, dtype=int)
-    order = _two_opt(points, order, max_passes=7)
-    return order
+    order = np.array(visit_order, dtype=int)
+    return _two_opt(points, order, max_passes=7)
 
 
-def wabi_sabi_minimal_style(stars):
+def wabi_sabi_minimal_style(stars: dict[str, Any] | None) -> tuple[Figure | None, str]:
     if stars is None or stars.get("count", 0) == 0:
         return None, "white"
 
@@ -127,13 +129,19 @@ def wabi_sabi_minimal_style(stars):
     ax.set_ylim(-r_max, r_max)
     ax.axis("off")
 
-    circle = plt.Circle((0, 0), r_max, color=ink, fill=False, linewidth=0.18, alpha=0.35)
+    circle = Circle((0, 0), r_max, color=ink, fill=False, linewidth=0.18, alpha=0.35)
     ax.add_patch(circle)
 
     return fig, bg
 
 
-def create_artwork(location, named_stars, fov, azimuth, altitude):
+def create_artwork(
+    location: dict[str, Any],
+    named_stars: list[dict[str, Any]],
+    fov: float,
+    azimuth: float,
+    altitude: float,
+) -> None:
     start_time = time.time()
 
     planets = load("de421.bsp")
@@ -184,7 +192,7 @@ def create_artwork(location, named_stars, fov, azimuth, altitude):
     print(f"✓ Saved: {filename} ({duration:.2f}s)")
 
 
-def main(locations_file="stargazing-locations.json"):
+def main(locations_file: str = "stargazing-locations.json") -> None:
     with open(locations_file) as f:
         locations = json.load(f)
 

@@ -15,16 +15,18 @@ from star_art_utils import StarArtUtils
 
 
 class TestStarArtUtils(unittest.TestCase):
-    def test_stereographic_project_returns_mask(self):
+    def test_stereographic_project_returns_mask(self) -> None:
         alt = [0, 10]
         az = [0, 90]
         x, y, mask = StarArtUtils.stereographic_project(alt, az, 0, 0, 180)
         self.assertEqual(mask.shape[0], 2)
         self.assertTrue(mask.all())
+        assert x is not None
+        assert y is not None
         self.assertEqual(len(x), 2)
         self.assertEqual(len(y), 2)
 
-    def test_add_info_text_adds_text(self):
+    def test_add_info_text_adds_text(self) -> None:
         fig = plt.figure()
         before = len(fig.texts)
         StarArtUtils.add_info_text(
@@ -38,7 +40,7 @@ class TestStarArtUtils(unittest.TestCase):
         plt.close(fig)
         self.assertEqual(after, before + 1)
 
-    def test_get_astronomical_dusk_has_tzinfo(self):
+    def test_get_astronomical_dusk_has_tzinfo(self) -> None:
         dusk = StarArtUtils.get_astronomical_dusk(0.0, 0.0, datetime(2020, 1, 1).date())
         self.assertIsNotNone(dusk.tzinfo)
 

@@ -2,6 +2,7 @@ import json
 import os
 import time
 from datetime import datetime
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -25,7 +26,14 @@ BODIES = [
 os.makedirs(IMAGES_DIR, exist_ok=True)
 
 
-def get_bodies(observer, planets, obs_time, center_alt, center_az, fov):
+def get_bodies(
+    observer: Any,
+    planets: Any,
+    obs_time: datetime,
+    center_alt: float,
+    center_az: float,
+    fov: float,
+) -> dict[str, Any] | None:
     alt_list = []
     az_list = []
     mags = []
@@ -44,24 +52,23 @@ def get_bodies(observer, planets, obs_time, center_alt, center_az, fov):
         mags.append(body["mag"])
         names.append(body["name"])
 
-    projected = StarArtUtils.stereographic_project(alt_list, az_list, center_alt, center_az, fov)
-    if projected[0] is None:
+    x, y, mask = StarArtUtils.stereographic_project(alt_list, az_list, center_alt, center_az, fov)
+    if x is None or y is None:
         return None
 
-    x, y, mask = projected
-    mags = np.asarray(mags)
-    names = np.asarray(names)
+    mags_arr = np.asarray(mags)
+    names_arr = np.asarray(names)
 
     return {
         "x": x[mask],
         "y": y[mask],
-        "mag": mags[mask],
-        "name": names[mask],
+        "mag": mags_arr[mask],
+        "name": names_arr[mask],
         "count": int(np.sum(mask)),
     }
 
 
-def create_artwork(location, fov, azimuth, altitude):
+def create_artwork(location: dict[str, Any], fov: float, azimuth: float, altitude: float) -> None:
     start_time = time.time()
 
     planets = load("de421.bsp")
@@ -108,7 +115,7 @@ def create_artwork(location, fov, azimuth, altitude):
     print(f"✓ Saved: {filename} ({duration:.2f}s)")
 
 
-def main(locations_file="stargazing-locations.json"):
+def main(locations_file: str = "stargazing-locations.json") -> None:
     with open(locations_file) as f:
         locations = json.load(f)
 
