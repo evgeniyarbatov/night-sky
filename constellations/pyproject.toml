@@ -18,6 +18,10 @@ dependencies = [
 dev = [
     "black",
     "flake8",
+    "mypy>=2.3.0",
+    "pandas-stubs>=3.0.3.260530",
+    "ruff>=0.15.21",
+    "types-pytz>=2026.2.0.20260518",
 ]
 
 [tool.uv]
@@ -43,3 +47,7 @@ python_version = "3.11"
 strict = true
 warn_return_any = true
 warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ["astropy.*", "astroplan.*"]
+ignore_missing_imports = true

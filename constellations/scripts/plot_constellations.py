@@ -1,5 +1,6 @@
 import os
 from datetime import datetime, timedelta
+from typing import TypedDict
 
 import astropy.units as u
 import matplotlib.dates as mdates
@@ -25,6 +26,13 @@ HANOI_TZ = pytz.timezone("Asia/Ho_Chi_Minh")
 NAMES_FILE = "data/constellation_names.csv"
 
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+
+
+class ConstellationVisibility(TypedDict):
+    start: datetime | None
+    end: datetime | None
+    below_horizon: bool
+
 
 # ===== Load constellation names =====
 try:
@@ -72,7 +80,7 @@ obs_time_local = HANOI_TZ.localize(
 obs_time_utc = obs_time_local.astimezone(pytz.UTC)
 obs_time_astropy = Time(obs_time_utc)
 
-constellation_data = {}
+constellation_data: dict[str, ConstellationVisibility] = {}
 
 # ===== Process constellation files =====
 for file_name in os.listdir(DATA_FOLDER):
@@ -95,25 +103,25 @@ for file_name in os.listdir(DATA_FOLDER):
         ra_deg.append((h + m / 60 + s / 3600) * 15)
     df["RA_deg"] = ra_deg
 
-    for const_abbr, group in df.groupby("Constellation"):
-        const_abbr = const_abbr.strip()
+    for const_abbr_raw, group in df.groupby("Constellation"):
+        const_abbr = str(const_abbr_raw).strip()
         stars = SkyCoord(
             ra=group["RA_deg"].values * u.degree,
             dec=group["Dec_deg"].values * u.degree,
             frame="icrs",
         )
 
-        altitudes = []
-        azimuths = []
+        altitude_samples = []
+        azimuth_samples = []
 
         for t in times_astropy:
             altaz_frame = AltAz(obstime=t, location=observer_location)
             star_altaz = stars.transform_to(altaz_frame)
-            altitudes.append(star_altaz.alt.deg)
-            azimuths.append(star_altaz.az.deg)
+            altitude_samples.append(star_altaz.alt.deg)
+            azimuth_samples.append(star_altaz.az.deg)
 
-        altitudes = np.array(altitudes)
-        azimuths = np.array(azimuths)
+        altitudes = np.array(altitude_samples)
+        azimuths = np.array(azimuth_samples)
 
         # Determine if constellation is above horizon
         mean_altitudes = np.mean(altitudes, axis=1)
@@ -173,16 +181,16 @@ for const_abbr, data in constellation_data.items():
         frame="icrs",
     )
 
-    altitudes = []
-    azimuths = []
+    altitude_samples = []
+    azimuth_samples = []
     for t in times_astropy:
         altaz_frame = AltAz(obstime=t, location=observer_location)
         star_altaz = stars.transform_to(altaz_frame)
-        altitudes.append(np.mean(star_altaz.alt.deg))
-        azimuths.append(np.mean(star_altaz.az.deg))
+        altitude_samples.append(np.mean(star_altaz.alt.deg))
+        azimuth_samples.append(np.mean(star_altaz.az.deg))
 
-    altitudes = np.array(altitudes)
-    azimuths = np.array(azimuths)
+    altitudes = np.array(altitude_samples)
+    azimuths = np.array(azimuth_samples)
 
     # Create figure layout
     if has_gif:
@@ -206,8 +214,9 @@ for const_abbr, data in constellation_data.items():
     ax_az.plot(times, azimuths, color="darkorange", lw=2)
     ax_az.set_ylabel("Azimuth ° (Direction)")
     ax_az.set_xlabel("Time (Hanoi)")
-    ax_az.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M", tz=HANOI_TZ))
-    ax_az.xaxis.set_major_locator(mdates.HourLocator(interval=2, tz=HANOI_TZ))
+    # matplotlib.dates.DateFormatter/HourLocator have no type annotations upstream
+    ax_az.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M", tz=HANOI_TZ))  # type: ignore[no-untyped-call]
+    ax_az.xaxis.set_major_locator(mdates.HourLocator(interval=2, tz=HANOI_TZ))  # type: ignore[no-untyped-call]
     ax_az.grid(True, alpha=0.3)
 
     # Set azimuth ticks and add cardinal directions
@@ -224,8 +233,8 @@ for const_abbr, data in constellation_data.items():
     ax_alt.plot(times, altitudes, color="steelblue", lw=2)
     ax_alt.set_ylabel("Altitude (°)")
     ax_alt.set_xlabel("Time (Hanoi)")
-    ax_alt.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M", tz=HANOI_TZ))
-    ax_alt.xaxis.set_major_locator(mdates.HourLocator(interval=2, tz=HANOI_TZ))
+    ax_alt.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M", tz=HANOI_TZ))  # type: ignore[no-untyped-call]
+    ax_alt.xaxis.set_major_locator(mdates.HourLocator(interval=2, tz=HANOI_TZ))  # type: ignore[no-untyped-call]
     ax_alt.grid(True, alpha=0.3)
     ax_alt.axhline(0, color="gray", linestyle="--", lw=1)
 
