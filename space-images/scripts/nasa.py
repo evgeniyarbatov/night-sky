@@ -15,7 +15,7 @@ import requests
 
 
 class SpaceImageDownloader:
-    def __init__(self, download_dir="images"):
+    def __init__(self, download_dir: str = "images") -> None:
         self.download_dir = Path(download_dir)
         self.download_dir.mkdir(exist_ok=True)
 
@@ -25,10 +25,10 @@ class SpaceImageDownloader:
 
         # No subdirectories needed
 
-    def download_image(self, url, filepath):
+    def download_image(self, url: str, filepath: Path) -> bool:
         """Download image from URL to filepath"""
         try:
-            response = requests.get(url, stream=True)
+            response = requests.get(url, stream=True, timeout=20)
             response.raise_for_status()
 
             with open(filepath, "wb") as f:
@@ -41,7 +41,7 @@ class SpaceImageDownloader:
             print(f"✗ Failed to download {url}: {e}")
             return False
 
-    def download_apod(self):
+    def download_apod(self) -> bool:
         """Download Astronomy Picture of the Day from random day within last year"""
         # Generate random date within last year
         today = datetime.now()
@@ -53,7 +53,7 @@ class SpaceImageDownloader:
         url = f"https://api.nasa.gov/planetary/apod?api_key={self.api_key}&date={date_str}"
 
         try:
-            response = requests.get(url)
+            response = requests.get(url, timeout=15)
             response.raise_for_status()
             data = response.json()
 
@@ -95,7 +95,7 @@ class SpaceImageDownloader:
             print(f"Failed to fetch APOD: {e}")
             return False
 
-    def download_nasa_library_random(self):
+    def download_nasa_library_random(self) -> bool:
         """Search and download random space object from NASA Image Library"""
         space_objects = [
             "mars",
@@ -120,7 +120,7 @@ class SpaceImageDownloader:
         url = f"https://images-api.nasa.gov/search?q={search_term}&media_type=image"
 
         try:
-            response = requests.get(url)
+            response = requests.get(url, timeout=15)
             response.raise_for_status()
             data = response.json()
 
@@ -135,7 +135,7 @@ class SpaceImageDownloader:
 
             # Get the actual image URL
             asset_url = item["href"]
-            asset_response = requests.get(asset_url)
+            asset_response = requests.get(asset_url, timeout=15)
             asset_response.raise_for_status()
             assets = asset_response.json()
 
@@ -174,7 +174,7 @@ class SpaceImageDownloader:
             print(f"Failed to fetch from NASA Library: {e}")
             return False
 
-    def download_all(self):
+    def download_all(self) -> None:
         """Download from all three sources"""
         print("🚀 NASA Space Image Downloader")
         print("=" * 40)

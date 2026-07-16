@@ -10,18 +10,19 @@ import random
 import time
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import requests
 
 
 class PlanetImageDownloader:
-    def __init__(self, download_dir="planets"):
+    def __init__(self, download_dir: str = "planets") -> None:
         self.download_dir = Path(download_dir)
         self.download_dir.mkdir(exist_ok=True)
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": "NASA-Planet-Downloader/1.0"})
 
-    def download_image(self, url, filepath, retries=3):
+    def download_image(self, url: str, filepath: Path, retries: int = 3) -> bool:
         """Download image from URL to filepath with retry logic"""
         for attempt in range(retries):
             try:
@@ -41,7 +42,7 @@ class PlanetImageDownloader:
                     return False
         return False
 
-    def is_valid_planet_image(self, item, planet_name):
+    def is_valid_planet_image(self, item: dict[str, Any], planet_name: str) -> bool:
         """Check if image is a valid planet photo (relaxed filtering)"""
         try:
             data_block = item.get("data", [{}])[0]
@@ -92,14 +93,14 @@ class PlanetImageDownloader:
             ]
 
             # Give bonus points for having positive indicators
-            has_positive = any(term in combined for term in positive_indicators)
-
-            return has_positive
+            return any(term in combined for term in positive_indicators)
 
         except Exception:
             return False
 
-    def fetch_images_from_page(self, planet_name, page=1):
+    def fetch_images_from_page(
+        self, planet_name: str, page: int = 1
+    ) -> tuple[list[dict[str, Any]], int]:
         """Fetch images from a specific API page"""
         url = f"https://images-api.nasa.gov/search?q={planet_name}&media_type=image&page={page}"
 
@@ -117,7 +118,7 @@ class PlanetImageDownloader:
             print(f"   ⚠ Failed to fetch page {page}: {e}")
             return [], 0
 
-    def download_planet_images(self, planet_name, max_images=20):
+    def download_planet_images(self, planet_name: str, max_images: int = 20) -> bool:
         """Download up to max_images for a given planet"""
         print(f"\n🔭 Downloading images for: {planet_name.capitalize()}")
 
@@ -165,10 +166,11 @@ class PlanetImageDownloader:
                 # Find best quality image (prefer original, then large)
                 image_url = None
                 for asset in assets:
-                    if "orig" in asset or "large" in asset:
-                        if asset.endswith((".jpg", ".jpeg", ".png")):
-                            image_url = asset
-                            break
+                    if ("orig" in asset or "large" in asset) and asset.endswith(
+                        (".jpg", ".jpeg", ".png")
+                    ):
+                        image_url = asset
+                        break
 
                 # Fallback to any image
                 if not image_url:
@@ -219,7 +221,7 @@ class PlanetImageDownloader:
         print(f"   ✅ Successfully downloaded {count}/{max_images} images for {planet_name}")
         return count > 0
 
-    def download_all(self):
+    def download_all(self) -> None:
         """Download images for all planets"""
         print("🚀 NASA Planet Image Downloader (Improved)")
         print("=" * 60)
