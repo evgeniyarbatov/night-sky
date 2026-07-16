@@ -17,6 +17,7 @@ import os
 import sys
 from datetime import date, datetime, timedelta
 from pathlib import Path
+from typing import Any
 from zoneinfo import ZoneInfo
 
 import matplotlib.pyplot as plt
@@ -59,7 +60,7 @@ EPHEMERIS_MIRRORS = {
 }
 
 
-def print_progress(message: str, end: str = "\n"):
+def print_progress(message: str, end: str = "\n") -> None:
     """Simple progress printer."""
     print(f"→ {message}", file=sys.stderr, end=end, flush=True)
 
@@ -93,25 +94,28 @@ def check_ephemeris_cache() -> str | None:
     return None
 
 
-def download_ephemeris_with_progress(url: str, dest_path: Path):
+def download_ephemeris_with_progress(url: str, dest_path: Path) -> None:
     """Download ephemeris file with progress bar."""
     import urllib.request
+
+    if not url.startswith("https://"):
+        raise ValueError(f"Refusing to download from non-https URL: {url}")
 
     dest_path.parent.mkdir(parents=True, exist_ok=True)
 
     if HAS_TQDM:
 
-        class DownloadProgressBar(tqdm):
-            def update_to(self, b=1, bsize=1, tsize=None):
+        class DownloadProgressBar(tqdm[Any]):
+            def update_to(self, b: int = 1, bsize: int = 1, tsize: int | None = None) -> None:
                 if tsize is not None:
                     self.total = tsize
                 self.update(b * bsize - self.n)
 
         with DownloadProgressBar(unit="B", unit_scale=True, miniters=1, desc=dest_path.name) as t:
-            urllib.request.urlretrieve(url, dest_path, reporthook=t.update_to)
+            urllib.request.urlretrieve(url, dest_path, reporthook=t.update_to)  # noqa: S310
     else:
         print_progress(f"Downloading {dest_path.name}...")
-        urllib.request.urlretrieve(url, dest_path)
+        urllib.request.urlretrieve(url, dest_path)  # noqa: S310
         print(" ✓", file=sys.stderr)
 
 
@@ -122,14 +126,16 @@ def _build_dates(year: int, step_days: int) -> list[date]:
     return [start + timedelta(days=i) for i in range(0, n, step_days)]
 
 
-def _skyfield_times_for_local_clock(dates: list[date], hh: int, mm: int, tz: ZoneInfo, ts):
+def _skyfield_times_for_local_clock(
+    dates: list[date], hh: int, mm: int, tz: ZoneInfo, ts: Any
+) -> Any:
     """Convert local clock times to Skyfield Time array."""
     # local datetimes -> UTC datetimes
     dts_local = [datetime(d.year, d.month, d.day, hh, mm, 0, tzinfo=tz) for d in dates]
     dts_utc = [dt.astimezone(ZoneInfo("UTC")) for dt in dts_local]
 
     # Build a Skyfield Time array
-    t = ts.utc(
+    return ts.utc(
         [dt.year for dt in dts_utc],
         [dt.month for dt in dts_utc],
         [dt.day for dt in dts_utc],
@@ -137,7 +143,6 @@ def _skyfield_times_for_local_clock(dates: list[date], hh: int, mm: int, tz: Zon
         [dt.minute for dt in dts_utc],
         [dt.second + dt.microsecond * 1e-6 for dt in dts_utc],
     )
-    return t
 
 
 def analemma_series_skyfield(
@@ -148,7 +153,7 @@ def analemma_series_skyfield(
     lon_deg: float = LONGITUDE,
     tz_name: str = TZ_NAME,
     ephemeris: str = EPHEMERIS,
-):
+) -> dict[str, dict[str, np.ndarray[Any, np.dtype[Any]]]]:
     """
     Returns dict: { "HH:MM": {"date": np.array[date], "az_deg": np.array[float], "alt_deg": np.array[float]} }
     """
@@ -207,7 +212,7 @@ def analemma_series_skyfield(
                     raise RuntimeError("All download attempts failed") from e3
 
         if eph is None:
-            raise RuntimeError("Could not load any ephemeris file")
+            raise RuntimeError("Could not load any ephemeris file") from e
 
     ts = load.timescale()
     earth = eph["earth"]
@@ -215,7 +220,7 @@ def analemma_series_skyfield(
 
     observer = wgs84.latlon(lat_deg, lon_deg)
 
-    out = {}
+    out: dict[str, dict[str, np.ndarray[Any, np.dtype[Any]]]] = {}
     iterator = tqdm(clock_times, desc="Computing curves", unit="time") if HAS_TQDM else clock_times
 
     for ct in iterator:
@@ -241,7 +246,9 @@ def analemma_series_skyfield(
     return out
 
 
-def _unwrap_azimuth_compact(az_deg: np.ndarray) -> np.ndarray:
+def _unwrap_azimuth_compact(
+    az_deg: np.ndarray[Any, np.dtype[Any]],
+) -> np.ndarray[Any, np.dtype[Any]]:
     """
     Make azimuth a smooth x-coordinate for plotting by unwrapping around its circular mean,
     then centering. This avoids a big jump at 0/360.
@@ -251,16 +258,17 @@ def _unwrap_azimuth_compact(az_deg: np.ndarray) -> np.ndarray:
     centered = np.angle(np.exp(1j * (rad - mean_angle)))  # (-pi, pi]
     unwrapped = np.unwrap(centered)
     x = np.rad2deg(unwrapped)
-    return x - np.median(x)
+    result: np.ndarray[Any, np.dtype[Any]] = x - np.median(x)
+    return result
 
 
-def plot_analemma(data: dict, title: str):
+def plot_analemma(data: dict[str, dict[str, np.ndarray[Any, np.dtype[Any]]]], title: str) -> None:
     """Plot analemma curves with minimal, zen styling."""
     print_progress("Generating plot...")
 
     # Minimal, "zen" styling: no ticks, no spines, airy margins.
     fig = plt.figure(figsize=(7.2, 7.2), dpi=170)
-    ax = fig.add_axes([0.08, 0.08, 0.84, 0.84])
+    ax = fig.add_axes((0.08, 0.08, 0.84, 0.84))
 
     for spine in ax.spines.values():
         spine.set_visible(False)
@@ -286,14 +294,17 @@ def plot_analemma(data: dict, title: str):
     plt.show()
 
 
-def main():
+def main() -> None:
     print_progress("=== Analemma Generator ===")
 
     # Check ephemeris situation
-    if EPHEMERIS.endswith(".bsp") and os.path.exists(EPHEMERIS):
-        if not verify_ephemeris_file(EPHEMERIS):
-            print_progress(f"Warning: Ephemeris file may be corrupted: {EPHEMERIS}")
-            print_progress("Will attempt to download a fresh copy...")
+    if (
+        EPHEMERIS.endswith(".bsp")
+        and os.path.exists(EPHEMERIS)
+        and not verify_ephemeris_file(EPHEMERIS)
+    ):
+        print_progress(f"Warning: Ephemeris file may be corrupted: {EPHEMERIS}")
+        print_progress("Will attempt to download a fresh copy...")
 
     try:
         data = analemma_series_skyfield(

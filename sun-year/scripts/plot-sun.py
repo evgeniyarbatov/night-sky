@@ -16,7 +16,9 @@ observer.elevation = 0  # meters above sea level
 observer.horizon = "0"  # 0 degrees for astronomical sunrise/sunset
 
 
-def get_sun_azimuth_at_rise_set(observer, date):
+def get_sun_azimuth_at_rise_set(
+    observer: ephem.Observer, date: datetime
+) -> tuple[float, float] | tuple[None, None]:
     """
     Calculate sun's exact azimuth at sunrise and sunset using PyEphem.
     PyEphem computes exact rise/set times analytically.
