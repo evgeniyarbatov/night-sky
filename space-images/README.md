@@ -10,7 +10,7 @@ See [ROADMAP.md](ROADMAP.md) for the path outward and what you can build with a 
 | --- | --- |
 | `make inspire` | APOD + caption → `album/daily/YYYY-MM-DD/` (adds a new photo each run; local only) |
 | `scripts/nasa.py` | Random APOD (last year) + NASA Image Library sample → `images/` |
-| `scripts/planets.py` | Up to 20 images per planet (Mercury–Neptune) → `planets/` |
+| `scripts/planets.py` | Up to 20 images per planet (Mercury–Neptune) → `images/<planet>/` |
 | `ROADMAP.md` | Ladder outward + project plan |
 
 Every download gets **sidecar** `.json` + `.md`: title, date, mission, body, license, source URL, destination tag, and full caption from the source.
@@ -33,7 +33,7 @@ Bulk pulls:
 
 ```bash
 make nasa      # 20× APOD + library samples → images/
-make planets   # per-planet sets → planets/
+make planets   # per-planet sets → images/<planet>/
 ```
 
 Or run scripts once:
@@ -55,8 +55,8 @@ uv run python scripts/planets.py
 
 ```
 scripts/         downloaders + inspire
-images/          APOD + library downloads (local)
-planets/         per-planet downloads (local)
+images/          APOD + library + per-planet downloads (local)
+images/<planet>/ make planets output (mercury … neptune)
 album/daily/     daily pulls (local, gitignored)
 ROADMAP.md       path outward + project plan
 ```

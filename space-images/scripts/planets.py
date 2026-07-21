@@ -27,7 +27,7 @@ from common import (
 
 
 class PlanetImageDownloader:
-    def __init__(self, download_dir: str | Path = "planets") -> None:
+    def __init__(self, download_dir: str | Path = "images") -> None:
         root = repo_root()
         path = Path(download_dir)
         self.download_dir = path if path.is_absolute() else root / path
@@ -105,6 +105,8 @@ class PlanetImageDownloader:
         print(f"   Found {len(all_valid_items)} valid images")
         random.shuffle(all_valid_items)
         items_to_download = all_valid_items[:max_images]
+        planet_dir = self.download_dir / planet_name
+        planet_dir.mkdir(parents=True, exist_ok=True)
         count = 0
 
         for item in items_to_download:
@@ -121,7 +123,7 @@ class PlanetImageDownloader:
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
                 nasa_id = safe_filename(meta.nasa_id or "unknown", max_len=30)
                 filename = f"{planet_name}_{nasa_id}_{timestamp}.jpg"
-                filepath = self.download_dir / filename
+                filepath = planet_dir / filename
                 download_file(image_url, filepath, sess=self.sess)
                 write_sidecar(filepath, meta)
                 print(f"   ✓ {filepath.name}")
@@ -162,10 +164,10 @@ class PlanetImageDownloader:
             status = "✓" if success else "✗"
             print(f"   {status} {planet.capitalize()}")
         print(f"\nTotal time: {elapsed:.1f} seconds")
-        print(f"All images saved to: {self.download_dir.absolute()}")
+        print(f"All images saved to: {self.download_dir.absolute()}/<planet>/")
         if not any(ok for _, ok in results):
             sys.exit(1)
 
 
 if __name__ == "__main__":
-    PlanetImageDownloader(download_dir="planets").download_all()
+    PlanetImageDownloader(download_dir="images").download_all()

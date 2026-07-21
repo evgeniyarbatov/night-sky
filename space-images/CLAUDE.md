@@ -21,7 +21,7 @@ Default write-ups and explanations to the conceptual level: name scripts, dirs, 
 ## Code
 
 - Python 3.11+, managed with **uv**; run via `uv run` or Makefile targets.
-- Shared helpers live in `scripts/common.py`. Entry points: `inspire.py` → `album/daily/`; `nasa.py` → `images/`; `planets.py` → `planets/`.
+- Shared helpers live in `scripts/common.py`. Entry points: `inspire.py` → `album/daily/`; `nasa.py` → `images/`; `planets.py` → `images/<planet>/`.
 - Prefer env `NASA_API_KEY` (fallback `DEMO_KEY`) — never commit secrets.
 - Be polite to public APIs: retries, short sleeps, no aggressive parallel hammering.
 - Keep download + sidecar `.json`/`.md` metadata paired; filenames safe for common filesystems.
@@ -33,7 +33,7 @@ Default write-ups and explanations to the conceptual level: name scripts, dirs, 
 
 - User-facing targets: `make install` / `inspire` / `nasa` / `planets` / `clean` / `lock`; keep `make help` accurate.
 - Ruff + mypy config live in `pyproject.toml` (`mypy_path = scripts`); match existing lint/format style.
-- Downloaded and generated content under `images/`, `planets/`, `album/daily` stays gitignored.
+- Downloaded and generated content under `images/`, `album/daily` stays gitignored.
 
 ## Commits
 

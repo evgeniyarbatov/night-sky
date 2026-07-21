@@ -15,7 +15,7 @@ No special lab. Free or rate-limited public APIs. Run it, keep the files, read t
 | Capability | How |
 | --- | --- |
 | **One picture, today** | `make inspire` → APOD into `album/daily/` with sidecar story (repeat to stack more that day) |
-| **Bulk sky + missions** | `make nasa` / `make planets` → APOD archive samples and library hits into `images/` and `planets/` |
+| **Bulk sky + missions** | `make nasa` / `make planets` → APOD archive samples and library hits into `images/` and `images/<planet>/` |
 | **Schedule wonder** | cron (or any scheduler) calling `make inspire` |
 | **Trace provenance** | every file has paired `.json` / `.md` (title, date, mission, license, source URL, destination tag) |
 | **Go further by hand** | open archives linked in the README — Hubble, JPL Photojournal, ESA, ESO, Chandra, Mars raw images |
@@ -75,7 +75,7 @@ Proxima, the Centauri system, everything beyond. Light-years mean **new propulsi
 ## What this repo does today
 
 - **Daily pull** — `make inspire` fetches APOD into `album/daily/` with caption
-- **Bulk pulls** — NASA Image Library + APOD samples into `images/`; per-planet sets into `planets/`
+- **Bulk pulls** — NASA Image Library + APOD samples into `images/`; per-planet sets into `images/<planet>/`
 - **Sidecars** — metadata and source caption next to every image
 - **Make targets** — `inspire`, `nasa`, `planets`, `clean`, `lock`
 - **Source map** — links to NASA, ESA, Hubble, JPL, ESO, Chandra, Mars raw, and space news (see `README.md`)

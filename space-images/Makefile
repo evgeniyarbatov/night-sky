@@ -16,7 +16,7 @@ inspire: install
 	@uv run python scripts/inspire.py
 
 clean:
-	rm -rf planets/* images/*
+	rm -rf images/* planets/*
 
 lock:
 	@uv lock
@@ -25,7 +25,7 @@ help:
 	@echo "install    - create/update .venv and install dependencies"
 	@echo "inspire    - APOD → album/daily (adds a new photo each run)"
 	@echo "nasa       - run nasa.py 20 times → images/"
-	@echo "planets    - run planets.py → planets/"
+	@echo "planets    - run planets.py → images/<planet>/"
 	@echo "clean      - remove generated downloads"
 	@echo "lock       - refresh uv.lock"
 
