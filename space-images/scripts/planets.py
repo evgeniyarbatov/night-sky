@@ -8,6 +8,7 @@ Downloads up to 20 planet images for each planet from the NASA Image and Video L
 from __future__ import annotations
 
 import random
+import re
 import sys
 import time
 from datetime import datetime
@@ -25,6 +26,187 @@ from common import (
     write_sidecar,
 )
 
+# Bare planet queries rank event photos and program homonyms first; bias toward the body.
+PLANET_SEARCH_QUERY: dict[str, str] = {
+    "mercury": "mercury planet",
+    "venus": "venus planet",
+    "earth": "earth from space",
+    "mars": "mars planet",
+    "jupiter": "jupiter planet",
+    "saturn": "saturn planet",
+    "uranus": "uranus planet",
+    "neptune": "neptune planet",
+}
+
+# Hardware, people, graphics — not photos of the body itself.
+GLOBAL_EXCLUDE: tuple[str, ...] = (
+    "artist concept",
+    "artist's concept",
+    "artists concept",
+    "concept art",
+    "illustration",
+    "diagram",
+    "schematic",
+    "infographic",
+    "mission patch",
+    "logo",
+    "poster",
+    "artwork",
+    "wind tunnel",
+    "spin tunnel",
+    "scale model",
+    "engineering model",
+    "mockup",
+    "mock-up",
+    "mock up",
+    "model of",
+    "astronaut",
+    "cosmonaut",
+    "crew portrait",
+    "launch pad",
+    "liftoff",
+    "lift-off",
+    "celebration",
+    "ceremony",
+    "conference",
+    "headquarters",
+    "press conference",
+    "speech",
+    "award",
+    "handshake",
+    "students",
+    "classroom",
+    "visitor center",
+    "exhibit",
+    "museum",
+    "employees",
+    "clean room",
+    "cleanroom",
+    "cutaway",
+    "spacecraft diagram",
+)
+
+# Homonyms and named programs that share a planet word.
+PLANET_EXCLUDE: dict[str, tuple[str, ...]] = {
+    "mercury": (
+        "project mercury",
+        "mercury project",
+        "mercury program",
+        "mercury capsule",
+        "mercury-redstone",
+        "mercury redstone",
+        "mercury-atlas",
+        "mercury atlas",
+        "friendship 7",
+        "space capsule",
+    ),
+    "venus": ("venus transit event",),
+    "earth": ("earth day",),
+    "mars": ("mars celebration", "mars day"),
+    "saturn": (
+        "saturn v",
+        "saturn 5",
+        "saturn i",
+        "saturn 1",
+        "saturn apollo",
+        "apollo program",
+        "saturn rocket",
+    ),
+}
+
+# Moons in the title usually mean the subject is not the planet.
+PLANET_MOON_TITLE: dict[str, tuple[str, ...]] = {
+    "earth": (),  # Earth–Moon pairs are classic planet imagery
+    "mars": ("phobos", "deimos"),
+    "jupiter": ("europa", "ganymede", "callisto", "io"),
+    "saturn": (
+        "titan",
+        "enceladus",
+        "mimas",
+        "iapetus",
+        "rhea",
+        "dione",
+        "tethys",
+    ),
+    "uranus": ("miranda", "titania", "oberon", "ariel", "umbriel"),
+    "neptune": ("triton",),
+}
+
+# Non-Earth planets as a point of light from crewed missions are not planet portraits.
+CREWED_CONTEXT: tuple[str, ...] = (
+    "expedition",
+    "sts-",
+    "international space station",
+    "from iss",
+    "space shuttle",
+)
+
+# Strong evidence the item is imagery of the body (not just a name-drop).
+BODY_TERMS: tuple[str, ...] = (
+    "surface",
+    "atmosphere",
+    "cloud",
+    "ring",
+    "crater",
+    "terrain",
+    "mosaic",
+    "globe",
+    "disk",
+    "disc",
+    "horizon",
+    "flyby",
+    "from orbit",
+    "global",
+    "crescent",
+    "storm",
+    "polar",
+    "topograph",
+    "albedo",
+    "false color",
+    "true color",
+    "enhanced color",
+    "hemisphere",
+    "from space",
+    "blue marble",
+)
+
+PLANET_MISSIONS: dict[str, tuple[str, ...]] = {
+    "mercury": ("messenger", "mariner 10", "mariner10", "bepicolombo"),
+    "venus": ("magellan", "akatsuki", "venera", "parker solar", "galileo"),
+    "earth": (
+        "galileo",
+        "apollo",
+        "dscovr",
+        "suomi",
+        "terra",
+        "aqua",
+        "goes",
+        "landsat",
+        "himawari",
+        "epix",
+    ),
+    "mars": (
+        "mro",
+        "mgs",
+        "viking",
+        "curiosity",
+        "perseverance",
+        "opportunity",
+        "spirit",
+        "maven",
+        "mars express",
+        "mars global",
+        "mars reconnaissance",
+        "mars odyssey",
+        "pathfinder",
+        "hubble",
+    ),
+    "jupiter": ("juno", "galileo", "voyager", "cassini", "hubble", "new horizons", "pioneer"),
+    "saturn": ("cassini", "voyager", "pioneer", "hubble"),
+    "uranus": ("voyager", "hubble"),
+    "neptune": ("voyager", "hubble"),
+}
+
 
 class PlanetImageDownloader:
     def __init__(self, download_dir: str | Path = "images") -> None:
@@ -35,62 +217,52 @@ class PlanetImageDownloader:
         self.sess = session()
 
     def is_valid_planet_image(self, item: dict[str, Any], planet_name: str) -> bool:
-        try:
-            data_block = item.get("data", [{}])[0]
-            title = str(data_block.get("title", "")).lower()
-            desc = str(data_block.get("description", "")).lower()
-            keywords = data_block.get("keywords", [])
-            keywords_text = " ".join(str(k) for k in keywords).lower() if keywords else ""
-            combined = f"{title} {desc} {keywords_text}"
-            if planet_name not in combined:
-                return False
-            exclude_terms = [
-                "rover on",
-                "landing site",
-                "lander",
-                "from rover",
-                "spacecraft diagram",
-                "mission patch",
-                "crew",
-                "astronaut",
-                "launch",
-                "rocket",
-                "artist concept",
-                "artist's concept",
-                "illustration",
-                "diagram",
-                "schematic",
-            ]
-            if any(term in combined for term in exclude_terms):
-                return False
-            positive_indicators = [
-                planet_name,
-                "surface",
-                "atmosphere",
-                "view",
-                "photo",
-                "image",
-                "picture",
-                "observation",
-                "captured",
-            ]
-            return any(term in combined for term in positive_indicators)
-        except Exception:
+        data_block = item.get("data", [{}])[0]
+        title = str(data_block.get("title", "")).lower()
+        desc = str(data_block.get("description", "")).lower()
+        keywords = data_block.get("keywords") or []
+        keywords_text = " ".join(str(k).lower() for k in keywords)
+        combined = f"{title} {desc} {keywords_text}"
+
+        if not re.search(rf"\b{re.escape(planet_name)}\b", title):
             return False
+
+        if any(term in combined for term in GLOBAL_EXCLUDE):
+            return False
+        if any(term in combined for term in PLANET_EXCLUDE.get(planet_name, ())):
+            return False
+
+        for moon in PLANET_MOON_TITLE.get(planet_name, ()):
+            if re.search(rf"\b{re.escape(moon)}\b", title):
+                return False
+
+        if planet_name != "earth" and any(term in combined for term in CREWED_CONTEXT):
+            return False
+
+        kw_hit = any(planet_name in str(k).lower() for k in keywords)
+        body_hit = any(term in title or term in desc for term in BODY_TERMS)
+        mission_hit = any(m in combined for m in PLANET_MISSIONS.get(planet_name, ()))
+        if kw_hit or body_hit or mission_hit:
+            return True
+
+        # Short planet-forward titles ("Crescent Mercury", "Bold Saturn").
+        title_words = re.findall(r"[a-z0-9]+", title)
+        return planet_name in title_words and len(title_words) <= 6
 
     def download_planet_images(self, planet_name: str, max_images: int = 20) -> bool:
         print(f"\nDownloading images for: {planet_name.capitalize()}")
         all_valid_items: list[dict[str, Any]] = []
         pages_to_check = min(5, max(1, max_images // 2))
+        query = PLANET_SEARCH_QUERY.get(planet_name, f"{planet_name} planet")
 
         for page in range(1, pages_to_check + 1):
             try:
-                items, total_hits = library_search(planet_name, page=page, sess=self.sess)
+                items, total_hits = library_search(query, page=page, sess=self.sess)
             except Exception as e:
                 print(f"   Failed to fetch page {page}: {e}")
                 break
             if page == 1:
-                print(f"   Total hits in NASA library: {total_hits}")
+                print(f"   Search: {query!r} — {total_hits} hits")
             if not items:
                 break
             for item in items:
