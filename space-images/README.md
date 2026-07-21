@@ -8,39 +8,72 @@ It takes all of us — kids, teachers, builders, artists — to get there. See [
 
 | Piece | Role |
 | --- | --- |
-| `scripts/nasa.py` | Pulls a random [APOD](https://apod.nasa.gov) image (last year) plus a random hit from the [NASA Image and Video Library](https://images.nasa.gov). Writes image + `.md` description into `images/`. |
-| `scripts/planets.py` | Downloads up to 20 filtered images per planet (Mercury–Neptune) from the NASA library into `planets/`, each with metadata. |
-| `Makefile` | `make nasa` (20 runs), `make planets`, `make install`, `make clean`. Uses [uv](https://docs.astral.sh/uv). |
-| `ROADMAP.md` | Vision for a broad audience and phased work for this project. |
+| `make inspire` | **Daily wow path** — today's [APOD](https://apod.nasa.gov), kid + deep captions, social draft → `album/daily/` |
+| `scripts/nasa.py` | Random APOD (last year) + NASA Image Library sample → `images/` |
+| `scripts/planets.py` | Up to 20 images per planet (Mercury–Neptune) → `planets/` |
+| `make select` / `album` | Build a local favorites album in `album/selected/` |
+| `make browse` | Index local images by destination (Moon, Mars, gas giants, …) |
+| `make classroom` | 5 images + 5 questions for teachers and families |
+| `ROADMAP.md` | Vision and phased project plan |
 
-Images and descriptions are local artifacts (gitignored under `images/` and `planets/`). Source data is public NASA material — credit missions and agencies when you share.
+Every download gets **sidecar** `.json` + `.md` stories: title, date, mission, body, license, source URL, destination tag, “explain like I'm 10”, and “go deeper”.
+
+Images are local (gitignored). Credit NASA and other sources when you share.
 
 ## Quick start
 
 Requires Python 3.11+ and [uv](https://docs.astral.sh/uv).
 
 ```bash
-make install   # uv sync --dev
-make nasa      # APOD + library samples → images/
+make install
+export NASA_API_KEY=your_key   # free at https://api.nasa.gov — optional; DEMO_KEY works with limits
+make inspire                   # one picture + story + post draft
+```
+
+Open `album/daily/LATEST.md`. Optional:
+
+```bash
+make inspire SELECT=1          # also save to album/selected/
+make select IMAGE=images/some.jpg
+make browse                    # browse/INDEX.md by destination
+make classroom                 # classroom/pack-YYYYMMDD/
+```
+
+Bulk pulls:
+
+```bash
+make nasa      # 20× APOD + library samples → images/
 make planets   # per-planet sets → planets/
 ```
 
-Or run once without the loop:
+Or run scripts once:
 
 ```bash
+uv run python scripts/inspire.py
 uv run python scripts/nasa.py
 uv run python scripts/planets.py
 ```
 
-NASA APOD needs an API key ([api.nasa.gov](https://api.nasa.gov)); set it in the downloader (prefer env over hardcoding). Rate limits apply.
+### Daily schedule
+
+```bash
+# crontab example — 08:00 every day
+0 8 * * * cd /path/to/space-images && make inspire
+```
+
+Social sharing is **draft-only**: each daily folder includes `post.txt` (credit + source URL). Paste into X or elsewhere yourself.
 
 ## Layout
 
 ```
-scripts/     downloaders
-images/      APOD + library downloads (local)
-planets/     per-planet downloads (local)
-ROADMAP.md   inspiration + project roadmap
+scripts/       downloaders + inspire / select / browse / classroom
+images/        APOD + library downloads (local)
+planets/       per-planet downloads (local)
+album/daily/   daily inspiration (local)
+album/selected/ favorites (local)
+browse/        destination indexes (regenerate with make browse)
+classroom/     classroom packs (local packs; README committed)
+ROADMAP.md     inspiration + project roadmap
 ```
 
 ## Image & news sources
@@ -53,4 +86,4 @@ ROADMAP.md   inspiration + project roadmap
 
 ## License
 
-MIT — see [LICENSE.md](LICENSE.md). Downloaded NASA media remains under its own terms; check each source before redistribution.
+MIT — see [LICENSE.md](LICENSE.md). Downloaded NASA media remains under its own terms; check each source before redistribution. APOD entries may carry third-party copyright — see each day's credit line.

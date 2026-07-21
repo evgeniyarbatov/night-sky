@@ -21,19 +21,19 @@ Default write-ups and explanations to the conceptual level: name scripts, dirs, 
 ## Code
 
 - Python 3.11+, managed with **uv**; run via `uv run` or Makefile targets.
-- Entry points: `scripts/nasa.py` → `images/`; `scripts/planets.py` → `planets/`.
-- Prefer env (or local config gitignored) for API keys — never commit secrets.
+- Shared helpers live in `scripts/common.py`. Entry points: `inspire.py` → `album/daily/`; `nasa.py` → `images/`; `planets.py` → `planets/`; `select.py`, `browse.py`, `classroom.py` for album/index/packs.
+- Prefer env `NASA_API_KEY` (fallback `DEMO_KEY`) — never commit secrets.
 - Be polite to public APIs: retries, short sleeps, no aggressive parallel hammering.
-- Keep download + sidecar `.md` metadata paired; filenames safe for common filesystems.
+- Keep download + sidecar `.json`/`.md` metadata paired; filenames safe for common filesystems.
 - No drive-by refactors. No new deps without a clear need.
 - Fail hard on real errors; do not swallow network failures silently.
 - Comments only when the *why* is non-obvious.
 
 ## Make / tooling
 
-- `make install` / `make nasa` / `make planets` / `make clean` / `make lock` are the user-facing commands; keep `make help` accurate when targets change.
-- Ruff + mypy config live in `pyproject.toml`; match existing lint/format style.
-- Downloaded content under `images/` and `planets/` stays gitignored.
+- User-facing targets: `make install` / `inspire` / `nasa` / `planets` / `select` / `album` / `browse` / `classroom` / `clean` / `lock`; keep `make help` accurate.
+- Ruff + mypy config live in `pyproject.toml` (`mypy_path = scripts`); match existing lint/format style.
+- Downloaded and generated content under `images/`, `planets/`, `album/daily`, `album/selected`, `browse/`, `classroom/pack-*` stays gitignored.
 
 ## Commits
 

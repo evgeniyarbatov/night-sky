@@ -32,6 +32,7 @@ quote-style = "double"
 
 [tool.mypy]
 python_version = "3.11"
+mypy_path = "scripts"
 strict = true
 warn_return_any = true
 warn_unused_ignores = true

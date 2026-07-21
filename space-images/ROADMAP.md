@@ -75,10 +75,13 @@ Proxima, the Centauri system, and everything beyond. Light-years mean either **n
 
 Practical pieces already in place:
 
-- **NASA / APOD image pulls** — real sky and mission photography into `images/`
+- **Daily inspiration** — `make inspire` pulls today's APOD into `album/daily/` with captions and a social draft
+- **NASA / APOD bulk pulls** — real sky and mission photography into `images/`
 - **Planet-focused downloads** — curated planet imagery into `planets/`
+- **Structured sidecars** — `.json` + `.md` stories (metadata, kid caption, go deeper)
+- **Selected album + browse + classroom packs** — favorites, destination indexes, 5-image lesson packs
 - **Curated links** — NASA, ESA, Hubble, JPL, ESO, Chandra, Mars raw images, and space news (see `README.md`)
-- **Simple make targets** — `make nasa`, `make planets` so anyone can run the flow
+- **Make targets** — `inspire`, `nasa`, `planets`, `select`, `album`, `browse`, `classroom`
 
 The seed is simple: **put the cosmos on disk, in the open, so people can look and build.**
 
@@ -88,32 +91,32 @@ The seed is simple: **put the cosmos on disk, in the open, so people can look an
 
 Phases are ordered so each one makes the next easier. Ship value early; grow ambition with users.
 
-### Phase 0 — Welcome mat *(now → next)*
+### Phase 0 — Welcome mat *(done)*
 
 Make the first five minutes magical for a 10-year-old *and* a senior engineer.
 
-- [ ] Clear README: vision one paragraph, then “run this, see a picture”
-- [ ] Safe defaults (no secrets in tree; document free NASA API keys)
-- [ ] One “wow” path: download today’s (or a random) APOD + short caption
-- [ ] Age-friendly language in docs; keep technical detail in nested sections
+- [x] Clear README: vision one paragraph, then “run this, see a picture”
+- [x] Safe defaults (no secrets in tree; document free NASA API keys)
+- [x] One “wow” path: download today’s (or a random) APOD + short caption
+- [x] Age-friendly language in docs; keep technical detail in nested sections
 
-### Phase 1 — Daily inspiration
+### Phase 1 — Daily inspiration *(done)*
 
 Wonder on a schedule, not only when someone remembers to run a script.
 
-- [ ] Daily (or on-demand) inspiration job: fetch → select → caption
-- [ ] Optional post path to X / social with credit and link back to source
-- [ ] Local album of “selected” images for wallpapers, classrooms, art
-- [ ] Lightweight orchestration (start simple; Airflow only if the pipeline earns it)
+- [x] Daily (or on-demand) inspiration job: fetch → select → caption
+- [x] Optional post path to X / social with credit and link back to source
+- [x] Local album of “selected” images for wallpapers, classrooms, art
+- [x] Lightweight orchestration (start simple; Airflow only if the pipeline earns it)
 
-### Phase 2 — Stories, not only files
+### Phase 2 — Stories, not only files *(done)*
 
 Every image is a door into science.
 
-- [ ] Sidecar metadata: title, date, mission, body (planet/moon), license, source URL
-- [ ] “Explain like I’m 10” + “go deeper” text pairs where APIs allow
-- [ ] Browse by destination: Moon, Mars, gas giants, nebulae, Earth-from-space
-- [ ] Classroom packs: 5 images + 5 questions, printable or markdown
+- [x] Sidecar metadata: title, date, mission, body (planet/moon), license, source URL
+- [x] “Explain like I’m 10” + “go deeper” text pairs where APIs allow
+- [x] Browse by destination: Moon, Mars, gas giants, nebulae, Earth-from-space
+- [x] Classroom packs: 5 images + 5 questions, printable or markdown
 
 ### Phase 3 — Create with the cosmos
 
