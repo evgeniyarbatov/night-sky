@@ -4,7 +4,7 @@ NASA Planet Image Downloader
 
 Downloads up to 20 planet images for each planet from the NASA Image and Video Library.
 Re-runs skip NASA IDs already on disk (accumulate new only).
-Keeps body/surface imagery (globe, orbit, rover terrain); drops PR, people, and hardware.
+Keeps photographs of the body or its terrain; drops PR, people, hardware, and data products.
 """
 
 from __future__ import annotations
@@ -152,6 +152,52 @@ GLOBAL_EXCLUDE: tuple[str, ...] = (
     "landing area narrowed",
     "candidate landing",
     "landing site candidates",
+    # Elevation / science data products — not photographs.
+    "mola",
+    "elevation map",
+    "elevation (m)",
+    "mola elevation",
+    "topographic map",
+    "topographic context",
+    "topographical context",
+    "topography map",
+    "topography to map",
+    "laser altimeter",
+    "laser altimiter",
+    "altimetry",
+    "crustal thickness",
+    "gravity map",
+    "using gravity and topography",
+    "surface temperature",
+    "surface gradients",
+    "color-coded map",
+    "color coded map",
+    "shaded relief",
+    "hillshade",
+    "digital terrain",
+    "digital elevation",
+    "contour map",
+    "gridded map",
+    "cartographic",
+    "radargram",
+    "abundance map",
+    "concentration map",
+    "thickness map",
+    "dose map",
+    "radiation map",
+    "thermal map",
+    "temperature map",
+    "spectral map",
+    "mineral map",
+    "global map of",
+    "map of surface",
+    "maps of",
+    "map of mars",
+    "geological map",
+    "geologic map",
+    "context map",
+    "location map",
+    "site map",
 )
 
 # Allowed non-planet words in short portrait titles ("Crescent Mercury", "Blue Marble Earth").
@@ -180,7 +226,6 @@ PORTRAIT_TITLE_WORDS: frozenset[str] = frozenset(
         "false",
         "enhanced",
         "global",
-        "map",
         "image",
         "photo",
         "portrait",
@@ -272,7 +317,6 @@ BODY_TERMS: tuple[str, ...] = (
     "crescent",
     "storm",
     "polar",
-    "topograph",
     "albedo",
     "false color",
     "true color",
