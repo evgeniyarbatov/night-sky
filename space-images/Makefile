@@ -17,7 +17,6 @@ inspire: install
 
 clean:
 	rm -rf planets/* images/*
-	@find album/daily -mindepth 1 ! -name '.gitkeep' -exec rm -rf {} + 2>/dev/null || true
 
 lock:
 	@uv lock
