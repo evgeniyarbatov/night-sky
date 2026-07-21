@@ -3,6 +3,8 @@
 NASA Planet Image Downloader
 
 Downloads up to 20 planet images for each planet from the NASA Image and Video Library.
+Re-runs skip NASA IDs already on disk (accumulate new only).
+Keeps body/surface imagery (globe, orbit, rover terrain); drops PR, people, and hardware.
 """
 
 from __future__ import annotations
@@ -19,6 +21,7 @@ from common import (
     download_file,
     library_item_to_meta,
     library_search,
+    load_meta,
     repo_root,
     resolve_library_image_url,
     safe_filename,
@@ -26,19 +29,26 @@ from common import (
     write_sidecar,
 )
 
-# Bare planet queries rank event photos and program homonyms first; bias toward the body.
-PLANET_SEARCH_QUERY: dict[str, str] = {
-    "mercury": "mercury planet",
-    "venus": "venus planet",
-    "earth": "earth from space",
-    "mars": "mars planet",
-    "jupiter": "jupiter planet",
-    "saturn": "saturn planet",
-    "uranus": "uranus planet",
-    "neptune": "neptune planet",
+# Multiple queries per body so surface/globe hits are not buried under mission PR.
+PLANET_SEARCH_QUERIES: dict[str, tuple[str, ...]] = {
+    "mercury": ("mercury planet", "mercury surface", "mercury messenger"),
+    "venus": ("venus planet", "venus surface", "venus atmosphere"),
+    "earth": ("earth from space", "blue marble", "earth globe"),
+    "mars": (
+        "mars surface",
+        "mars globe",
+        "mars from orbit",
+        "mars crater terrain",
+        "planet mars hubble",
+        "mars planet",
+    ),
+    "jupiter": ("jupiter atmosphere", "jupiter from juno", "jupiter planet"),
+    "saturn": ("saturn rings", "saturn from cassini", "saturn planet"),
+    "uranus": ("uranus voyager", "uranus atmosphere", "uranus planet"),
+    "neptune": ("neptune voyager", "neptune atmosphere", "neptune planet"),
 }
 
-# Hardware, people, graphics — not photos of the body itself.
+# Hardware, people, graphics, PR — not photos of the body or its terrain.
 GLOBAL_EXCLUDE: tuple[str, ...] = (
     "artist concept",
     "artist's concept",
@@ -77,13 +87,104 @@ GLOBAL_EXCLUDE: tuple[str, ...] = (
     "students",
     "classroom",
     "visitor center",
-    "exhibit",
+    "museum exhibit",
     "museum",
     "employees",
     "clean room",
     "cleanroom",
     "cutaway",
     "spacecraft diagram",
+    "briefing",
+    "science overview",
+    "engineering overview",
+    "technology overview",
+    "landing update",
+    "post-landing",
+    "mission support",
+    "mission control",
+    "control room",
+    "marketsite",
+    "nasdaq",
+    "empire state",
+    "illuminated for",
+    "times square",
+    "entry vehicle",
+    "payload canister",
+    "payload fairing",
+    "assembly facility",
+    "processing facility",
+    "overhead crane",
+    "team members",
+    "from left",
+    "pictured here",
+    "administrator",
+    "media day",
+    "ribbon cutting",
+    "unveiling",
+    "signed by",
+    "autograph",
+    "animation",
+    "frame from an animation",
+    "space simulator",
+    "vacuum chamber",
+    "flight model",
+    "engineering unit",
+    "test model",
+    "team inspect",
+    "technicians",
+    "technician",
+    "hair net",
+    "hairnet",
+    "bunny suit",
+    "clean-room",
+    "clean suit",
+    "ground test",
+    "lab test",
+    "boresight",
+    "downtrack",
+    "crosstrack",
+    "radiation dosage",
+    "dose equivalent",
+    "cosmic ray",
+    "rem/yr",
+    "stereo imager on mars",
+    "face-on",
+    "landing area narrowed",
+    "candidate landing",
+    "landing site candidates",
+)
+
+# Allowed non-planet words in short portrait titles ("Crescent Mercury", "Blue Marble Earth").
+PORTRAIT_TITLE_WORDS: frozenset[str] = frozenset(
+    {
+        "the",
+        "planet",
+        "crescent",
+        "bold",
+        "pale",
+        "full",
+        "blue",
+        "red",
+        "marble",
+        "globe",
+        "disk",
+        "disc",
+        "view",
+        "of",
+        "from",
+        "space",
+        "orbit",
+        "mosaic",
+        "true",
+        "color",
+        "false",
+        "enhanced",
+        "global",
+        "map",
+        "image",
+        "photo",
+        "portrait",
+    }
 )
 
 # Homonyms and named programs that share a planet word.
@@ -102,7 +203,15 @@ PLANET_EXCLUDE: dict[str, tuple[str, ...]] = {
     ),
     "venus": ("venus transit event",),
     "earth": ("earth day",),
-    "mars": ("mars celebration", "mars day"),
+    "mars": (
+        "mars celebration",
+        "mars day",
+        "mars 2020 engineering",
+        "mars 2020 science overview",
+        "mars 2020 technology",
+        "perseverance on nasdaq",
+        "illuminated for mars",
+    ),
     "saturn": (
         "saturn v",
         "saturn 5",
@@ -141,9 +250,10 @@ CREWED_CONTEXT: tuple[str, ...] = (
     "space shuttle",
 )
 
-# Strong evidence the item is imagery of the body (not just a name-drop).
+# Evidence the frame is the body (globe/disk) or its terrain (orbit or rover).
 BODY_TERMS: tuple[str, ...] = (
     "surface",
+    "surfaces",
     "atmosphere",
     "cloud",
     "ring",
@@ -156,6 +266,8 @@ BODY_TERMS: tuple[str, ...] = (
     "horizon",
     "flyby",
     "from orbit",
+    "in orbit",
+    "orbital",
     "global",
     "crescent",
     "storm",
@@ -168,6 +280,81 @@ BODY_TERMS: tuple[str, ...] = (
     "hemisphere",
     "from space",
     "blue marble",
+    "the planet",
+    "planet mars",
+    "planet mercury",
+    "planet venus",
+    "planet jupiter",
+    "planet saturn",
+    "planet uranus",
+    "planet neptune",
+    "full disk",
+    "full-disc",
+    "full-disk",
+    "whole planet",
+    "whole-planet",
+    "rock",
+    "rocks",
+    "outcrop",
+    "dune",
+    "dunes",
+    "regolith",
+    "soil",
+    "panorama",
+    "layered",
+    "sediment",
+    "ridge",
+    "cliff",
+    "valley",
+    "canyon",
+    "channel",
+    "boulder",
+    "sand",
+    "dust devil",
+    "ice cap",
+    "polar cap",
+    "volcan",
+    "plains",
+    "basin",
+    "impact",
+    "ejecta",
+    "bedrock",
+    "hillside",
+    "slope",
+    "gully",
+    "delta",
+    "lava",
+    "frost",
+)
+
+# Short ambiguous body terms need word boundaries (avoid "rock" in "rocket").
+_BODY_WORD_BOUNDARY: frozenset[str] = frozenset(
+    {
+        "rock",
+        "rocks",
+        "ring",
+        "soil",
+        "sand",
+        "slope",
+        "delta",
+        "lava",
+        "frost",
+        "cloud",
+        "storm",
+        "polar",
+        "basin",
+        "plains",
+        "global",
+        "orbital",
+        "surface",
+        "surfaces",
+        "terrain",
+        "horizon",
+        "crater",
+        "globe",
+        "disk",
+        "disc",
+    }
 )
 
 PLANET_MISSIONS: dict[str, tuple[str, ...]] = {
@@ -200,12 +387,29 @@ PLANET_MISSIONS: dict[str, tuple[str, ...]] = {
         "mars odyssey",
         "pathfinder",
         "hubble",
+        "ingenuity",
+        "hirise",
+        "ctx",
+        "mastcam",
+        "navcam",
+        "hazcam",
     ),
     "jupiter": ("juno", "galileo", "voyager", "cassini", "hubble", "new horizons", "pioneer"),
     "saturn": ("cassini", "voyager", "pioneer", "hubble"),
     "uranus": ("voyager", "hubble"),
     "neptune": ("voyager", "hubble"),
 }
+
+
+def _has_term(text: str, term: str) -> bool:
+    if term in _BODY_WORD_BOUNDARY or " " not in term and len(term) <= 5:
+        return bool(re.search(rf"\b{re.escape(term)}\b", text))
+    return term in text
+
+
+def _item_nasa_id(item: dict[str, Any]) -> str:
+    data_block = item.get("data", [{}])[0]
+    return str(data_block.get("nasa_id") or "").strip()
 
 
 class PlanetImageDownloader:
@@ -216,6 +420,16 @@ class PlanetImageDownloader:
         self.download_dir.mkdir(parents=True, exist_ok=True)
         self.sess = session()
 
+    def existing_nasa_ids(self, planet_dir: Path) -> set[str]:
+        found: set[str] = set()
+        if not planet_dir.is_dir():
+            return found
+        for path in planet_dir.glob("*.json"):
+            meta = load_meta(path)
+            if meta and meta.nasa_id:
+                found.add(meta.nasa_id)
+        return found
+
     def is_valid_planet_image(self, item: dict[str, Any], planet_name: str) -> bool:
         data_block = item.get("data", [{}])[0]
         title = str(data_block.get("title", "")).lower()
@@ -224,7 +438,13 @@ class PlanetImageDownloader:
         keywords_text = " ".join(str(k).lower() for k in keywords)
         combined = f"{title} {desc} {keywords_text}"
 
-        if not re.search(rf"\b{re.escape(planet_name)}\b", title):
+        planet_in_title = bool(re.search(rf"\b{re.escape(planet_name)}\b", title))
+        planet_in_kw = any(planet_name in str(k).lower() for k in keywords)
+        planet_in_desc = bool(re.search(rf"\b{re.escape(planet_name)}\b", desc))
+        mission_hit = any(m in combined for m in PLANET_MISSIONS.get(planet_name, ()))
+
+        # Title must name the planet, or a known mission with planet in keywords/desc.
+        if not planet_in_title and not (mission_hit and (planet_in_kw or planet_in_desc)):
             return False
 
         if any(term in combined for term in GLOBAL_EXCLUDE):
@@ -239,50 +459,82 @@ class PlanetImageDownloader:
         if planet_name != "earth" and any(term in combined for term in CREWED_CONTEXT):
             return False
 
-        kw_hit = any(planet_name in str(k).lower() for k in keywords)
-        body_hit = any(term in title or term in desc for term in BODY_TERMS)
-        mission_hit = any(m in combined for m in PLANET_MISSIONS.get(planet_name, ()))
-        if kw_hit or body_hit or mission_hit:
+        body_hit = any(_has_term(title, term) or _has_term(desc, term) for term in BODY_TERMS)
+        if body_hit:
             return True
 
-        # Short planet-forward titles ("Crescent Mercury", "Bold Saturn").
+        # Short portrait titles only ("Crescent Mercury") — not "Inspecting Mars Helicopter".
+        if not planet_in_title:
+            return False
         title_words = re.findall(r"[a-z0-9]+", title)
-        return planet_name in title_words and len(title_words) <= 6
+        if not (1 <= len(title_words) <= 6):
+            return False
+        extras = [w for w in title_words if w != planet_name]
+        return all(w in PORTRAIT_TITLE_WORDS for w in extras)
 
     def download_planet_images(self, planet_name: str, max_images: int = 20) -> bool:
         print(f"\nDownloading images for: {planet_name.capitalize()}")
-        all_valid_items: list[dict[str, Any]] = []
-        pages_to_check = min(5, max(1, max_images // 2))
-        query = PLANET_SEARCH_QUERY.get(planet_name, f"{planet_name} planet")
+        planet_dir = self.download_dir / planet_name
+        planet_dir.mkdir(parents=True, exist_ok=True)
+        existing = self.existing_nasa_ids(planet_dir)
+        if existing:
+            print(f"   Already on disk: {len(existing)} NASA IDs (will skip)")
 
-        for page in range(1, pages_to_check + 1):
+        all_valid_items: list[dict[str, Any]] = []
+        seen_ids: set[str] = set(existing)
+        queries = PLANET_SEARCH_QUERIES.get(planet_name, (f"{planet_name} planet",))
+        pool_target = max(max_images * 3, max_images)
+        max_pages_per_query = 3
+
+        def collect_page(query: str, page: int) -> bool:
+            """Fetch one search page into all_valid_items. Returns False on empty/error."""
             try:
                 items, total_hits = library_search(query, page=page, sess=self.sess)
             except Exception as e:
-                print(f"   Failed to fetch page {page}: {e}")
-                break
+                print(f"   Failed to fetch {query!r} page {page}: {e}")
+                return False
             if page == 1:
                 print(f"   Search: {query!r} — {total_hits} hits")
             if not items:
-                break
+                return False
             for item in items:
+                nasa_id = _item_nasa_id(item)
+                if not nasa_id or nasa_id in seen_ids:
+                    continue
                 if self.is_valid_planet_image(item, planet_name):
                     all_valid_items.append(item)
+                    seen_ids.add(nasa_id)
             time.sleep(0.5)
+            return True
+
+        # Page 1 of every query first so surface/globe are not starved by "planet" PR noise.
+        for query in queries:
+            collect_page(query, 1)
+
+        # Deeper pages until the candidate pool is large enough.
+        for query in queries:
+            if len(all_valid_items) >= pool_target:
+                break
+            for page in range(2, max_pages_per_query + 1):
+                if len(all_valid_items) >= pool_target:
+                    break
+                if not collect_page(query, page):
+                    break
 
         if not all_valid_items:
-            print(f"   No valid images found for '{planet_name}'")
+            print(f"   No new valid images found for '{planet_name}'")
             return False
 
-        print(f"   Found {len(all_valid_items)} valid images")
+        print(f"   Found {len(all_valid_items)} new valid candidates")
         random.shuffle(all_valid_items)
         items_to_download = all_valid_items[:max_images]
-        planet_dir = self.download_dir / planet_name
-        planet_dir.mkdir(parents=True, exist_ok=True)
         count = 0
 
         for item in items_to_download:
             try:
+                nasa_id_raw = _item_nasa_id(item)
+                if nasa_id_raw and nasa_id_raw in existing:
+                    continue
                 image_url = resolve_library_image_url(item, sess=self.sess)
                 if not image_url:
                     continue
@@ -292,12 +544,16 @@ class PlanetImageDownloader:
                     search_term=planet_name,
                     body=planet_name,
                 )
+                if meta.nasa_id and meta.nasa_id in existing:
+                    continue
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
                 nasa_id = safe_filename(meta.nasa_id or "unknown", max_len=30)
                 filename = f"{planet_name}_{nasa_id}_{timestamp}.jpg"
                 filepath = planet_dir / filename
                 download_file(image_url, filepath, sess=self.sess)
                 write_sidecar(filepath, meta)
+                if meta.nasa_id:
+                    existing.add(meta.nasa_id)
                 print(f"   ✓ {filepath.name}")
                 count += 1
                 if count >= max_images:
@@ -307,7 +563,7 @@ class PlanetImageDownloader:
                 print(f"   Error processing image: {e}")
                 continue
 
-        print(f"   Successfully downloaded {count}/{max_images} images for {planet_name}")
+        print(f"   Successfully downloaded {count}/{max_images} new images for {planet_name}")
         return count > 0
 
     def download_all(self) -> None:
