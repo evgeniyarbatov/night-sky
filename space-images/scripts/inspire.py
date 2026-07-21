@@ -64,8 +64,7 @@ def run_inspire(*, select: bool, root: Path) -> Path:
         f"# Daily inspiration — {date}\n\n"
         f"**{meta.title}**\n\n"
         f"![APOD]({rel_img})\n\n"
-        f"## Explain like I'm 10\n\n{meta.explain_like_10}\n\n"
-        f"## Go deeper\n\n{meta.go_deeper}\n\n"
+        f"{meta.go_deeper}\n\n"
         f"Credit: {meta.credit}  \n"
         f"Source: {meta.source_url}\n\n"
         f"Social draft: `{date}/post.txt`\n",

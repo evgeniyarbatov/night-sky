@@ -60,7 +60,6 @@ class SpaceImageDownloader:
             filename = f"apod_{date_str}_{safe_filename(meta.title)}.jpg"
             filepath = self.download_dir / filename
             print(f"APOD: {meta.title} ({meta.date})")
-            print(f"Explain like I'm 10: {meta.explain_like_10[:120]}…")
             try:
                 download_file(meta.image_url, filepath, sess=self.sess)
                 write_sidecar(filepath, meta)

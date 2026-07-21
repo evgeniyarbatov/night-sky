@@ -1,25 +1,27 @@
 # Roadmap to the Stars
 
-We are going. Not someday in a storybook — on a path we can name, measure, and walk together.
+We are going. Not someday in a storybook — on a path we can name, measure, and climb.
 
-This repository is both **inspiration** and **toolkit**: images of worlds we have already touched with robots and telescopes, and a living map of how humanity leaves Earth, settles the solar system, and eventually crosses the gulf between the stars.
+This repository is **inspiration grounded in tooling**: real images from public missions on your disk, and a map of how a civilization leaves Earth, settles the solar system, and eventually reaches the stars. The mind expands because the data is real — distances, timelines, and hard problems included.
 
-**It takes all of us.** Children who draw rockets. Teachers who open a classroom window onto Saturn’s rings. Engineers who write the next thruster controller. Artists who make the void feel close enough to touch. Citizens who fund, vote, and dream. The stars do not belong to one profession, one nation, or one generation.
+With a laptop and an Internet connection you already have what this repo needs: open NASA APIs, public image archives, and scripts that pull them home.
 
 ---
 
-## Who this is for
+## What you can do today (laptop + network)
 
-| You are… | You can… |
+No special lab. Free or rate-limited public APIs. Run it, keep the files, read the source captions.
+
+| Capability | How |
 | --- | --- |
-| **A child** | Look at real photos of Mars and the Moon. Ask “how far?” and “when?” Collect favorites. Draw the next step. |
-| **A student** | Use APIs and open data. Build small tools. Learn physics from missions that already flew. |
-| **An educator** | Turn daily sky images into lessons. Assign “pick a planet, tell its story.” |
-| **A builder** | Automate downloads, curate galleries, ship pipelines that keep wonder on a schedule. |
-| **An artist** | Remix public-domain space imagery into posters, albums, and new work. |
-| **Anyone** | Share one image that made you stop scrolling. Talk about why leaving Earth matters. |
+| **One picture, today** | `make inspire` → APOD into `album/daily/` with sidecar story and a social draft |
+| **Bulk sky + missions** | `make nasa` / `make planets` → APOD archive samples and library hits into `images/` and `planets/` |
+| **Keep favorites** | `make select` → local album under `album/selected/` |
+| **Schedule wonder** | cron (or any scheduler) calling `make inspire` |
+| **Trace provenance** | every file has paired `.json` / `.md` (title, date, mission, license, source URL, destination tag) |
+| **Go further by hand** | open archives linked in the README — Hubble, JPL Photojournal, ESA, ESO, Chandra, Mars raw images |
 
-No ticket price. Curiosity is the only requirement.
+Downloaded content stays on your machine (gitignored). The repo is the pipeline and the map, not a content dump.
 
 ---
 
@@ -35,147 +37,125 @@ Earth ──► LEO ──► Moon ──► Mars ──► Outer planets ──
 
 ### 1. Earth — protect the launchpad
 
-The only world we know can host a civilization *today*. Climate, biodiversity, and peace are not side quests; they are the foundation. A species that cannot steward one planet will not steward a hundred.
+The only world we know can host a civilization *today*. Climate, industry, and peace are load-bearing. A species that cannot steward one planet will not steward a hundred.
 
-**Near-term markers:** sustainable energy, resilient cities, open science, more people with STEM access.
+**Near-term markers:** sustainable energy, resilient infrastructure, open science, cheaper launch.
 
 ### 2. Low Earth orbit — the practice ground
 
-ISS, commercial stations, frequent crew and cargo. Learn to live off the ground without leaving the neighborhood.
+ISS, commercial stations, frequent crew and cargo. Live off the ground without leaving the neighborhood.
 
-**Near-term markers:** cheaper access to orbit, private stations, manufacturing and research in microgravity, routine flight as infrastructure not spectacle.
+**Near-term markers:** cheaper access to orbit, private stations, microgravity manufacturing and research, routine flight as infrastructure.
 
 ### 3. Moon — the first off-world foothold
 
-Close enough to abort, far enough to train. Resources (ice, regolith), power, and navigation for deep space.
+Close enough to abort, far enough to train. Ice, regolith, power, and navigation for deep space.
 
-**Near-term markers:** sustained presence (not flags-and-footprints only), lunar logistics, science from the far side, propellant and construction demos.
+**Near-term markers:** sustained presence (not only flags-and-footprints), lunar logistics, far-side science, propellant and construction demos.
 
 ### 4. Mars — the second home candidate
 
-Months of travel, thin air, cold dust — and the clearest place after Earth where humans might build a lasting outpost.
+Months of travel, thin air, cold dust — and the clearest place after Earth for a lasting human outpost.
 
-**Near-term markers:** reliable cargo chains, ISRU (make fuel and oxygen on site), habitats, sample return, then crew missions with a plan to stay usefully, not only visit.
+**Near-term markers:** reliable cargo chains, ISRU (fuel and oxygen on site), habitats, sample return, then crew with a plan to stay usefully.
 
 ### 5. Outer solar system — robots lead, humans follow
 
-Jupiter’s moons, Saturn’s rings, ice giants, Kuiper belt. Most of the mass and mystery of *our* system still waits for better machines — and eventually for people.
+Jupiter’s moons, Saturn’s rings, ice giants, Kuiper belt. Most of the mass and mystery of *our* system still waits for better machines — then people.
 
-**Near-term markers:** ice-moon ocean probes, better nuclear and solar power for deep space, high-bandwidth relay networks, sample returns from new worlds.
+**Near-term markers:** ice-moon ocean probes, nuclear/solar power for deep space, high-bandwidth relays, sample returns from new worlds.
 
 ### 6. The stars — the long game
 
-Proxima, the Centauri system, and everything beyond. Light-years mean either **new propulsion**, **very long voyages**, or **both**. That work starts *now* in labs, papers, and public imagination — not after Mars is “done.”
+Proxima, the Centauri system, everything beyond. Light-years mean **new propulsion**, **very long voyages**, or both. That work starts in labs and papers *now* — not after Mars is “done.”
 
-**Near-term markers:** breakthrough propulsion research, interstellar precursor probes, life-support closed loops that could last decades, a culture that treats multi-generation goals as normal.
+**Near-term markers:** breakthrough propulsion research, interstellar precursor probes, closed-loop life support on decade timescales, a culture that treats multi-generation goals as normal.
 
 ---
 
 ## What this repo does today
 
-Practical pieces already in place:
+- **Daily pull** — `make inspire` fetches APOD into `album/daily/` with caption and social draft
+- **Bulk pulls** — NASA Image Library + APOD samples into `images/`; per-planet sets into `planets/`
+- **Sidecars** — metadata and source caption next to every image
+- **Selected album** — local favorites via `make select`
+- **Make targets** — `inspire`, `nasa`, `planets`, `select`, `album`, `clean`, `lock`
+- **Source map** — links to NASA, ESA, Hubble, JPL, ESO, Chandra, Mars raw, and space news (see `README.md`)
 
-- **Daily inspiration** — `make inspire` pulls today's APOD into `album/daily/` with captions and a social draft
-- **NASA / APOD bulk pulls** — real sky and mission photography into `images/`
-- **Planet-focused downloads** — curated planet imagery into `planets/`
-- **Structured sidecars** — `.json` + `.md` stories (metadata, kid caption, go deeper)
-- **Selected album + browse + classroom packs** — favorites, destination indexes, 5-image lesson packs
-- **Curated links** — NASA, ESA, Hubble, JPL, ESO, Chandra, Mars raw images, and space news (see `README.md`)
-- **Make targets** — `inspire`, `nasa`, `planets`, `select`, `album`, `browse`, `classroom`
-
-The seed is simple: **put the cosmos on disk, in the open, so people can look and build.**
+The seed: **put the cosmos on disk so you can look hard and build from it.**
 
 ---
 
 ## Project roadmap (this repository)
 
-Phases are ordered so each one makes the next easier. Ship value early; grow ambition with users.
+Ship tools that make looking outward automatic and honest. Ambition grows with the pipeline, not with packaging for every audience.
 
-### Phase 0 — Welcome mat *(done)*
+### Phase 0 — First run *(done)*
 
-Make the first five minutes magical for a 10-year-old *and* a senior engineer.
+- [x] README: vision, then “run this, get a picture”
+- [x] Safe defaults (no secrets in tree; free NASA API key documented)
+- [x] One wow path: today's (or recent) APOD + caption
 
-- [x] Clear README: vision one paragraph, then “run this, see a picture”
-- [x] Safe defaults (no secrets in tree; document free NASA API keys)
-- [x] One “wow” path: download today’s (or a random) APOD + short caption
-- [x] Age-friendly language in docs; keep technical detail in nested sections
+### Phase 1 — Daily pull *(done)*
 
-### Phase 1 — Daily inspiration *(done)*
+- [x] On-demand / scheduled inspire job: fetch → caption → album
+- [x] Draft-only social path (`post.txt` with credit and source)
+- [x] Local selected album
+- [x] Lightweight orchestration (cron first; heavier tooling only if earned)
 
-Wonder on a schedule, not only when someone remembers to run a script.
+### Phase 2 — Stories with the files *(done)*
 
-- [x] Daily (or on-demand) inspiration job: fetch → select → caption
-- [x] Optional post path to X / social with credit and link back to source
-- [x] Local album of “selected” images for wallpapers, classrooms, art
-- [x] Lightweight orchestration (start simple; Airflow only if the pipeline earns it)
-
-### Phase 2 — Stories, not only files *(done)*
-
-Every image is a door into science.
-
-- [x] Sidecar metadata: title, date, mission, body (planet/moon), license, source URL
-- [x] “Explain like I’m 10” + “go deeper” text pairs where APIs allow
-- [x] Browse by destination: Moon, Mars, gas giants, nebulae, Earth-from-space
-- [x] Classroom packs: 5 images + 5 questions, printable or markdown
+- [x] Sidecar metadata: title, date, mission, body, license, source URL, destination
+- [x] Full source captions where APIs provide them
 
 ### Phase 3 — Create with the cosmos
 
-From collecting to making.
-
-- [ ] Album export for artists (consistent naming, credits file)
-- [ ] Simple collage / poster recipes (scripted or documented manual flow)
-- [ ] Contribution guide: submit a favorite image set or a short “why this matters” note
-- [ ] Showcase gallery (static site or README wall) of community selections
+- [ ] Album export (consistent naming, credits file)
+- [ ] Collage / poster recipes (scripted or documented manual flow)
+- [ ] Contribution path for favorite sets or short “why this matters” notes
+- [ ] Optional static showcase of selections
 
 ### Phase 4 — The living ladder
-
-Connect the gallery to the path above.
 
 - [ ] Tag content by ladder step (LEO / Moon / Mars / outer / stars)
 - [ ] Timeline view: “where we are” vs “what’s next” with real mission milestones
 - [ ] Link images to open mission pages and primary data archives
-- [ ] “Careers & crafts” section: roles that move the ladder (not only astronauts)
 
-### Phase 5 — Open constellation
+### Phase 5 — Wider open data
 
-Many hands, many forks.
-
-- [ ] Translations and multi-language captions
-- [ ] Partner modules (ESA, JWST, open datasets) behind the same simple interface
-- [ ] Mentorship-friendly issues labeled `good first issue`, `for kids with help`, `for classrooms`
-- [ ] Annual “state of the climb” note: what humanity shipped this year toward the stars
+- [ ] Partner sources (ESA, JWST, other open datasets) behind the same interface
+- [ ] Better search and filter over local libraries
+- [ ] Annual “state of the climb” note: what humanity shipped toward the stars
 
 ---
 
 ## Principles
 
-1. **Wonder first, jargon second.** Lead with beauty and stakes; define terms when they appear.
+1. **Wonder with evidence.** Beauty and stakes first; numbers and limits close behind.
 2. **Truth over hype.** Real distances, real timelines, real hard problems. Inspiration survives honesty.
-3. **Credit the explorers.** Missions, agencies, and open data licenses stay visible.
-4. **Inclusive by design.** If a 12-year-old cannot find a first step, we failed the welcome mat.
-5. **Build in the open.** Reproducible scripts beat one-off downloads sitting on one laptop.
-6. **Long horizon, short loops.** Think centuries; ship something you can run this week.
+3. **Credit the explorers.** Missions, agencies, and licenses stay visible.
+4. **Build in the open.** Reproducible scripts beat one-off downloads on one machine.
+5. **Long horizon, short loops.** Think centuries; ship something you can run this week.
+6. **Depth over packaging.** Expand the mind; do not dilute the toolkit into a lesson kit.
 
 ---
 
 ## How you can help this week
 
-Pick one. Small is enough.
-
-1. Run `make nasa` or `make planets` and keep one image that stopped you cold.
-2. Tell someone younger than you one true fact about space (distance, time, or a mission name).
-3. Open an issue: a broken link, a missing world, a classroom idea.
+1. Run `make inspire` or `make planets` and keep one image that stopped you cold.
+2. Follow a source URL into a mission page or archive — one hop deeper than the pixels.
+3. Open an issue: broken link, missing world, better pipeline idea.
 4. Improve docs so the next person needs fewer guesses.
-5. Share a public-domain image *with* its story, not only the pixels.
+5. Share public imagery *with* credit and story, not only the file.
 
 ---
 
 ## North star
 
-When a child asks *“Will we ever go?”* the answer should not be a shrug.
+When someone asks *“Will we ever go?”* the answer should not be a shrug.
 
-It should be: **here is the ladder, here is the next rung, and here is something you can do today.**
+It should be: **here is the ladder, here is the next rung, and here is data and tooling you can run today.**
 
-This repo exists so that answer stays concrete — in images we can hold, tools we can run, and a roadmap we can all read.
+This repo exists so that answer stays concrete — images on disk, scripts that fetch them, and a roadmap you can read and extend.
 
 *The sky is not a ceiling. It is a direction.*

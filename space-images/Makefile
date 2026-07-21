@@ -22,17 +22,9 @@ select: install
 album: install
 	@uv run python scripts/select.py --list
 
-browse: install
-	@uv run python scripts/browse.py
-
-classroom: install
-	@uv run python scripts/classroom.py $(if $(SEED),--seed $(SEED),)
-
 clean:
 	rm -rf planets/* images/*
 	@find album/daily album/selected -mindepth 1 ! -name '.gitkeep' -exec rm -rf {} + 2>/dev/null || true
-	@find browse -mindepth 1 ! -name '.gitkeep' -exec rm -rf {} + 2>/dev/null || true
-	rm -rf classroom/pack-* classroom/LATEST.md
 
 lock:
 	@uv lock
@@ -44,9 +36,7 @@ help:
 	@echo "planets    - run planets.py → planets/"
 	@echo "select     - copy IMAGE into album/selected (IMAGE=path required)"
 	@echo "album      - list album/selected"
-	@echo "browse     - build browse/ indexes by destination"
-	@echo "classroom  - build a 5-image classroom pack (optional SEED=n)"
-	@echo "clean      - remove generated downloads and indexes"
+	@echo "clean      - remove generated downloads"
 	@echo "lock       - refresh uv.lock"
 
-.PHONY: install nasa planets inspire select album browse classroom clean lock help
+.PHONY: install nasa planets inspire select album clean lock help

@@ -11,7 +11,3 @@ album/daily/**
 !album/daily/.gitkeep
 album/selected/**
 !album/selected/.gitkeep
-browse/**
-!browse/.gitkeep
-classroom/pack-*/
-classroom/LATEST.md

@@ -1,24 +1,22 @@
 # space-images
 
-Inspiration and toolkit for looking outward: download real NASA space imagery, keep captions with the files, and follow a practical path from Earth to the stars.
+Toolkit for pulling real NASA space imagery onto a laptop: APIs, sidecars with captions and credit, and a practical map from Earth to the stars.
 
-It takes all of us — kids, teachers, builders, artists — to get there. See [ROADMAP.md](ROADMAP.md) for the human ladder and project plan.
+See [ROADMAP.md](ROADMAP.md) for the path outward and what you can build with a network connection today.
 
 ## What this repo does
 
 | Piece | Role |
 | --- | --- |
-| `make inspire` | **Daily wow path** — today's [APOD](https://apod.nasa.gov), kid + deep captions, social draft → `album/daily/` |
+| `make inspire` | Today's [APOD](https://apod.nasa.gov) + caption + social draft → `album/daily/` (local only) |
 | `scripts/nasa.py` | Random APOD (last year) + NASA Image Library sample → `images/` |
 | `scripts/planets.py` | Up to 20 images per planet (Mercury–Neptune) → `planets/` |
-| `make select` / `album` | Build a local favorites album in `album/selected/` |
-| `make browse` | Index local images by destination (Moon, Mars, gas giants, …) |
-| `make classroom` | 5 images + 5 questions for teachers and families |
-| `ROADMAP.md` | Vision and phased project plan |
+| `make select` / `album` | Local favorites album in `album/selected/` |
+| `ROADMAP.md` | Ladder outward + project plan |
 
-Every download gets **sidecar** `.json` + `.md` stories: title, date, mission, body, license, source URL, destination tag, “explain like I'm 10”, and “go deeper”.
+Every download gets **sidecar** `.json` + `.md`: title, date, mission, body, license, source URL, destination tag, and full caption from the source.
 
-Images are local (gitignored). Credit NASA and other sources when you share.
+Images stay local (gitignored). Credit NASA and other sources when you share.
 
 ## Quick start
 
@@ -35,8 +33,6 @@ Open `album/daily/LATEST.md`. Optional:
 ```bash
 make inspire SELECT=1          # also save to album/selected/
 make select IMAGE=images/some.jpg
-make browse                    # browse/INDEX.md by destination
-make classroom                 # classroom/pack-YYYYMMDD/
 ```
 
 Bulk pulls:
@@ -66,14 +62,12 @@ Social sharing is **draft-only**: each daily folder includes `post.txt` (credit 
 ## Layout
 
 ```
-scripts/       downloaders + inspire / select / browse / classroom
-images/        APOD + library downloads (local)
-planets/       per-planet downloads (local)
-album/daily/   daily inspiration (local)
-album/selected/ favorites (local)
-browse/        destination indexes (regenerate with make browse)
-classroom/     classroom packs (local packs; README committed)
-ROADMAP.md     inspiration + project roadmap
+scripts/         downloaders + inspire / select
+images/          APOD + library downloads (local)
+planets/         per-planet downloads (local)
+album/daily/     daily pull (local, gitignored)
+album/selected/  favorites (local, gitignored)
+ROADMAP.md       path outward + project plan
 ```
 
 ## Image & news sources

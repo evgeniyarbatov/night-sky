@@ -4,7 +4,7 @@ Project rules for agents and humans working in this repo. Global preferences sti
 
 ## Purpose
 
-Open toolkit + inspiration for space imagery and the path from Earth to the stars. Audience is broad: children through adults. Docs lead with wonder and plain language; put deep technical detail after the first successful run.
+Open toolkit + inspiration for space imagery and the path from Earth to the stars. Docs lead with wonder and plain language; put deep technical detail after the first successful run. Expand the mind; do not package as education-first.
 
 ## Altitude
 
@@ -21,7 +21,7 @@ Default write-ups and explanations to the conceptual level: name scripts, dirs, 
 ## Code
 
 - Python 3.11+, managed with **uv**; run via `uv run` or Makefile targets.
-- Shared helpers live in `scripts/common.py`. Entry points: `inspire.py` → `album/daily/`; `nasa.py` → `images/`; `planets.py` → `planets/`; `select.py`, `browse.py`, `classroom.py` for album/index/packs.
+- Shared helpers live in `scripts/common.py`. Entry points: `inspire.py` → `album/daily/`; `nasa.py` → `images/`; `planets.py` → `planets/`; `select.py` for album.
 - Prefer env `NASA_API_KEY` (fallback `DEMO_KEY`) — never commit secrets.
 - Be polite to public APIs: retries, short sleeps, no aggressive parallel hammering.
 - Keep download + sidecar `.json`/`.md` metadata paired; filenames safe for common filesystems.
@@ -31,9 +31,9 @@ Default write-ups and explanations to the conceptual level: name scripts, dirs, 
 
 ## Make / tooling
 
-- User-facing targets: `make install` / `inspire` / `nasa` / `planets` / `select` / `album` / `browse` / `classroom` / `clean` / `lock`; keep `make help` accurate.
+- User-facing targets: `make install` / `inspire` / `nasa` / `planets` / `select` / `album` / `clean` / `lock`; keep `make help` accurate.
 - Ruff + mypy config live in `pyproject.toml` (`mypy_path = scripts`); match existing lint/format style.
-- Downloaded and generated content under `images/`, `planets/`, `album/daily`, `album/selected`, `browse/`, `classroom/pack-*` stays gitignored.
+- Downloaded and generated content under `images/`, `planets/`, `album/daily`, `album/selected` stays gitignored.
 
 ## Commits
 

@@ -15,7 +15,7 @@ def ensure_sidecar(image_path: Path) -> None:
         return
     meta = load_meta(image_path)
     if meta is None:
-        from common import ImageMeta, classify_destination, explain_like_10, go_deeper_text
+        from common import ImageMeta, classify_destination, go_deeper_text
 
         title = image_path.stem
         dest = classify_destination(title)
@@ -27,7 +27,6 @@ def ensure_sidecar(image_path: Path) -> None:
             destination=dest,
             go_deeper=go_deeper_text("", title),
         )
-        meta.explain_like_10 = explain_like_10(title, dest, "")
         write_sidecar(image_path, meta)
 
 
@@ -38,8 +37,7 @@ def rebuild_album_index(selected_dir: Path) -> Path:
     lines = [
         "# Selected album",
         "",
-        "Favorites for wallpapers, classrooms, and art. Add with "
-        "`make select IMAGE=path/to/image.jpg`.",
+        "Local favorites. Add with `make select IMAGE=path/to/image.jpg`.",
         "",
     ]
     if not images:

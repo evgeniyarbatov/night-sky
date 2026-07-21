@@ -75,7 +75,6 @@ class ImageMeta:
     nasa_id: str = ""
     credit: str = "NASA"
     keywords: list[str] = field(default_factory=list)
-    explain_like_10: str = ""
     go_deeper: str = ""
     search_term: str = ""
     center: str = ""
@@ -107,14 +106,6 @@ def safe_filename(text: str, max_len: int = 80) -> str:
     cleaned = re.sub(r"\s+", " ", cleaned).strip().replace(" ", "_")
     cleaned = re.sub(r"_+", "_", cleaned)
     return cleaned[:max_len] or "untitled"
-
-
-def first_sentence(text: str) -> str:
-    text = " ".join(text.split())
-    if not text:
-        return ""
-    match = re.split(r"(?<=[.!?])\s+", text, maxsplit=1)
-    return match[0].strip()
 
 
 def classify_destination(
@@ -159,27 +150,6 @@ def classify_destination(
     return best if scores[best] > 0 else "other"
 
 
-def explain_like_10(title: str, destination: str, description: str, body: str = "") -> str:
-    where = ""
-    if body:
-        where = f" It is about {body}."
-    elif destination and destination != "other":
-        label = destination.replace("-", " ")
-        where = f" It belongs with our {label} pictures."
-    lead = first_sentence(description)
-    if len(lead) > 220:
-        lead = lead[:217].rsplit(" ", 1)[0] + "…"
-    if lead:
-        return (
-            f'Today\'s sky picture is called "{title}".{where} '
-            f"{lead} Real spacecraft and telescopes took it so everyone can explore space."
-        )
-    return (
-        f'Today\'s sky picture is called "{title}".{where} '
-        "Real spacecraft and telescopes took it so everyone can explore space."
-    )
-
-
 def go_deeper_text(description: str, title: str) -> str:
     text = description.strip()
     if text:
@@ -190,10 +160,6 @@ def go_deeper_text(description: str, title: str) -> str:
 def write_sidecar(image_path: Path, meta: ImageMeta) -> tuple[Path, Path]:
     """Write image_path.with_suffix('.json') and '.md' next to the image."""
     meta.local_image = image_path.name
-    if not meta.explain_like_10:
-        meta.explain_like_10 = explain_like_10(
-            meta.title, meta.destination, meta.go_deeper, meta.body
-        )
     if not meta.go_deeper:
         meta.go_deeper = go_deeper_text("", meta.title)
 
@@ -219,9 +185,7 @@ def write_sidecar(image_path: Path, meta: ImageMeta) -> tuple[Path, Path]:
         f"| Source | {meta.source_url or '—'} |\n"
         f"| Image URL | {meta.image_url or '—'} |\n"
         f"| Keywords | {kw} |\n\n"
-        f"## Explain like I'm 10\n\n"
-        f"{meta.explain_like_10}\n\n"
-        f"## Go deeper\n\n"
+        f"## Caption\n\n"
         f"{meta.go_deeper}\n"
     )
     with open(md_path, "w", encoding="utf-8") as f:
@@ -321,7 +285,7 @@ def apod_to_meta(data: dict[str, Any]) -> ImageMeta:
             source_url = "https://apod.nasa.gov/apod/"
 
     dest = classify_destination(title, explanation)
-    meta = ImageMeta(
+    return ImageMeta(
         title=title,
         date=date,
         source_url=source_url,
@@ -335,8 +299,6 @@ def apod_to_meta(data: dict[str, Any]) -> ImageMeta:
         keywords=["APOD", "astronomy"],
         go_deeper=go_deeper_text(explanation, title),
     )
-    meta.explain_like_10 = explain_like_10(title, dest, explanation)
-    return meta
 
 
 def library_search(
@@ -380,7 +342,7 @@ def library_item_to_meta(
         else "https://images.nasa.gov"
     )
     credit = f"NASA/{center}" if center else "NASA"
-    meta = ImageMeta(
+    return ImageMeta(
         title=title,
         date=date,
         source_url=source_url,
@@ -396,8 +358,6 @@ def library_item_to_meta(
         center=center,
         go_deeper=go_deeper_text(description, title),
     )
-    meta.explain_like_10 = explain_like_10(title, dest, description, meta.body)
-    return meta
 
 
 def resolve_library_image_url(
@@ -416,16 +376,23 @@ def resolve_library_image_url(
 
 
 def social_post_text(meta: ImageMeta) -> str:
+    blurb = " ".join(meta.go_deeper.split())
+    if len(blurb) > 280:
+        blurb = blurb[:277].rsplit(" ", 1)[0] + "…"
     lines = [
         meta.title,
         "",
-        meta.explain_like_10,
-        "",
-        f"Credit: {meta.credit}",
-        f"Source: {meta.source_url}",
-        "",
-        "#space #astronomy #nasa",
     ]
+    if blurb:
+        lines.extend([blurb, ""])
+    lines.extend(
+        [
+            f"Credit: {meta.credit}",
+            f"Source: {meta.source_url}",
+            "",
+            "#space #astronomy #nasa",
+        ]
+    )
     return "\n".join(lines)
 
 
@@ -441,16 +408,3 @@ def copy_with_sidecars(image_path: Path, dest_dir: Path) -> Path:
         if src.is_file():
             shutil.copy2(src, dest_dir / src.name)
     return dest_image
-
-
-def iter_sidecars(roots: list[Path]) -> list[Path]:
-    found: list[Path] = []
-    for root in roots:
-        if not root.exists():
-            continue
-        found.extend(sorted(root.rglob("*.json")))
-    return found
-
-
-def destination_label(dest: str) -> str:
-    return dest.replace("-", " ").title()
