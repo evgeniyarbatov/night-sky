@@ -14,9 +14,8 @@ No special lab. Free or rate-limited public APIs. Run it, keep the files, read t
 
 | Capability | How |
 | --- | --- |
-| **One picture, today** | `make inspire` → APOD into `album/daily/` with sidecar story and a social draft |
+| **One picture, today** | `make inspire` → APOD into `album/daily/` with sidecar story (repeat to stack more that day) |
 | **Bulk sky + missions** | `make nasa` / `make planets` → APOD archive samples and library hits into `images/` and `planets/` |
-| **Keep favorites** | `make select` → local album under `album/selected/` |
 | **Schedule wonder** | cron (or any scheduler) calling `make inspire` |
 | **Trace provenance** | every file has paired `.json` / `.md` (title, date, mission, license, source URL, destination tag) |
 | **Go further by hand** | open archives linked in the README — Hubble, JPL Photojournal, ESA, ESO, Chandra, Mars raw images |
@@ -75,11 +74,10 @@ Proxima, the Centauri system, everything beyond. Light-years mean **new propulsi
 
 ## What this repo does today
 
-- **Daily pull** — `make inspire` fetches APOD into `album/daily/` with caption and social draft
+- **Daily pull** — `make inspire` fetches APOD into `album/daily/` with caption
 - **Bulk pulls** — NASA Image Library + APOD samples into `images/`; per-planet sets into `planets/`
 - **Sidecars** — metadata and source caption next to every image
-- **Selected album** — local favorites via `make select`
-- **Make targets** — `inspire`, `nasa`, `planets`, `select`, `album`, `clean`, `lock`
+- **Make targets** — `inspire`, `nasa`, `planets`, `clean`, `lock`
 - **Source map** — links to NASA, ESA, Hubble, JPL, ESO, Chandra, Mars raw, and space news (see `README.md`)
 
 The seed: **put the cosmos on disk so you can look hard and build from it.**
@@ -99,8 +97,6 @@ Ship tools that make looking outward automatic and honest. Ambition grows with t
 ### Phase 1 — Daily pull *(done)*
 
 - [x] On-demand / scheduled inspire job: fetch → caption → album
-- [x] Draft-only social path (`post.txt` with credit and source)
-- [x] Local selected album
 - [x] Lightweight orchestration (cron first; heavier tooling only if earned)
 
 ### Phase 2 — Stories with the files *(done)*
@@ -110,10 +106,10 @@ Ship tools that make looking outward automatic and honest. Ambition grows with t
 
 ### Phase 3 — Create with the cosmos
 
-- [ ] Album export (consistent naming, credits file)
+- [ ] Export (consistent naming, credits file)
 - [ ] Collage / poster recipes (scripted or documented manual flow)
-- [ ] Contribution path for favorite sets or short “why this matters” notes
-- [ ] Optional static showcase of selections
+- [ ] Contribution path for short “why this matters” notes
+- [ ] Optional static showcase
 
 ### Phase 4 — The living ladder
 

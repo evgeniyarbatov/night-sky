@@ -6,8 +6,6 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
-# Generated downloads and indexes (keep directory placeholders)
+# Generated downloads (keep directory placeholders)
 album/daily/**
 !album/daily/.gitkeep
-album/selected/**
-!album/selected/.gitkeep

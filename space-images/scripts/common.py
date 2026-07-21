@@ -375,27 +375,6 @@ def resolve_library_image_url(
     return pick_image_asset([str(a) for a in assets])
 
 
-def social_post_text(meta: ImageMeta) -> str:
-    blurb = " ".join(meta.go_deeper.split())
-    if len(blurb) > 280:
-        blurb = blurb[:277].rsplit(" ", 1)[0] + "…"
-    lines = [
-        meta.title,
-        "",
-    ]
-    if blurb:
-        lines.extend([blurb, ""])
-    lines.extend(
-        [
-            f"Credit: {meta.credit}",
-            f"Source: {meta.source_url}",
-            "",
-            "#space #astronomy #nasa",
-        ]
-    )
-    return "\n".join(lines)
-
-
 def copy_with_sidecars(image_path: Path, dest_dir: Path) -> Path:
     """Copy image + .json/.md sidecars into dest_dir. Returns new image path."""
     import shutil

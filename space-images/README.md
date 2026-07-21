@@ -8,10 +8,9 @@ See [ROADMAP.md](ROADMAP.md) for the path outward and what you can build with a 
 
 | Piece | Role |
 | --- | --- |
-| `make inspire` | Today's [APOD](https://apod.nasa.gov) + caption + social draft → `album/daily/` (local only) |
+| `make inspire` | APOD + caption → `album/daily/YYYY-MM-DD/` (adds a new photo each run; local only) |
 | `scripts/nasa.py` | Random APOD (last year) + NASA Image Library sample → `images/` |
 | `scripts/planets.py` | Up to 20 images per planet (Mercury–Neptune) → `planets/` |
-| `make select` / `album` | Local favorites album in `album/selected/` |
 | `ROADMAP.md` | Ladder outward + project plan |
 
 Every download gets **sidecar** `.json` + `.md`: title, date, mission, body, license, source URL, destination tag, and full caption from the source.
@@ -25,15 +24,10 @@ Requires Python 3.11+ and [uv](https://docs.astral.sh/uv).
 ```bash
 make install
 export NASA_API_KEY=your_key   # free at https://api.nasa.gov — optional; DEMO_KEY works with limits
-make inspire                   # one picture + story + post draft
+make inspire                   # one picture + story (repeat to add more the same day)
 ```
 
-Open `album/daily/LATEST.md`. Optional:
-
-```bash
-make inspire SELECT=1          # also save to album/selected/
-make select IMAGE=images/some.jpg
-```
+Open `album/daily/LATEST.md`.
 
 Bulk pulls:
 
@@ -57,16 +51,13 @@ uv run python scripts/planets.py
 0 8 * * * cd /path/to/space-images && make inspire
 ```
 
-Social sharing is **draft-only**: each daily folder includes `post.txt` (credit + source URL). Paste into X or elsewhere yourself.
-
 ## Layout
 
 ```
-scripts/         downloaders + inspire / select
+scripts/         downloaders + inspire
 images/          APOD + library downloads (local)
 planets/         per-planet downloads (local)
-album/daily/     daily pull (local, gitignored)
-album/selected/  favorites (local, gitignored)
+album/daily/     daily pulls (local, gitignored)
 ROADMAP.md       path outward + project plan
 ```
 
