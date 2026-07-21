@@ -1,3 +1,0 @@
-- post selected images on X
-- album of selected images and use for creating art works
-- daily inspiration: creative data pipeline with Airflow
