@@ -15,6 +15,9 @@ planets: install
 inspire: install
 	@uv run python scripts/inspire.py
 
+test: install
+	@PYTHONPATH=scripts uv run python -m unittest discover -s tests -p 'test_*.py' -v
+
 clean:
 	rm -rf images/* planets/*
 
@@ -26,7 +29,8 @@ help:
 	@echo "inspire    - APOD → album/daily (adds a new photo each run)"
 	@echo "nasa       - run nasa.py 20 times → images/"
 	@echo "planets    - run planets.py → images/<planet>/"
+	@echo "test       - run unit tests"
 	@echo "clean      - remove generated downloads"
 	@echo "lock       - refresh uv.lock"
 
-.PHONY: install nasa planets inspire clean lock help
+.PHONY: install nasa planets inspire test clean lock help
