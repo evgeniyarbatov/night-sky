@@ -138,6 +138,7 @@ def wabi_sabi_minimal_style(stars: dict[str, Any] | None) -> tuple[Figure | None
 def create_artwork(
     location: dict[str, Any],
     named_stars: list[dict[str, Any]],
+    magnitude: float,
     fov: float,
     azimuth: float,
     altitude: float,
@@ -167,14 +168,30 @@ def create_artwork(
         print("No named stars visible in this FOV, skipping...")
         return
 
-    print(f"Named stars in FOV: {stars['count']}")
+    keep = stars["mag"] <= magnitude
+    if not np.any(keep):
+        print(f"No named stars at mag ≤{magnitude} in this FOV, skipping...")
+        return
+
+    stars = {
+        "x": stars["x"][keep],
+        "y": stars["y"][keep],
+        "mag": stars["mag"][keep],
+        "name": stars["name"][keep],
+        "count": int(np.sum(keep)),
+    }
+
+    print(f"Named stars in FOV (mag ≤{magnitude}): {stars['count']}")
 
     fig, bg_color = wabi_sabi_minimal_style(stars)
     if fig is None:
         print("Failed to generate artwork, skipping...")
         return
 
-    details = f"Stars {stars['count']}  |  FOV {fov}°  |  Az {azimuth}°  Alt {altitude}°"
+    details = (
+        f"Mag ≤{magnitude}  |  Stars {stars['count']}  |  "
+        f"FOV {fov}°  |  Az {azimuth}°  Alt {altitude}°"
+    )
     StarArtUtils.add_info_text(fig, location, obs_time, details, bg_color)
 
     date_stamp = obs_time.strftime("%Y%m%d")
@@ -182,7 +199,7 @@ def create_artwork(
     os.makedirs(f"{IMAGES_DIR}/wabi-sabi-stars", exist_ok=True)
     filename = (
         f"{IMAGES_DIR}/wabi-sabi-stars/{safe_name}_"
-        f"fov{fov}_az{azimuth}_alt{altitude}_{date_stamp}.png"
+        f"mag{magnitude}_fov{fov}_az{azimuth}_alt{altitude}_{date_stamp}.png"
     )
 
     fig.tight_layout(pad=0.5)
@@ -201,17 +218,19 @@ def main(locations_file: str = "stargazing-locations.json") -> None:
     fovs = [180]
     azimuths = [0]
     altitudes = [90]
+    magnitudes = [3.5, 12.4]
 
-    total = len(locations) * len(fovs) * len(azimuths) * len(altitudes)
+    total = len(locations) * len(fovs) * len(azimuths) * len(altitudes) * len(magnitudes)
     current = 0
 
     for location in locations:
         for fov in fovs:
             for azimuth in azimuths:
                 for altitude in altitudes:
-                    current += 1
-                    print(f"\n[{current}/{total}]", end=" ")
-                    create_artwork(location, named_stars, fov, azimuth, altitude)
+                    for magnitude in magnitudes:
+                        current += 1
+                        print(f"\n[{current}/{total}]", end=" ")
+                        create_artwork(location, named_stars, magnitude, fov, azimuth, altitude)
 
     print(f"\n✓ All artworks (attempted) saved to {IMAGES_DIR}/")
 
