@@ -4,5 +4,11 @@
     "lat": 10.78737155383889,
     "lon": 106.70732881086364,
     "description": "Dense urban sky, heavy light pollution, tropical latitude"
+  },
+  {
+    "name": "Home",
+    "lat": 10.811374257507774,
+    "lon": 106.67425202230856,
+    "description": "Personal stargazing spot"
   }
 ]
