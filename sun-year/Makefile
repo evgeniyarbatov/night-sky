@@ -3,6 +3,9 @@
 install:
 	@uv sync
 
+test: install
+	@uv run python -m unittest discover -s tests -p 'test_*.py' -v
+
 lock:
 	@uv lock
 
@@ -20,6 +23,7 @@ analemma: install
 
 help:
 	@echo "install    - uv sync (create/update .venv with all deps)"
+	@echo "test       - run unit tests"
 	@echo "lock       - uv lock (refresh uv.lock)"
 	@echo "plot       - run scripts/plot-sun.py"
 	@echo "path       - run scripts/sun-path.py"
