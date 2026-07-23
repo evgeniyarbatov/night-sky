@@ -1,2 +1,6 @@
 *
 !.gitignore
+!samples/
+!samples/**
+!content/
+!content/**

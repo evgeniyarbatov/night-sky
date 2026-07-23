@@ -12,6 +12,8 @@ dependencies = [
     "pyproj",
     "timezonefinder",
     "pytz",
+    "skyfield>=1.54",
+    "pyyaml>=6.0.3",
 ]
 
 [dependency-groups]
@@ -20,6 +22,7 @@ dev = [
     "pandas-stubs>=3.0.3.260530",
     "pytest",
     "types-pytz>=2026.2.0.20260518",
+    "types-pyyaml>=6.0.12.20260518",
 ]
 
 [tool.uv]
@@ -48,4 +51,12 @@ warn_unused_ignores = true
 
 [[tool.mypy.overrides]]
 module = "contextily.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "skyfield.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "yaml.*"
 ignore_missing_imports = true

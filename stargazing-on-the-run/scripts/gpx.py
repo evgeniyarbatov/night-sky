@@ -1,28 +1,40 @@
-import os
-import random
+"""Copy a GPX file into the local drop zone (data/gpx/)."""
+
+from __future__ import annotations
+
+import argparse
 import shutil
+from pathlib import Path
 
-GPX_SOURCE_DIR = os.path.expanduser("~/gitRepo/[private]/data/year/2025")
-GPX_DEST_DIR = "data/gpx"
-NUMBER_OF_GPX = 1
-
-
-def _gpx_files_in(path: str) -> list[str]:
-    matches = []
-    for root, _, files in os.walk(path):
-        for filename in files:
-            if filename.endswith(".gpx"):
-                matches.append(os.path.join(root, filename))
-    return matches
+GPX_DEST_DIR = Path("data/gpx")
+SAMPLE_GPX = Path("data/samples/sample_night_run.gpx")
 
 
 def main() -> None:
-    shutil.rmtree(GPX_DEST_DIR, ignore_errors=True)
-    os.makedirs(GPX_DEST_DIR, exist_ok=True)
+    parser = argparse.ArgumentParser(description="Copy a GPX into data/gpx/")
+    parser.add_argument(
+        "src",
+        nargs="?",
+        default=None,
+        help="Path to a .gpx file (default: committed sample)",
+    )
+    parser.add_argument(
+        "--clear",
+        action="store_true",
+        help="Remove existing files in data/gpx/ before copying",
+    )
+    args = parser.parse_args()
 
-    gpx_files = _gpx_files_in(GPX_SOURCE_DIR)
-    for gpx_file in random.sample(gpx_files, NUMBER_OF_GPX):
-        shutil.copy(gpx_file, GPX_DEST_DIR)
+    src = Path(args.src) if args.src else SAMPLE_GPX
+    if not src.is_file():
+        raise SystemExit(f"GPX not found: {src}")
+
+    if args.clear and GPX_DEST_DIR.exists():
+        shutil.rmtree(GPX_DEST_DIR)
+    GPX_DEST_DIR.mkdir(parents=True, exist_ok=True)
+    dest = GPX_DEST_DIR / src.name
+    shutil.copy(src, dest)
+    print(f"Copied {src} → {dest}")
 
 
 if __name__ == "__main__":

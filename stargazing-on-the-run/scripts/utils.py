@@ -1,5 +1,5 @@
-import random
 from dataclasses import dataclass
+from datetime import datetime
 from statistics import median
 
 import gpxpy
@@ -8,9 +8,7 @@ import pytz
 from timezonefinder import TimezoneFinder
 
 VIEW_ANGLES: list[float] = [0, 30, 70]
-FOV_MIN = 10.0
 FOV_MAX = 60.0
-FOV_ZOOM_PROBABILITY = 0.4
 
 
 def get_timezone_from_points(points: "list[Point]") -> str:
@@ -177,7 +175,6 @@ def add_view_angles(points: list[Point], view_angles: list[float] = VIEW_ANGLES)
 
     view_points: list[Point] = []
     for idx, point in enumerate(points):
-        fov = random_fov()
         view_points.append(
             Point(
                 point.time,
@@ -186,11 +183,10 @@ def add_view_angles(points: list[Point], view_angles: list[float] = VIEW_ANGLES)
                 point.lon,
                 point.az,
                 zero_alt,
-                fov,
+                FOV_MAX,
             )
         )
         for alt in extras_by_point.get(idx, []):
-            fov = random_fov()
             alt_index = alt_to_index[alt]
             view_points.append(
                 Point(
@@ -200,20 +196,75 @@ def add_view_angles(points: list[Point], view_angles: list[float] = VIEW_ANGLES)
                     point.lon,
                     point.az,
                     alt,
-                    fov,
+                    FOV_MAX,
                 )
             )
 
     return view_points
 
 
-def load_points(gpx_file: str) -> list[Point]:
+def load_points(gpx_file: str, *, with_zoom: bool = False) -> list[Point]:
     points_for_timezone = GPXData(gpx_file, timezone="UTC").get_points()
     timezone = get_timezone_from_points(points_for_timezone)
-    return GPXData(gpx_file, timezone).get_points()
+    points = GPXData(gpx_file, timezone).get_points()
+    if with_zoom:
+        from scripts.sky import enrich_with_zoom
+
+        return enrich_with_zoom(points)
+    return points
 
 
-def random_fov() -> float:
-    if random.random() < FOV_ZOOM_PROBABILITY:  # noqa: S311 -- non-cryptographic map styling
-        return random.uniform(FOV_MIN, FOV_MAX)  # noqa: S311 -- non-cryptographic map styling
-    return FOV_MAX
+def load_raw_track(gpx_file: str) -> list[Point]:
+    """All track points with headings (no stargazing filter / view angles)."""
+    with open(gpx_file) as f:
+        gpx = gpxpy.parse(f)
+
+    provisional: list[tuple[datetime, float, float, float]] = []
+    geod = pyproj.Geod(ellps="WGS84")
+    for track in gpx.tracks:
+        for segment in track.segments:
+            if len(segment.points) < 2:
+                continue
+            for idx, point in enumerate(segment.points[1:], start=1):
+                previous = segment.points[idx - 1]
+                fwd_azimuth = geod.inv(
+                    previous.longitude,
+                    previous.latitude,
+                    point.longitude,
+                    point.latitude,
+                )[0]
+                if fwd_azimuth < 0:
+                    fwd_azimuth += 360
+                if point.time is None:
+                    msg = f"GPX point in {gpx_file} is missing a timestamp"
+                    raise ValueError(msg)
+                raw_t = point.time
+                if raw_t.tzinfo is None:
+                    utc = raw_t.replace(tzinfo=pytz.UTC)
+                else:
+                    utc = raw_t.astimezone(pytz.UTC)
+                provisional.append((utc, point.latitude, point.longitude, fwd_azimuth))
+
+    if not provisional:
+        return []
+
+    seed = [
+        Point(t.strftime("%Y-%m-%dT%H:%M:%S"), t.strftime("%s"), lat, lon, az, 0.0, FOV_MAX)
+        for t, lat, lon, az in provisional
+    ]
+    tz = pytz.timezone(get_timezone_from_points(seed))
+    points: list[Point] = []
+    for utc, lat, lon, az in provisional:
+        local = utc.astimezone(tz)
+        points.append(
+            Point(
+                local.strftime("%Y-%m-%dT%H:%M:%S"),
+                local.strftime("%s"),
+                lat,
+                lon,
+                az,
+                0.0,
+                FOV_MAX,
+            )
+        )
+    return points

@@ -1,0 +1,77 @@
+constellations:
+  Orion:
+    myth: "The hunter stands over winter evenings, belt three stars in a row."
+    science: "Home to Betelgeuse and Rigel; the sword holds the Orion Nebula, a stellar nursery."
+    wonder: "The light from Rigel left when you were roughly a decade younger — still arriving on this run."
+  Canis Major:
+    myth: "The greater dog follows Orion across the sky."
+    science: "Holds Sirius, the brightest star in Earth's night sky, only 8.6 light-years away."
+    wonder: "If Sirius were as close as the Moon, its glare would turn night into pale day."
+  Canis Minor:
+    myth: "The lesser dog, a small but bright companion to the hunter."
+    science: "Procyon is a nearby binary; among the sky's top-ten brightest stars."
+    wonder: "Procyon and Sirius form a winter triangle with Betelgeuse — three lights, one glance."
+  Taurus:
+    myth: "The bull faces Orion; the Hyades form its face, the Pleiades ride its shoulder."
+    science: "Aldebaran is a red giant; the Pleiades are a young open cluster."
+    wonder: "The Pleiades have been marked on cave walls and bronze disks for millennia."
+  Gemini:
+    myth: "The twins Castor and Pollux — inseparable in story, distinct in physics."
+    science: "Castor is a multiple star system; Pollux is an evolved orange giant with a known planet."
+    wonder: "Two stars that look like siblings are nothing alike up close."
+  Leo:
+    myth: "The lion of spring, mane curved like a backward question mark."
+    science: "Regulus sits nearly on the ecliptic, so the Moon and planets pass near it often."
+    wonder: "When Regulus rises in the evening, winter's hunter is already leaving the stage."
+  Ursa Major:
+    myth: "The great bear; seven bright stars form the Big Dipper asterism."
+    science: "Most Dipper stars are a moving group at similar distances; pointers lead to Polaris."
+    wonder: "Follow the bowl's edge outward and you find true north without a compass."
+  Ursa Minor:
+    myth: "The little bear; Polaris nearly pins the north celestial pole."
+    science: "Polaris is a yellow supergiant and Cepheid variable, ~430 light-years away."
+    wonder: "Every other northern star wheels around this one while you run a single loop."
+  Cygnus:
+    myth: "The swan flies along the summer Milky Way, wings open."
+    science: "Deneb is a luminous supergiant; the Northern Cross is an easy city asterism."
+    wonder: "Deneb's light has been traveling longer than recorded human history."
+  Lyra:
+    myth: "The lyre of Orpheus, small but unmistakable."
+    science: "Vega was the northern pole star ~12,000 years ago and will be again."
+    wonder: "Vega is close enough that its spectrum helped calibrate modern astronomy."
+  Aquila:
+    myth: "The eagle of Zeus, carrying thunderbolts."
+    science: "Altair is a fast-spinning nearby star, flattened by its own rotation."
+    wonder: "Altair, Vega, and Deneb make the Summer Triangle — three corners of warm nights."
+  Scorpius:
+    myth: "The scorpion that, in myth, killed Orion — they never share the sky for long."
+    science: "Antares is a red supergiant near the heart of the scorpion."
+    wonder: "Antares means rival of Ares — a star that reddens like Mars on summer nights."
+  Virgo:
+    myth: "The maiden of the harvest, holding an ear of wheat (Spica)."
+    science: "Spica is a tight hot binary; Virgo hosts a rich galaxy cluster beyond naked-eye reach."
+    wonder: "You see one star; behind it lies a whole crowd of galaxies."
+  Boötes:
+    myth: "The herdsman, driving the bears around the pole."
+    science: "Arcturus is a red giant and among the brightest stars in the northern sky."
+    wonder: "Arcturus's light left around the time of the First World War."
+  Cassiopeia:
+    myth: "The queen on her throne — a zigzag W or M depending on the season."
+    science: "Circumpolar from mid-northern latitudes; easy to spot under city skies."
+    wonder: "Once you learn the W, you can always find north even when Polaris is washed out."
+  Andromeda:
+    myth: "The princess chained, rescued by Perseus."
+    science: "Holds the Andromeda Galaxy, the most distant object easily seen with the naked eye."
+    wonder: "That faint smudge is a trillion stars, and its light left before Homo sapiens existed."
+  Pegasus:
+    myth: "The winged horse; three bright stars with Andromeda form the Great Square."
+    science: "The Square is a large empty-looking landmark useful for hopping to neighbors."
+    wonder: "An almost blank square teaches you how dark true sky can be between the lights."
+  Perseus:
+    myth: "The hero; Algol is the demon star that winks."
+    science: "Algol is an eclipsing binary — its brightness dips on a reliable cycle."
+    wonder: "You can watch two stars eclipse each other with no telescope, only patience."
+  Auriga:
+    myth: "The charioteer, holding a goat (Capella) in his arms."
+    science: "Capella is a yellow giant system near the overhead winter path for northern runners."
+    wonder: "Capella is one of the few first-magnitude stars near the zenith on cold nights."

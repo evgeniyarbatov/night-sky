@@ -1,13 +1,30 @@
 # Uses uv (https://docs.astral.sh/uv) for dependency management — uv sync creates/updates .venv; run commands via uv run, no manual activation.
+
+GPX_DIR ?= data/gpx
+SKY_LOGS_DIR ?= data/sky-logs
+SRC ?=
+START ?=
+GPX ?=
+
 install:
 	@uv sync --dev
 
+# Copy a GPX into data/gpx/. Default: committed sample. Override: make gpx SRC=/path/to/file.gpx
 gpx: install
-	@uv run python scripts/gpx.py
+	@if [ -n "$(SRC)" ]; then \
+		uv run python scripts/gpx.py "$(SRC)" --clear; \
+	else \
+		uv run python scripts/gpx.py --clear; \
+	fi
+
+# Sky identity logs (no Stellarium required)
+sky-log: install
+	@uv run python -m scripts.sky_log $(GPX_DIR) $(SKY_LOGS_DIR)
+	@uv run python -m scripts.sky_index --sky-logs $(SKY_LOGS_DIR)
 
 stellarium-scripts: install
 	@uv run python -m scripts.create_scripts \
-	data/gpx \
+	$(GPX_DIR) \
 	data/scripts \
 	data/screenshots
 
@@ -19,12 +36,12 @@ screenshots:
 
 maps: install
 	@uv run python -m scripts.make_maps \
-	data/gpx \
+	$(GPX_DIR) \
 	data/maps
 
 merge: install
 	@uv run python scripts/merge.py \
-	data/gpx \
+	$(GPX_DIR) \
 	data/screenshots \
 	data/maps \
 	data/screenshots-with-maps
@@ -45,23 +62,64 @@ video:
 		fi; \
 	done
 
+# Route profile, seasonal rotation, constellation cards
+profile: install
+	@uv run python -m scripts.profile --gpx-dir $(GPX_DIR) --out $(SKY_LOGS_DIR) --also-sky-log
+	@uv run python -m scripts.sky_index --sky-logs $(SKY_LOGS_DIR)
+
+# Rebuild personal sky index only
+index: install
+	@uv run python -m scripts.sky_index --sky-logs $(SKY_LOGS_DIR)
+
+# Pre-run briefing. Example: make tonight GPX=data/gpx/sample_night_run.gpx START=2026-07-24T21:30
+tonight: install
+	@if [ -z "$(GPX)" ] || [ -z "$(START)" ]; then \
+		echo "Usage: make tonight GPX=data/gpx/your.gpx START=YYYY-MM-DDTHH:MM"; \
+		exit 1; \
+	fi
+	@uv run python -m scripts.tonight --gpx "$(GPX)" --start "$(START)"
+
+tonight-weather: install
+	@if [ -z "$(GPX)" ] || [ -z "$(START)" ]; then \
+		echo "Usage: make tonight-weather GPX=data/gpx/your.gpx START=YYYY-MM-DDTHH:MM"; \
+		exit 1; \
+	fi
+	@uv run python -m scripts.tonight --gpx "$(GPX)" --start "$(START)" --weather
+
+# Full visual pipeline (requires Stellarium on macOS for screenshots)
+all: sky-log stellarium-scripts screenshots maps merge
+
+demo: install
+	@$(MAKE) gpx
+	@$(MAKE) sky-log
+	@$(MAKE) profile
+	@echo ""
+	@echo "Open data/sky-logs/sample_night_run/sky_log.md"
+
 test: install
 	@uv run python -m pytest
 
 clean:
-	@rm -rf data/*
+	@rm -rf data/gpx data/scripts data/screenshots data/maps data/screenshots-with-maps data/sky-logs data/sky-index.json data/sky-index.md data/*.mp4 data/.skyfield
 
 lock:
 	@uv lock
 
 help:
 	@echo "install              - create/update .venv and install dependencies"
-	@echo "gpx                  - run gpx.py"
-	@echo "stellarium-scripts   - run create_scripts.py"
-	@echo "screenshots          - run stellarium startup scripts"
-	@echo "maps                 - run make_maps.py"
-	@echo "merge                - run merge.py"
+	@echo "gpx                  - copy sample (or SRC=...) into data/gpx/"
+	@echo "sky-log              - Skyfield sky logs + personal index (no Stellarium)"
+	@echo "profile              - route profile, seasonal rotation, constellation cards"
+	@echo "index                - rebuild personal sky index from sky-logs"
+	@echo "tonight              - pre-run briefing (GPX=... START=...)"
+	@echo "tonight-weather      - tonight + Open-Meteo cloud cover"
+	@echo "stellarium-scripts   - create Stellarium scripts"
+	@echo "screenshots          - run Stellarium startup scripts"
+	@echo "maps                 - map thumbnails"
+	@echo "merge                - merge screenshots and maps"
 	@echo "video                - build videos from screenshots-with-maps"
+	@echo "all                  - sky-log + stellarium visual pipeline"
+	@echo "demo                 - sample GPX → sky-log → profile"
 	@echo "test                 - run pytest"
-	@echo "clean                - remove data/*"
+	@echo "clean                - remove generated data (keeps samples/content)"
 	@echo "lock                 - refresh uv.lock"

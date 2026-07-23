@@ -104,7 +104,7 @@ def main(gpx_dir: str, stellarium_dir: str, screenshot_dir: str) -> None:
     for gpx_file in gpx_files:
         filename = os.path.splitext(os.path.basename(gpx_file))[0]
 
-        points = load_points(gpx_file)
+        points = load_points(gpx_file, with_zoom=True)
 
         screenshot_path = os.path.join(screenshot_dir, filename)
         os.makedirs(screenshot_path, exist_ok=True)
