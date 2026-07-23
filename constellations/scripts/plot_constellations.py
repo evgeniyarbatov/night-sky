@@ -12,6 +12,7 @@ from astroplan import Observer
 from astropy.coordinates import AltAz, EarthLocation, SkyCoord
 from astropy.time import Time
 from PIL import Image
+from ra_utils import ra_hms_to_deg
 
 # ===== User settings =====
 LAT = 20.99484044876172
@@ -97,10 +98,7 @@ for file_name in os.listdir(DATA_FOLDER):
     df["Dec_deg"] = df["Dec_deg"].astype(float)
 
     # Convert RA hms to degrees
-    ra_deg = []
-    for ra_hms in df["RA_hms"]:
-        h, m, s = [float(x) for x in ra_hms.strip().split()]
-        ra_deg.append((h + m / 60 + s / 3600) * 15)
+    ra_deg = [ra_hms_to_deg(ra_hms) for ra_hms in df["RA_hms"]]
     df["RA_deg"] = ra_deg
 
     for const_abbr_raw, group in df.groupby("Constellation"):
@@ -169,10 +167,7 @@ for const_abbr, data in constellation_data.items():
     df["Dec_deg"] = df["Dec_deg"].astype(float)
 
     # Convert RA hms to degrees
-    ra_deg = []
-    for ra_hms in df["RA_hms"]:
-        h, m, s = [float(x) for x in ra_hms.strip().split()]
-        ra_deg.append((h + m / 60 + s / 3600) * 15)
+    ra_deg = [ra_hms_to_deg(ra_hms) for ra_hms in df["RA_hms"]]
     df["RA_deg"] = ra_deg
 
     stars = SkyCoord(

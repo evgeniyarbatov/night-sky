@@ -3,6 +3,9 @@
 install:
 	@uv sync --dev
 
+test: install
+	@uv run python -m unittest discover -s tests -p 'test_*.py' -v
+
 download: install
 	@uv run python scripts/download.py
 
@@ -18,6 +21,7 @@ lock:
 
 help:
 	@echo "install    - create/update .venv and install dependencies"
+	@echo "test       - run offline unit tests (tests/test_*.py)"
 	@echo "download   - run scripts/download.py"
 	@echo "plot       - clean and run scripts/plot_constellations.py"
 	@echo "clean      - remove generated plots and .venv"
