@@ -9,6 +9,8 @@ Downloads images from:
 
 from __future__ import annotations
 
+import argparse
+import os
 import random
 import sys
 from datetime import datetime, timedelta
@@ -146,5 +148,17 @@ class SpaceImageDownloader:
             sys.exit(1)
 
 
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Download NASA APOD + library images.")
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=Path(os.environ.get("SPACE_IMAGES_OUTPUT_DIR", "images")),
+        help="Directory to save images to (default: images/, or $SPACE_IMAGES_OUTPUT_DIR)",
+    )
+    args = parser.parse_args()
+    SpaceImageDownloader(download_dir=args.output_dir).download_all()
+
+
 if __name__ == "__main__":
-    SpaceImageDownloader().download_all()
+    main()

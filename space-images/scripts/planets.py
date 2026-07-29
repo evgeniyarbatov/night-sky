@@ -9,6 +9,8 @@ Keeps photographs of the body or its terrain; drops PR, people, hardware, and da
 
 from __future__ import annotations
 
+import argparse
+import os
 import random
 import re
 import sys
@@ -641,5 +643,17 @@ class PlanetImageDownloader:
             sys.exit(1)
 
 
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Download NASA per-planet images.")
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=Path(os.environ.get("SPACE_IMAGES_OUTPUT_DIR", "images")),
+        help="Directory to save images to (default: images/, or $SPACE_IMAGES_OUTPUT_DIR)",
+    )
+    args = parser.parse_args()
+    PlanetImageDownloader(download_dir=args.output_dir).download_all()
+
+
 if __name__ == "__main__":
-    PlanetImageDownloader(download_dir="images").download_all()
+    main()

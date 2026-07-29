@@ -8,14 +8,14 @@ See [ROADMAP.md](ROADMAP.md) for the path outward and what you can build with a 
 
 | Piece | Role |
 | --- | --- |
-| `make inspire` | APOD + caption → `album/daily/YYYY-MM-DD/` (adds a new photo each run; local only) |
-| `scripts/nasa.py` | Random APOD (last year) + NASA Image Library sample → `images/` |
-| `scripts/planets.py` | Up to 20 images per planet (Mercury–Neptune) → `images/<planet>/` |
+| `make inspire` | APOD + caption → `$(DATA_DIR)/album/daily/YYYY-MM-DD/` (adds a new photo each run; local only) |
+| `scripts/nasa.py` | Random APOD (last year) + NASA Image Library sample → `$(DATA_DIR)/images/` |
+| `scripts/planets.py` | Up to 20 images per planet (Mercury–Neptune) → `$(DATA_DIR)/images/<planet>/` |
 | `ROADMAP.md` | Ladder outward + project plan |
 
 Every download gets **sidecar** `.json` + `.md`: title, date, mission, body, license, source URL, destination tag, and full caption from the source.
 
-Images stay local (gitignored). Credit NASA and other sources when you share.
+Generated images never live in the repo working tree. By default they go to `~/data/space-images/`; override with `make <target> DATA_ROOT=/path/to/shared` (keeps the `space-images` subfolder) or `make <target> DATA_DIR=/tmp/run-42` (exact path). Credit NASA and other sources when you share.
 
 ## Quick start
 
@@ -27,21 +27,21 @@ export NASA_API_KEY=your_key   # free at https://api.nasa.gov — optional; DEMO
 make inspire                   # one picture + story (repeat to add more the same day)
 ```
 
-Open `album/daily/LATEST.md`.
+Open `~/data/space-images/album/daily/LATEST.md`.
 
 Bulk pulls:
 
 ```bash
-make nasa      # 20× APOD + library samples → images/
-make planets   # per-planet sets → images/<planet>/
+make nasa      # 20× APOD + library samples → $(DATA_DIR)/images/
+make planets   # per-planet sets → $(DATA_DIR)/images/<planet>/
 ```
 
-Or run scripts once:
+Or run scripts once (pass `--root` / `--output-dir` to control where files land; otherwise they default to `images/` and `album/` inside the repo):
 
 ```bash
-uv run python scripts/inspire.py
-uv run python scripts/nasa.py
-uv run python scripts/planets.py
+uv run python scripts/inspire.py --root ~/data/space-images
+uv run python scripts/nasa.py --output-dir ~/data/space-images/images
+uv run python scripts/planets.py --output-dir ~/data/space-images/images
 ```
 
 ### Daily schedule
@@ -54,12 +54,14 @@ uv run python scripts/planets.py
 ## Layout
 
 ```
-scripts/         downloaders + inspire
-images/          APOD + library + per-planet downloads (local)
-images/<planet>/ make planets output (mercury … neptune)
-album/daily/     daily pulls (local, gitignored)
-ROADMAP.md       path outward + project plan
+scripts/                            downloaders + inspire
+$(DATA_DIR)/images/                 APOD + library + per-planet downloads
+$(DATA_DIR)/images/<planet>/        make planets output (mercury … neptune)
+$(DATA_DIR)/album/daily/            daily pulls
+ROADMAP.md                          path outward + project plan
 ```
+
+`$(DATA_DIR)` defaults to `~/data/space-images` (see Quick start).
 
 ## Image & news sources
 

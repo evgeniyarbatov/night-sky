@@ -9,3 +9,7 @@ __pycache__/
 # Generated downloads (keep directory placeholders)
 album/daily/**
 !album/daily/.gitkeep
+images/*
+!images/.gitignore
+planets/*
+!planets/.gitignore
