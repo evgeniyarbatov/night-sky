@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 
 # Base URL for the IAU constellations page
 BASE_URL = "https://iauarchive.eso.org/public/themes/constellations/"
+DATA_DIR = os.environ.get("DATA_DIR", "data")
 
 
 def extract_download_links(html: str) -> tuple[list[str], list[str]]:
@@ -33,14 +34,16 @@ def main() -> None:
     response = requests.get(BASE_URL, timeout=30)
     gif_links, txt_links = extract_download_links(response.text)
 
-    os.makedirs("data/gifs", exist_ok=True)
-    os.makedirs("data/boundaries", exist_ok=True)
+    gifs_dir = os.path.join(DATA_DIR, "gifs")
+    boundaries_dir = os.path.join(DATA_DIR, "boundaries")
+    os.makedirs(gifs_dir, exist_ok=True)
+    os.makedirs(boundaries_dir, exist_ok=True)
 
     for url in gif_links:
-        download_file(url, "data/gifs")
+        download_file(url, gifs_dir)
 
     for url in txt_links:
-        download_file(url, "data/boundaries")
+        download_file(url, boundaries_dir)
 
     print("Download complete.")
 

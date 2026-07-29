@@ -1,5 +1,9 @@
 # Uses uv (https://docs.astral.sh/uv) for dependency management — uv sync creates/updates .venv; run commands via uv run, no manual activation.
 
+DATA_ROOT ?= $(HOME)/data
+REPO_NAME := $(notdir $(CURDIR))
+DATA_DIR  ?= $(DATA_ROOT)/$(REPO_NAME)
+
 install:
 	@uv sync --dev
 
@@ -7,13 +11,13 @@ test: install
 	@uv run python -m unittest discover -s tests -p 'test_*.py' -v
 
 download: install
-	@uv run python scripts/download.py
+	@DATA_DIR=$(DATA_DIR) uv run python scripts/download.py
 
 plot: install clean
-	@uv run python scripts/plot_constellations.py
+	@DATA_DIR=$(DATA_DIR) uv run python scripts/plot_constellations.py
 
 clean:
-	@rm -rf data/plots/*
+	@rm -rf $(DATA_DIR)/plots/*
 	@rm -rf .venv
 
 lock:

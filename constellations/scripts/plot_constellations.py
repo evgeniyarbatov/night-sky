@@ -18,9 +18,10 @@ from ra_utils import ra_hms_to_deg
 LAT = 20.99484044876172
 LON = 105.86796107324045
 ELEV = 10  # meters
+DATA_DIR = os.environ.get("DATA_DIR", "data")
 DATA_FOLDER = "data/boundaries"
-OUTPUT_FOLDER = "data/plots"
-GIF_FOLDER = "data/gifs"
+OUTPUT_FOLDER = os.path.join(DATA_DIR, "plots")
+GIF_FOLDER = os.path.join(DATA_DIR, "gifs")
 DATE = datetime.now().date()
 DELTA_MINUTES = 10
 HANOI_TZ = pytz.timezone("Asia/Ho_Chi_Minh")
