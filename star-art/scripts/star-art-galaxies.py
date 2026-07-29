@@ -9,7 +9,7 @@ import pytz
 from skyfield.api import load, wgs84
 from star_art_utils import StarArtUtils
 
-IMAGES_DIR = "images"
+IMAGES_DIR = os.environ.get("STAR_ART_IMAGES_DIR", "images")
 
 GALAXIES = [
     {"name": "Andromeda Galaxy", "ra": 0.712306, "dec": 41.269167, "mag": 3.4},

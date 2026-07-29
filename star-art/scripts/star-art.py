@@ -14,7 +14,7 @@ from star_art_utils import StarArtUtils
 StyleFunc = Callable[[dict[str, Any], float], tuple[Figure | None, str]]
 
 STYLES: dict[str, StyleFunc] = {}
-IMAGES_DIR = "images"
+IMAGES_DIR = os.environ.get("STAR_ART_IMAGES_DIR", "images")
 
 os.makedirs(IMAGES_DIR, exist_ok=True)
 

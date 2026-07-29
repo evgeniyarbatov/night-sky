@@ -23,3 +23,8 @@ make exotic     # generates exotic object renders
 make path       # generates the path renders
 make timelapse  # generates timelapse frames for a single location
 ```
+
+Generated images are written outside the repo, to `~/data/star-art/images` by
+default. Override the location with `make <target> DATA_ROOT=/path` (changes
+the root under which every repo's data lives) or `make <target> DATA_DIR=/path`
+(changes this repo's data dir directly).

@@ -9,7 +9,7 @@ import pytz
 from skyfield.api import load, wgs84
 from star_art_utils import StarArtUtils
 
-IMAGES_DIR = "images"
+IMAGES_DIR = os.environ.get("STAR_ART_IMAGES_DIR", "images")
 
 STAR_CLUSTERS = [
     {"name": "Pleiades (M45)", "ra": 3.79, "dec": 24.12, "mag": 1.6},

@@ -9,7 +9,7 @@ import pytz
 from skyfield.api import load, wgs84
 from star_art_utils import StarArtUtils
 
-IMAGES_DIR = "images"
+IMAGES_DIR = os.environ.get("STAR_ART_IMAGES_DIR", "images")
 LOCATIONS_FILE = "stargazing-locations.json"
 
 FRAME_MINUTES = 10

@@ -13,7 +13,7 @@ from numpy.typing import NDArray
 from skyfield.api import load, wgs84
 from star_art_utils import StarArtUtils
 
-IMAGES_DIR = "images"
+IMAGES_DIR = os.environ.get("STAR_ART_IMAGES_DIR", "images")
 STAR_NAMES_FILE = "data/star_names.csv"
 HIPPARCOS_FILE = "hip_main.dat"
 

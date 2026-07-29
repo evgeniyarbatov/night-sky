@@ -1,4 +1,9 @@
 # Uses uv (https://docs.astral.sh/uv) for dependency management — uv sync creates/updates .venv; run commands via uv run, no manual activation.
+DATA_ROOT ?= $(HOME)/data
+REPO_NAME := $(notdir $(CURDIR))
+DATA_DIR  ?= $(DATA_ROOT)/$(REPO_NAME)
+IMAGES_DIR := $(DATA_DIR)/images
+
 .PHONY: all art stars galaxies planets nebulae clusters exotic path timelapse test clean install lock help
 
 all: art stars galaxies planets nebulae clusters exotic path timelapse
@@ -7,37 +12,37 @@ install:
 	@uv sync
 
 art: install
-	@uv run python scripts/star-art.py
+	@STAR_ART_IMAGES_DIR=$(IMAGES_DIR) uv run python scripts/star-art.py
 
 stars: install
-	@uv run python scripts/star-art-names.py
+	@STAR_ART_IMAGES_DIR=$(IMAGES_DIR) uv run python scripts/star-art-names.py
 
 galaxies: install
-	@uv run python scripts/star-art-galaxies.py
+	@STAR_ART_IMAGES_DIR=$(IMAGES_DIR) uv run python scripts/star-art-galaxies.py
 
 planets: install
-	@uv run python scripts/star-art-planets.py
+	@STAR_ART_IMAGES_DIR=$(IMAGES_DIR) uv run python scripts/star-art-planets.py
 
 nebulae: install
-	@uv run python scripts/star-art-nebulae.py
+	@STAR_ART_IMAGES_DIR=$(IMAGES_DIR) uv run python scripts/star-art-nebulae.py
 
 clusters: install
-	@uv run python scripts/star-art-star-clusters.py
+	@STAR_ART_IMAGES_DIR=$(IMAGES_DIR) uv run python scripts/star-art-star-clusters.py
 
 exotic: install
-	@uv run python scripts/star-art-exotic-objects.py
+	@STAR_ART_IMAGES_DIR=$(IMAGES_DIR) uv run python scripts/star-art-exotic-objects.py
 
 path: install
-	@uv run python scripts/star-art-path.py
+	@STAR_ART_IMAGES_DIR=$(IMAGES_DIR) uv run python scripts/star-art-path.py
 
 timelapse: install
-	@uv run python scripts/star-art-timelapse.py
+	@STAR_ART_IMAGES_DIR=$(IMAGES_DIR) uv run python scripts/star-art-timelapse.py
 
 test: install
 	@uv run python -m unittest discover -s tests
 
 clean:
-	@find images -mindepth 1 ! -name '.gitignore' -exec rm -rf {} +
+	@rm -rf $(IMAGES_DIR)
 
 lock:
 	@uv lock
@@ -57,3 +62,6 @@ help:
 	@echo "test       - run unittest suite"
 	@echo "clean      - remove generated images"
 	@echo "lock       - refresh uv.lock"
+	@echo ""
+	@echo "Images are written to \$$(DATA_DIR)/images, default: ~/data/star-art/images"
+	@echo "Override with: make <target> DATA_ROOT=/path or DATA_DIR=/path"
