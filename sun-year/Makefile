@@ -14,22 +14,27 @@ lock:
 	@uv lock
 
 plot: install
-	@uv run python scripts/plot-sun.py
+	@mkdir -p $(DATA_DIR)
+	@DATA_DIR=$(DATA_DIR) uv run python scripts/plot-sun.py
 
 path: install
-	@uv run python scripts/sun-path.py
+	@mkdir -p $(DATA_DIR)
+	@DATA_DIR=$(DATA_DIR) uv run python scripts/sun-path.py
 
 duration: install
-	@uv run python scripts/day-duration.py
+	@mkdir -p $(DATA_DIR)
+	@DATA_DIR=$(DATA_DIR) uv run python scripts/day-duration.py
 
 analemma: install
-	@uv run python scripts/analemma.py
+	@mkdir -p $(DATA_DIR)
+	@DATA_DIR=$(DATA_DIR) uv run python scripts/analemma.py
 
 help:
 	@echo "install    - uv sync (create/update .venv with all deps)"
 	@echo "test       - run unit tests"
 	@echo "lock       - uv lock (refresh uv.lock)"
-	@echo "plot       - run scripts/plot-sun.py"
-	@echo "path       - run scripts/sun-path.py"
-	@echo "duration   - run scripts/day-duration.py"
-	@echo "analemma   - run scripts/analemma.py"
+	@echo "plot       - save scripts/plot-sun.py output to \$$(DATA_DIR)/sun-azimuth.png"
+	@echo "path       - save scripts/sun-path.py output to \$$(DATA_DIR)/sun-path.png"
+	@echo "duration   - save scripts/day-duration.py output to \$$(DATA_DIR)/day-duration.png"
+	@echo "analemma   - save scripts/analemma.py output to \$$(DATA_DIR)/analemma.png"
+	@echo "Default DATA_DIR: ~/data/sunset-sunrise-azimuth. Override: make plot DATA_DIR=/tmp/run"

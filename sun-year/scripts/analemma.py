@@ -20,6 +20,9 @@ from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
 
+import matplotlib
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 from skyfield.api import load, wgs84
@@ -46,6 +49,8 @@ STEP_DAYS = 1  # daily sampling
 # Use de421.bsp by default - it's smaller (17MB) and downloads faster than de440s (32MB)
 # Both are accurate enough for analemma visualization
 EPHEMERIS = os.environ.get("SKYFIELD_EPHEMERIS", "de421.bsp")
+
+OUTPUT_DIR = Path(os.environ.get("DATA_DIR", "data"))
 
 # Alternative download sources (mirrors)
 EPHEMERIS_MIRRORS = {
@@ -290,8 +295,10 @@ def plot_analemma(data: dict[str, dict[str, np.ndarray[Any, np.dtype[Any]]]], ti
     ax.text(0.02, 0.98, title, transform=ax.transAxes, va="top", ha="left", fontsize=9)
     ax.margins(0.18)
 
-    print_progress("Displaying plot...")
-    plt.show()
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    out_path = OUTPUT_DIR / "analemma.png"
+    print_progress(f"Saving plot to {out_path}...")
+    plt.savefig(out_path, dpi=170)
 
 
 def main() -> None:

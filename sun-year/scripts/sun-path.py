@@ -1,7 +1,15 @@
+import os
+from pathlib import Path
+
+import matplotlib
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pvlib
+
+OUTPUT_DIR = Path(os.environ.get("DATA_DIR", "data"))
 
 # === CONFIGURATION ===
 latitude = 20.994839969936898
@@ -75,4 +83,7 @@ plt.gca().set_facecolor("#f9f9f6")
 for spine in plt.gca().spines.values():
     spine.set_visible(False)
 
-plt.show()
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+out_path = OUTPUT_DIR / "sun-path.png"
+plt.savefig(out_path, dpi=150)
+print(f"Saved plot to {out_path}")

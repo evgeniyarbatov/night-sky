@@ -10,6 +10,4 @@ The sun is also one of the easiest astronomical objects to observe. It is an inv
 
 ## Usage
 
-Run `make help` to list targets (`plot`, `path`, `duration`, `analemma`, `test`, ...). Plots are shown interactively (`plt.show()`) rather than saved to disk.
-
-Any future generated output defaults to `~/data/sunset-sunrise-azimuth/`. Override with `make <target> DATA_ROOT=/path/to/shared` or `make <target> DATA_DIR=/tmp/run-42`.
+Run `make help` to list targets (`plot`, `path`, `duration`, `analemma`, `test`, ...). Each saves a PNG to `~/data/sunset-sunrise-azimuth/` by default, no GUI window. Override with `make <target> DATA_ROOT=/path/to/shared` or `make <target> DATA_DIR=/tmp/run-42`.

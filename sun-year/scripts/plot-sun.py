@@ -1,8 +1,15 @@
+import os
 from datetime import datetime, timedelta
+from pathlib import Path
 
 import ephem
+import matplotlib
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+
+OUTPUT_DIR = Path(os.environ.get("DATA_DIR", "data"))
 
 # Location: Hanoi, Vietnam
 lat = 20.994839969936898
@@ -251,7 +258,10 @@ ax2.spines["bottom"].set_color("#CCCCCC")
 ax2.tick_params(colors="#999999")
 
 plt.tight_layout()
-plt.show()
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+out_path = OUTPUT_DIR / "sun-azimuth.png"
+plt.savefig(out_path, dpi=150)
+print(f"Saved plot to {out_path}")
 
 # Summary statistics
 print("\n" + "=" * 80)
