@@ -144,7 +144,7 @@ def main(
     gpx_files = sorted(glob.glob(os.path.join(gpx_dir, "*.gpx")))
     if not gpx_files:
         print(f"No GPX files found in {gpx_dir}")
-        print("Drop a .gpx into data/gpx/ or run: make gpx")
+        print(f"Drop a .gpx into {gpx_dir}/ or run: make gpx")
         return
     for gpx_file in gpx_files:
         process_gpx(gpx_file, sky_logs_dir, with_zoom=with_zoom)

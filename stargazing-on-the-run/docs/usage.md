@@ -6,33 +6,45 @@
 make install   # uv sync --dev
 ```
 
-First planet/Moon computation downloads the Skyfield ephemeris into `data/.skyfield/` (one-time, then offline).
+First planet/Moon computation downloads the Skyfield ephemeris into `$(DATA_DIR)/.skyfield/` (one-time, then offline).
+
+## Generated data location
+
+All generated artifacts (GPX drop zone, sky logs, screenshots, maps, videos, sky index)
+are written under `DATA_DIR`, which defaults to `~/data/stargazing-on-the-run/`.
+
+```sh
+make <target> DATA_ROOT=/path/to/shared   # changes the parent dir
+make <target> DATA_DIR=/tmp/run-42        # changes the full path
+```
+
+The committed sample GPX (`data/samples/sample_night_run.gpx`) and constellation
+content (`data/content/`) stay in the repo and are unaffected by `DATA_DIR`.
 
 ## Sky log (no Stellarium)
 
 ```sh
-make gpx                              # sample → data/gpx/
+make gpx                              # sample → $(DATA_DIR)/gpx/
 make gpx SRC=/path/to/run.gpx         # or your file
-# or: cp run.gpx data/gpx/
 
 make sky-log
 ```
 
-Open `data/sky-logs/<run-id>/sky_log.md`.
+Open `$(DATA_DIR)/sky-logs/<run-id>/sky_log.md`.
 
 | Artifact | Contents |
 |---|---|
 | `sky_log.md` / `.json` | Viewpoints: facing, minute, highlight, objects |
-| `data/sky-index.md` | Objects/constellations first seen across runs |
+| `$(DATA_DIR)/sky-index.md` | Objects/constellations first seen across runs |
 
 ## Route learning
 
 ```sh
-make profile    # needs GPX in data/gpx/
+make profile    # needs GPX in $(DATA_DIR)/gpx/
 make index      # rebuild index from all sky logs
 ```
 
-Per run under `data/sky-logs/<run-id>/`:
+Per run under `$(DATA_DIR)/sky-logs/<run-id>/`:
 
 | File | Contents |
 |---|---|
@@ -43,11 +55,11 @@ Per run under `data/sky-logs/<run-id>/`:
 ## Tonight (pre-run)
 
 ```sh
-make tonight GPX=data/gpx/your.gpx START=2026-01-15T21:30
-make tonight-weather GPX=data/gpx/your.gpx START=2026-01-15T21:30
+make tonight GPX=$(DATA_DIR)/gpx/your.gpx START=2026-01-15T21:30
+make tonight-weather GPX=$(DATA_DIR)/gpx/your.gpx START=2026-01-15T21:30
 ```
 
-Outputs under `data/sky-logs/<run-id>/tonight/`:
+Outputs under `$(DATA_DIR)/sky-logs/<run-id>/tonight/`:
 
 | File | Contents |
 |---|---|

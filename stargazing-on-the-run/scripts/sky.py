@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import os
 from dataclasses import dataclass, field
 from datetime import datetime
 from functools import lru_cache
@@ -133,7 +134,7 @@ def _timescale() -> Any:
 
 @lru_cache(maxsize=1)
 def _ephemeris() -> Any:
-    cache = Path("data") / ".skyfield"
+    cache = Path(os.environ.get("DATA_DIR", "data")) / ".skyfield"
     cache.mkdir(parents=True, exist_ok=True)
     loader = load
     loader.directory = str(cache)

@@ -1,4 +1,4 @@
-"""Copy a GPX file into the local drop zone (data/gpx/)."""
+"""Copy a GPX file into the local drop zone."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ SAMPLE_GPX = Path("data/samples/sample_night_run.gpx")
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Copy a GPX into data/gpx/")
+    parser = argparse.ArgumentParser(description="Copy a GPX into the drop zone")
     parser.add_argument(
         "src",
         nargs="?",
@@ -19,9 +19,14 @@ def main() -> None:
         help="Path to a .gpx file (default: committed sample)",
     )
     parser.add_argument(
+        "--dest",
+        default=str(GPX_DEST_DIR),
+        help="Drop zone directory (default: data/gpx)",
+    )
+    parser.add_argument(
         "--clear",
         action="store_true",
-        help="Remove existing files in data/gpx/ before copying",
+        help="Remove existing files in the drop zone before copying",
     )
     args = parser.parse_args()
 
@@ -29,10 +34,11 @@ def main() -> None:
     if not src.is_file():
         raise SystemExit(f"GPX not found: {src}")
 
-    if args.clear and GPX_DEST_DIR.exists():
-        shutil.rmtree(GPX_DEST_DIR)
-    GPX_DEST_DIR.mkdir(parents=True, exist_ok=True)
-    dest = GPX_DEST_DIR / src.name
+    dest_dir = Path(args.dest)
+    if args.clear and dest_dir.exists():
+        shutil.rmtree(dest_dir)
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / src.name
     shutil.copy(src, dest)
     print(f"Copied {src} → {dest}")
 

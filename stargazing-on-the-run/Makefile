@@ -1,7 +1,17 @@
 # Uses uv (https://docs.astral.sh/uv) for dependency management — uv sync creates/updates .venv; run commands via uv run, no manual activation.
 
-GPX_DIR ?= data/gpx
-SKY_LOGS_DIR ?= data/sky-logs
+DATA_ROOT ?= $(HOME)/data
+REPO_NAME := $(notdir $(CURDIR))
+DATA_DIR  ?= $(DATA_ROOT)/$(REPO_NAME)
+export DATA_DIR
+
+GPX_DIR ?= $(DATA_DIR)/gpx
+SKY_LOGS_DIR ?= $(DATA_DIR)/sky-logs
+SCRIPTS_DIR ?= $(DATA_DIR)/scripts
+SCREENSHOTS_DIR ?= $(DATA_DIR)/screenshots
+MAPS_DIR ?= $(DATA_DIR)/maps
+MERGED_DIR ?= $(DATA_DIR)/screenshots-with-maps
+SKY_INDEX_JSON ?= $(DATA_DIR)/sky-index.json
 SRC ?=
 START ?=
 GPX ?=
@@ -9,27 +19,27 @@ GPX ?=
 install:
 	@uv sync --dev
 
-# Copy a GPX into data/gpx/. Default: committed sample. Override: make gpx SRC=/path/to/file.gpx
+# Copy a GPX into $(GPX_DIR). Default: committed sample (data/samples/). Override: make gpx SRC=/path/to/file.gpx
 gpx: install
 	@if [ -n "$(SRC)" ]; then \
-		uv run python scripts/gpx.py "$(SRC)" --clear; \
+		uv run python scripts/gpx.py "$(SRC)" --clear --dest $(GPX_DIR); \
 	else \
-		uv run python scripts/gpx.py --clear; \
+		uv run python scripts/gpx.py --clear --dest $(GPX_DIR); \
 	fi
 
 # Sky identity logs (no Stellarium required)
 sky-log: install
 	@uv run python -m scripts.sky_log $(GPX_DIR) $(SKY_LOGS_DIR)
-	@uv run python -m scripts.sky_index --sky-logs $(SKY_LOGS_DIR)
+	@uv run python -m scripts.sky_index --sky-logs $(SKY_LOGS_DIR) --out $(SKY_INDEX_JSON)
 
 stellarium-scripts: install
 	@uv run python -m scripts.create_scripts \
 	$(GPX_DIR) \
-	data/scripts \
-	data/screenshots
+	$(SCRIPTS_DIR) \
+	$(SCREENSHOTS_DIR)
 
 screenshots:
-	@for file in data/scripts/*.ssc; do \
+	@for file in $(SCRIPTS_DIR)/*.ssc; do \
 		script_path=$$(realpath $$file); \
 		/Applications/Stellarium.app/Contents/MacOS/stellarium --startup-script $$script_path; \
 	done
@@ -37,17 +47,17 @@ screenshots:
 maps: install
 	@uv run python -m scripts.make_maps \
 	$(GPX_DIR) \
-	data/maps
+	$(MAPS_DIR)
 
 merge: install
 	@uv run python scripts/merge.py \
 	$(GPX_DIR) \
-	data/screenshots \
-	data/maps \
-	data/screenshots-with-maps
+	$(SCREENSHOTS_DIR) \
+	$(MAPS_DIR) \
+	$(MERGED_DIR)
 
 video:
-	@for dir in data/screenshots-with-maps/*/; do \
+	@for dir in $(MERGED_DIR)/*/; do \
 		if [ -n "$$(ls $$dir/*.png 2>/dev/null)" ]; then \
 			subdir=$$(basename $$dir); \
 			echo "Creating video for $$subdir..."; \
@@ -57,7 +67,7 @@ video:
 				-c:v libx264 \
 				-pix_fmt yuv420p \
 				-filter:v "setpts=3.0*PTS" \
-				"data/$$subdir.mp4"; \
+				"$(DATA_DIR)/$$subdir.mp4"; \
 			echo "Video created: $$subdir.mp4"; \
 		fi; \
 	done
@@ -65,26 +75,26 @@ video:
 # Route profile, seasonal rotation, constellation cards
 profile: install
 	@uv run python -m scripts.profile --gpx-dir $(GPX_DIR) --out $(SKY_LOGS_DIR) --also-sky-log
-	@uv run python -m scripts.sky_index --sky-logs $(SKY_LOGS_DIR)
+	@uv run python -m scripts.sky_index --sky-logs $(SKY_LOGS_DIR) --out $(SKY_INDEX_JSON)
 
 # Rebuild personal sky index only
 index: install
-	@uv run python -m scripts.sky_index --sky-logs $(SKY_LOGS_DIR)
+	@uv run python -m scripts.sky_index --sky-logs $(SKY_LOGS_DIR) --out $(SKY_INDEX_JSON)
 
-# Pre-run briefing. Example: make tonight GPX=data/gpx/sample_night_run.gpx START=2026-07-24T21:30
+# Pre-run briefing. Example: make tonight GPX=$(DATA_DIR)/gpx/sample_night_run.gpx START=2026-07-24T21:30
 tonight: install
 	@if [ -z "$(GPX)" ] || [ -z "$(START)" ]; then \
-		echo "Usage: make tonight GPX=data/gpx/your.gpx START=YYYY-MM-DDTHH:MM"; \
+		echo "Usage: make tonight GPX=$(GPX_DIR)/your.gpx START=YYYY-MM-DDTHH:MM"; \
 		exit 1; \
 	fi
-	@uv run python -m scripts.tonight --gpx "$(GPX)" --start "$(START)"
+	@uv run python -m scripts.tonight --gpx "$(GPX)" --start "$(START)" --sky-logs-dir $(SKY_LOGS_DIR)
 
 tonight-weather: install
 	@if [ -z "$(GPX)" ] || [ -z "$(START)" ]; then \
-		echo "Usage: make tonight-weather GPX=data/gpx/your.gpx START=YYYY-MM-DDTHH:MM"; \
+		echo "Usage: make tonight-weather GPX=$(GPX_DIR)/your.gpx START=YYYY-MM-DDTHH:MM"; \
 		exit 1; \
 	fi
-	@uv run python -m scripts.tonight --gpx "$(GPX)" --start "$(START)" --weather
+	@uv run python -m scripts.tonight --gpx "$(GPX)" --start "$(START)" --weather --sky-logs-dir $(SKY_LOGS_DIR)
 
 # Full visual pipeline (requires Stellarium on macOS for screenshots)
 all: sky-log stellarium-scripts screenshots maps merge
@@ -94,20 +104,23 @@ demo: install
 	@$(MAKE) sky-log
 	@$(MAKE) profile
 	@echo ""
-	@echo "Open data/sky-logs/sample_night_run/sky_log.md"
+	@echo "Open $(SKY_LOGS_DIR)/sample_night_run/sky_log.md"
 
 test: install
 	@uv run python -m pytest
 
 clean:
-	@rm -rf data/gpx data/scripts data/screenshots data/maps data/screenshots-with-maps data/sky-logs data/sky-index.json data/sky-index.md data/*.mp4 data/.skyfield
+	@rm -rf $(DATA_DIR)
 
 lock:
 	@uv lock
 
 help:
+	@echo "Generated data goes under DATA_DIR (default: $(DATA_DIR))"
+	@echo "Override with DATA_ROOT=... or DATA_DIR=..."
+	@echo ""
 	@echo "install              - create/update .venv and install dependencies"
-	@echo "gpx                  - copy sample (or SRC=...) into data/gpx/"
+	@echo "gpx                  - copy sample (or SRC=...) into \$$(GPX_DIR)/"
 	@echo "sky-log              - Skyfield sky logs + personal index (no Stellarium)"
 	@echo "profile              - route profile, seasonal rotation, constellation cards"
 	@echo "index                - rebuild personal sky index from sky-logs"

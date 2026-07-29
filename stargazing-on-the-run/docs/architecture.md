@@ -26,7 +26,7 @@ Optional visual path:
 | `sky_index.py` | Append-only personal sky index |
 | `profile.py` | Route profile, seasonal rotation, constellation cards |
 | `tonight.py` | Pre-run briefing, glance card, audio script, weather |
-| `gpx.py` | Copy sample or `SRC` into `data/gpx/` |
+| `gpx.py` | Copy sample or `SRC` into the GPX drop zone |
 | `create_scripts.py` | Stellarium scripts |
 | `make_maps.py` / `merge.py` | Map thumbnails and composite images |
 
@@ -35,16 +35,17 @@ Shared sky identity: everything that answers “what was / will be there” goes
 ## Data layout
 
 ```text
-data/gpx/              # drop zone (generated; not committed)
-data/samples/          # committed sample GPX
-data/content/          # constellation card YAML
-data/sky-logs/<run>/   # sky_log, profile, seasonal, cards, tonight/
-data/sky-index.json    # project-wide first-seen index
-data/.skyfield/        # ephemeris cache (generated)
-data/scripts|screenshots|maps|…  # Stellarium visual path
+data/samples/                    # committed sample GPX
+data/content/                    # constellation card YAML
+
+$(DATA_DIR)/gpx/                 # drop zone (generated)
+$(DATA_DIR)/sky-logs/<run>/      # sky_log, profile, seasonal, cards, tonight/
+$(DATA_DIR)/sky-index.json       # project-wide first-seen index
+$(DATA_DIR)/.skyfield/           # ephemeris cache (generated)
+$(DATA_DIR)/scripts|screenshots|maps|…  # Stellarium visual path
 ```
 
-`run-id` = GPX basename. `data/*` is gitignored except `samples/` and `content/`.
+`run-id` = GPX basename. `DATA_DIR` defaults to `~/data/stargazing-on-the-run/` (see Makefile). Everything under `data/` in the repo is gitignored except `samples/` and `content/`.
 
 ## Principles (from roadmap)
 

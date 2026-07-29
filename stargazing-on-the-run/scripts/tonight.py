@@ -337,14 +337,19 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Generate a pre-run sky briefing")
     parser.add_argument("--gpx", required=True, help="Route GPX")
     parser.add_argument("--start", required=True, help="Planned start (local) YYYY-MM-DDTHH:MM")
-    parser.add_argument("--out", default=None, help="Output directory")
+    parser.add_argument("--out", default=None, help="Output directory (overrides --sky-logs-dir)")
+    parser.add_argument(
+        "--sky-logs-dir",
+        default="data/sky-logs",
+        help="Root dir for per-run sky logs; briefing is written under <dir>/<run-id>/tonight",
+    )
     parser.add_argument("--weather", action="store_true", help="Fetch Open-Meteo cloud cover")
     args = parser.parse_args()
 
     start = _parse_start(args.start)
     preview = build_tonight(args.gpx, start, weather=args.weather)
     run_id = Path(args.gpx).stem
-    out = Path(args.out) if args.out else Path("data/sky-logs") / run_id / "tonight"
+    out = Path(args.out) if args.out else Path(args.sky_logs_dir) / run_id / "tonight"
     write_tonight(preview, out)
 
 
