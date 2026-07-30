@@ -6,6 +6,7 @@ IMAGES_DIR := $(DATA_DIR)/images
 
 .PHONY: all art stars galaxies planets nebulae clusters exotic path timelapse test clean install lock help
 
+# Entry point (default goal): generate every style of star art
 all: art stars galaxies planets nebulae clusters exotic path timelapse
 
 install:

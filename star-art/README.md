@@ -10,7 +10,13 @@ This project generates minimalist star-field artworks from real star positions.
 - Projects the visible stars into a 2D stereographic view centered at azimuth 0 deg and altitude 90 deg with a 180 deg field of view.
 - Renders each view with Matplotlib and saves a PNG to `images/<style>/...`.
 
-## Makefile
+## How to run
+
+```
+make            # or `make all` — generates every style below
+```
+
+Individual styles:
 
 ```
 make art        # generates the base star art
