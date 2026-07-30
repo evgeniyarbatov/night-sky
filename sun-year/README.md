@@ -8,6 +8,10 @@ The sun affects my photography, what I see on my early morning and late evening 
 
 The sun is also one of the easiest astronomical objects to observe. It is an invitation to study the stars that are far away from the Earth.
 
-## Usage
+## How to run
 
-Run `make help` to list targets (`plot`, `path`, `duration`, `analemma`, `test`, ...). Each saves a PNG to `~/data/sunset-sunrise-azimuth/` by default, no GUI window. Override with `make <target> DATA_ROOT=/path/to/shared` or `make <target> DATA_DIR=/tmp/run-42`.
+```bash
+make run
+```
+
+Generates all charts (`plot`, `path`, `duration`, `analemma`) as PNGs under `~/data/sunset-sunrise-azimuth/`, no GUI window. Run `make help` to list individual targets. Override output with `make <target> DATA_ROOT=/path/to/shared` or `make <target> DATA_DIR=/tmp/run-42`.

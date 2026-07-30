@@ -29,6 +29,9 @@ analemma: install
 	@mkdir -p $(DATA_DIR)
 	@DATA_DIR=$(DATA_DIR) uv run python scripts/analemma.py
 
+# Entry point: generate all sun charts (plot, path, duration, analemma) into DATA_DIR
+run: plot path duration analemma
+
 help:
 	@echo "install    - uv sync (create/update .venv with all deps)"
 	@echo "test       - run unit tests"
@@ -37,4 +40,5 @@ help:
 	@echo "path       - save scripts/sun-path.py output to \$$(DATA_DIR)/sun-path.png"
 	@echo "duration   - save scripts/day-duration.py output to \$$(DATA_DIR)/day-duration.png"
 	@echo "analemma   - save scripts/analemma.py output to \$$(DATA_DIR)/analemma.png"
+	@echo "run        - generate all charts (plot, path, duration, analemma)"
 	@echo "Default DATA_DIR: ~/data/sunset-sunrise-azimuth. Override: make plot DATA_DIR=/tmp/run"
