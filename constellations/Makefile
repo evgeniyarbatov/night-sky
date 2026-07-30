@@ -13,8 +13,11 @@ test: install
 download: install
 	@DATA_DIR=$(DATA_DIR) uv run python scripts/download.py
 
-plot: install clean
+plot: install
+	@rm -rf $(DATA_DIR)/plots/*
 	@DATA_DIR=$(DATA_DIR) uv run python scripts/plot_constellations.py
+
+run: download plot
 
 clean:
 	@rm -rf $(DATA_DIR)/plots/*
@@ -27,6 +30,7 @@ help:
 	@echo "install    - create/update .venv and install dependencies"
 	@echo "test       - run offline unit tests (tests/test_*.py)"
 	@echo "download   - run scripts/download.py"
-	@echo "plot       - clean and run scripts/plot_constellations.py"
+	@echo "plot       - clear plots and run scripts/plot_constellations.py"
+	@echo "run        - full pipeline: install → download → plot"
 	@echo "clean      - remove generated plots and .venv"
 	@echo "lock       - refresh uv.lock"
