@@ -43,3 +43,6 @@ help:
 	@echo "DATA_DIR=$(DATA_DIR) (override with DATA_ROOT=... or DATA_DIR=...)"
 
 .PHONY: install nasa planets inspire test clean lock help
+
+# Entry point: fetch all image sets.
+run: nasa planets inspire
