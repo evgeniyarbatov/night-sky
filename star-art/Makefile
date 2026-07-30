@@ -66,3 +66,6 @@ help:
 	@echo ""
 	@echo "Images are written to \$$(DATA_DIR)/images, default: ~/data/star-art/images"
 	@echo "Override with: make <target> DATA_ROOT=/path or DATA_DIR=/path"
+
+# Entry point: full art generation pipeline.
+run: all
