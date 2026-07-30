@@ -15,8 +15,8 @@ from PIL import Image
 from ra_utils import ra_hms_to_deg
 
 # ===== User settings =====
-LAT = 20.99484044876172
-LON = 105.86796107324045
+LAT = 10.811313684630415
+LON = 106.67428829633214
 ELEV = 10  # meters
 DATA_DIR = os.environ.get("DATA_DIR", "data")
 DATA_FOLDER = "data/boundaries"
