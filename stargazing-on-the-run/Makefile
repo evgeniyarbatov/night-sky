@@ -136,3 +136,6 @@ help:
 	@echo "test                 - run pytest"
 	@echo "clean                - remove generated data (keeps samples/content)"
 	@echo "lock                 - refresh uv.lock"
+
+# Entry point: full capture pipeline (already chains sky-log, stellarium-scripts, screenshots, maps, merge).
+run: all
