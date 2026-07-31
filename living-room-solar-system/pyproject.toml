@@ -6,7 +6,6 @@ dependencies = [
     "skyfield",
     "astral",
     "numpy",
-    "python-dotenv",
 ]
 
 [dependency-groups]

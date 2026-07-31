@@ -23,4 +23,3 @@ repos:
           - astral==3.2
           - numpy==2.4.6
           - pytest==9.1.1
-          - python-dotenv==1.2.2

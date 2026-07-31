@@ -1,15 +1,19 @@
-import os
+import json
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from math import radians, tan
-from typing import TypedDict
+from pathlib import Path
+from typing import Any, TypedDict
 from zoneinfo import ZoneInfo
 
 import numpy as np
 from astral import LocationInfo
 from astral.sun import sun
-from dotenv import load_dotenv
 from skyfield.api import Topos, load
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_CONFIG_PATH = REPO_ROOT / "config.json"
+EPHEMERIS_PATH = REPO_ROOT / "de421.bsp"
 
 
 @dataclass(frozen=True)
@@ -32,43 +36,45 @@ class VisibilitySummary(TypedDict):
     set_time: datetime | None
 
 
-def _require_env(name: str) -> str:
-    value = os.getenv(name)
-    if value is None or value.strip() == "":
-        raise ValueError(f"Missing required setting: {name}")
+def _require_key(config: dict[str, Any], key: str) -> Any:
+    value = config.get(key)
+    if value is None or value == "":
+        raise ValueError(f"Missing required setting: {key}")
     return value
 
 
-def _env_float(name: str) -> float:
+def _as_float(config: dict[str, Any], key: str) -> float:
+    value = _require_key(config, key)
     try:
-        return float(_require_env(name))
-    except ValueError as exc:
-        raise ValueError(f"Invalid float for {name}") from exc
+        return float(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"Invalid float for {key}") from exc
 
 
-def _env_int(name: str) -> int:
+def _as_int(config: dict[str, Any], key: str) -> int:
+    value = _require_key(config, key)
     try:
-        return int(_require_env(name))
-    except ValueError as exc:
-        raise ValueError(f"Invalid int for {name}") from exc
+        return int(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"Invalid int for {key}") from exc
 
 
-def load_settings(load_dotenv_file: bool = True) -> Settings:
-    if load_dotenv_file:
-        load_dotenv()
+def load_settings(config_path: Path = DEFAULT_CONFIG_PATH) -> Settings:
+    with open(config_path) as f:
+        config: dict[str, Any] = json.load(f)
 
-    sample_interval_minutes = _env_int("SAMPLE_INTERVAL_MINUTES")
+    sample_interval_minutes = _as_int(config, "sample_interval_minutes")
     if sample_interval_minutes <= 0:
-        raise ValueError("SAMPLE_INTERVAL_MINUTES must be positive")
+        raise ValueError("sample_interval_minutes must be positive")
 
     return Settings(
-        city_name=_require_env("CITY_NAME"),
-        country=_require_env("COUNTRY"),
-        latitude=_env_float("LATITUDE"),
-        longitude=_env_float("LONGITUDE"),
-        timezone_str=_require_env("TIMEZONE"),
+        city_name=str(_require_key(config, "city_name")),
+        country=str(_require_key(config, "country")),
+        latitude=_as_float(config, "latitude"),
+        longitude=_as_float(config, "longitude"),
+        timezone_str=str(_require_key(config, "timezone")),
         sample_interval_minutes=sample_interval_minutes,
-        elevation_m=_env_float("ELEVATION_M"),
+        elevation_m=_as_float(config, "elevation_m"),
     )
 
 
@@ -206,7 +212,7 @@ def main() -> None:
     settings = load_settings()
 
     # Load ephemeris and timescale
-    eph = load("de421.bsp")
+    eph = load(str(EPHEMERIS_PATH))
     ts = load.timescale()
 
     # Define observer and location

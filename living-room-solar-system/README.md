@@ -6,7 +6,7 @@ by converting sky positions into wall projection heights.
 
 ## What the script does
 
-`planets.py`:
+`scripts/planets.py`:
 - Uses Skyfield + an ephemeris file (`de421.bsp`) to compute planet positions.
 - Uses Astral to find sunset (today) and sunrise (tomorrow) for the configured
   location and time zone.
@@ -28,16 +28,18 @@ This creates a `.venv` and installs dependencies.
 
 ## Configure your location
 
-Edit `.env` in the repo root:
+Edit `config.json` in the repo root:
 
-```env
-CITY_NAME=Hanoi
-COUNTRY=Vietnam
-LATITUDE=20.994852335385882
-LONGITUDE=105.8676630997609
-TIMEZONE=Asia/Ho_Chi_Minh
-SAMPLE_INTERVAL_MINUTES=10
-ELEVATION_M=36.5
+```json
+{
+  "city_name": "Ho Chi Minh",
+  "country": "Vietnam",
+  "latitude": 10.811487948774618,
+  "longitude": 106.6741415742141,
+  "timezone": "Asia/Ho_Chi_Minh",
+  "sample_interval_minutes": 10,
+  "elevation_m": 5
+}
 ```
 
 All values are required. The script loads these settings at runtime.
@@ -45,7 +47,7 @@ All values are required. The script loads these settings at runtime.
 ## Run
 
 ```bash
-make planets
+make run
 ```
 
 The script is interactive. After it prints visible planets, it will prompt for

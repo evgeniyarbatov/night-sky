@@ -1,20 +1,31 @@
 import datetime as dt
-
-import pytest
+import json
+from pathlib import Path
 
 import planets
+import pytest
+
+BASE_CONFIG: dict[str, object] = {
+    "city_name": "Hanoi",
+    "country": "Vietnam",
+    "latitude": 20.5,
+    "longitude": 105.2,
+    "timezone": "Asia/Ho_Chi_Minh",
+    "sample_interval_minutes": 15,
+    "elevation_m": 12.3,
+}
 
 
-def test_load_settings_success(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("CITY_NAME", "Hanoi")
-    monkeypatch.setenv("COUNTRY", "Vietnam")
-    monkeypatch.setenv("LATITUDE", "20.5")
-    monkeypatch.setenv("LONGITUDE", "105.2")
-    monkeypatch.setenv("TIMEZONE", "Asia/Ho_Chi_Minh")
-    monkeypatch.setenv("SAMPLE_INTERVAL_MINUTES", "15")
-    monkeypatch.setenv("ELEVATION_M", "12.3")
+def _write_config(path: Path, config: dict[str, object]) -> Path:
+    config_path = path / "config.json"
+    config_path.write_text(json.dumps(config))
+    return config_path
 
-    settings = planets.load_settings(load_dotenv_file=False)
+
+def test_load_settings_success(tmp_path: Path) -> None:
+    config_path = _write_config(tmp_path, BASE_CONFIG)
+
+    settings = planets.load_settings(config_path)
 
     assert settings.city_name == "Hanoi"
     assert settings.country == "Vietnam"
@@ -25,43 +36,28 @@ def test_load_settings_success(monkeypatch: pytest.MonkeyPatch) -> None:
     assert settings.elevation_m == 12.3
 
 
-def test_load_settings_missing(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.delenv("CITY_NAME", raising=False)
-    monkeypatch.setenv("COUNTRY", "Vietnam")
-    monkeypatch.setenv("LATITUDE", "20.5")
-    monkeypatch.setenv("LONGITUDE", "105.2")
-    monkeypatch.setenv("TIMEZONE", "Asia/Ho_Chi_Minh")
-    monkeypatch.setenv("SAMPLE_INTERVAL_MINUTES", "15")
-    monkeypatch.setenv("ELEVATION_M", "12.3")
+def test_load_settings_missing(tmp_path: Path) -> None:
+    config = {k: v for k, v in BASE_CONFIG.items() if k != "city_name"}
+    config_path = _write_config(tmp_path, config)
 
-    with pytest.raises(ValueError, match="Missing required setting: CITY_NAME"):
-        planets.load_settings(load_dotenv_file=False)
+    with pytest.raises(ValueError, match="Missing required setting: city_name"):
+        planets.load_settings(config_path)
 
 
-def test_load_settings_invalid_interval(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("CITY_NAME", "Hanoi")
-    monkeypatch.setenv("COUNTRY", "Vietnam")
-    monkeypatch.setenv("LATITUDE", "20.5")
-    monkeypatch.setenv("LONGITUDE", "105.2")
-    monkeypatch.setenv("TIMEZONE", "Asia/Ho_Chi_Minh")
-    monkeypatch.setenv("SAMPLE_INTERVAL_MINUTES", "0")
-    monkeypatch.setenv("ELEVATION_M", "12.3")
+def test_load_settings_invalid_interval(tmp_path: Path) -> None:
+    config = {**BASE_CONFIG, "sample_interval_minutes": 0}
+    config_path = _write_config(tmp_path, config)
 
-    with pytest.raises(ValueError, match="SAMPLE_INTERVAL_MINUTES must be positive"):
-        planets.load_settings(load_dotenv_file=False)
+    with pytest.raises(ValueError, match="sample_interval_minutes must be positive"):
+        planets.load_settings(config_path)
 
 
-def test_load_settings_missing_country(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("CITY_NAME", "Hanoi")
-    monkeypatch.delenv("COUNTRY", raising=False)
-    monkeypatch.setenv("LATITUDE", "20.5")
-    monkeypatch.setenv("LONGITUDE", "105.2")
-    monkeypatch.setenv("TIMEZONE", "Asia/Ho_Chi_Minh")
-    monkeypatch.setenv("SAMPLE_INTERVAL_MINUTES", "15")
-    monkeypatch.setenv("ELEVATION_M", "12.3")
+def test_load_settings_missing_country(tmp_path: Path) -> None:
+    config = {k: v for k, v in BASE_CONFIG.items() if k != "country"}
+    config_path = _write_config(tmp_path, config)
 
-    with pytest.raises(ValueError, match="Missing required setting: COUNTRY"):
-        planets.load_settings(load_dotenv_file=False)
+    with pytest.raises(ValueError, match="Missing required setting: country"):
+        planets.load_settings(config_path)
 
 
 def test_get_wall_distance_for_azimuth_wrap() -> None:
