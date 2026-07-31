@@ -2,6 +2,8 @@
 
 Plots of which constellations are visible overnight from a fixed observer location. Boundary data and reference GIFs come from the [IAU constellation pages](https://iauarchive.eso.org/public/themes/constellations/); visibility uses astropy/astroplan for tonight’s astronomical dusk → dawn.
 
+<img width="3666" height="1233" alt="Andromeda" src="https://github.com/user-attachments/assets/e071ca39-cec8-4106-84e1-7900995fbda9" />
+
 ## Run
 
 Requires [uv](https://docs.astral.sh/uv/) and Python 3.11+.
