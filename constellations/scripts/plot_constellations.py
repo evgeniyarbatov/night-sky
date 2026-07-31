@@ -1,3 +1,4 @@
+import json
 import os
 from datetime import datetime, timedelta
 from typing import TypedDict
@@ -15,16 +16,22 @@ from PIL import Image
 from ra_utils import ra_hms_to_deg
 
 # ===== User settings =====
-LAT = 10.811313684630415
-LON = 106.67428829633214
-ELEV = 10  # meters
+CONFIG_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config.json"
+)
+with open(CONFIG_PATH) as f:
+    config = json.load(f)
+
+LAT = config["lat"]
+LON = config["lon"]
+ELEV = config["elev_m"]
 DATA_DIR = os.environ.get("DATA_DIR", "data")
 DATA_FOLDER = "data/boundaries"
 OUTPUT_FOLDER = os.path.join(DATA_DIR, "plots")
 GIF_FOLDER = os.path.join(DATA_DIR, "gifs")
 DATE = datetime.now().date()
-DELTA_MINUTES = 10
-HANOI_TZ = pytz.timezone("Asia/Ho_Chi_Minh")
+DELTA_MINUTES = config["delta_minutes"]
+HANOI_TZ = pytz.timezone(config["timezone"])
 NAMES_FILE = "data/constellation_names.csv"
 
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)

@@ -12,7 +12,7 @@ make plot       # visibility plots for tonight
 make test       # offline unit tests
 ```
 
-Observer lat/lon live in `scripts/plot_constellations.py` (currently Saigon). Plots land under `~/data/constellations/plots/` by default. Override with `DATA_ROOT=` (parent) or `DATA_DIR=` (full path) on any `make` target.
+Observer lat/lon/elevation and other settings live in `config.json` at the repo root (currently Saigon). Plots land under `~/data/constellations/plots/` by default. Override with `DATA_ROOT=` (parent) or `DATA_DIR=` (full path) on any `make` target.
 
 ```sh
 make plot DATA_DIR=/tmp/constellations
