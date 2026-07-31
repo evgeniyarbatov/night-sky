@@ -32,6 +32,7 @@ GIF_FOLDER = os.path.join(DATA_DIR, "gifs")
 DATE = datetime.now().date()
 DELTA_MINUTES = config["delta_minutes"]
 HANOI_TZ = pytz.timezone(config["timezone"])
+TZ_LABEL = config["tz_label"]
 NAMES_FILE = "data/constellation_names.csv"
 
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
@@ -216,7 +217,7 @@ for const_abbr, data in constellation_data.items():
     ax_az = fig.add_subplot(gs[az_col])
     ax_az.plot(times, azimuths, color="darkorange", lw=2)
     ax_az.set_ylabel("Azimuth ° (Direction)")
-    ax_az.set_xlabel("Time (Hanoi)")
+    ax_az.set_xlabel(f"Time ({TZ_LABEL})")
     # matplotlib.dates.DateFormatter/HourLocator have no type annotations upstream
     ax_az.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M", tz=HANOI_TZ))  # type: ignore[no-untyped-call]
     ax_az.xaxis.set_major_locator(mdates.HourLocator(interval=2, tz=HANOI_TZ))  # type: ignore[no-untyped-call]
@@ -235,7 +236,7 @@ for const_abbr, data in constellation_data.items():
     ax_alt = fig.add_subplot(gs[alt_col])
     ax_alt.plot(times, altitudes, color="steelblue", lw=2)
     ax_alt.set_ylabel("Altitude (°)")
-    ax_alt.set_xlabel("Time (Hanoi)")
+    ax_alt.set_xlabel(f"Time ({TZ_LABEL})")
     ax_alt.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M", tz=HANOI_TZ))  # type: ignore[no-untyped-call]
     ax_alt.xaxis.set_major_locator(mdates.HourLocator(interval=2, tz=HANOI_TZ))  # type: ignore[no-untyped-call]
     ax_alt.grid(True, alpha=0.3)
