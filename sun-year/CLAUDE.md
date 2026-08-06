@@ -2,7 +2,7 @@
 
 ## Project
 
-Four independent scripts that chart the Sun's position/daylight over a year for a fixed location (Hanoi, Vietnam, hardcoded lat/lon): azimuth/altitude plot, sun path, day-duration, and analemma.
+Four independent scripts that chart the Sun's position/daylight over a year for a fixed location (from `config.json`): azimuth/altitude plot, sun path, day-duration, and analemma.
 
 ## Entry points
 
@@ -26,5 +26,5 @@ Each writes a PNG to `$(DATA_DIR)` (default `~/data/sunset-sunrise-azimuth/`; ov
 ## Conventions
 
 - Python 3.11+, `uv` for dependency management.
-- Location is hardcoded per-script (Hanoi); no CLI args for lat/lon.
+- Location lives only in repo-root `config.json` (`name`, `latitude`, `longitude`, `timezone`); scripts read it at startup. No CLI args for lat/lon.
 - `analemma.py` needs network on first run to fetch `de440s.bsp` unless pre-cached.

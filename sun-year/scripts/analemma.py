@@ -13,6 +13,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import sys
 from datetime import date, datetime, timedelta
@@ -36,10 +37,13 @@ except ImportError:
     print("Note: Install 'tqdm' for progress bars: pip install tqdm", file=sys.stderr)
 
 
-# --- User-provided location/timezone (Hanoi) ---
-LATITUDE = 20.994839969936898
-LONGITUDE = 105.86779701825405
-TZ_NAME = "Asia/Bangkok"
+REPO_ROOT = Path(__file__).resolve().parent.parent
+with open(REPO_ROOT / "config.json") as f:
+    _cfg = json.load(f)
+LOCATION_NAME = _cfg["name"]
+LATITUDE = _cfg["latitude"]
+LONGITUDE = _cfg["longitude"]
+TZ_NAME = _cfg["timezone"]
 
 # --- Parameters ---
 YEAR = 2026
@@ -326,7 +330,7 @@ def main() -> None:
 
         title = (
             "Sun analemma • azimuth vs altitude\n"
-            f"Hanoi • {LATITUDE:.4f}°, {LONGITUDE:.4f}° • {TZ_NAME} • {YEAR}"
+            f"{LOCATION_NAME} • {LATITUDE:.4f}°, {LONGITUDE:.4f}° • {TZ_NAME} • {YEAR}"
         )
         plot_analemma(data, title)
 

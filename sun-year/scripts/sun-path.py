@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 
@@ -10,11 +11,14 @@ import pandas as pd
 import pvlib
 
 OUTPUT_DIR = Path(os.environ.get("DATA_DIR", "data"))
+REPO_ROOT = Path(__file__).resolve().parent.parent
 
-# === CONFIGURATION ===
-latitude = 20.994839969936898
-longitude = 105.86779701825405
-tz = "Asia/Bangkok"  # Hanoi timezone
+with open(REPO_ROOT / "config.json") as f:
+    _cfg = json.load(f)
+location_name = _cfg["name"]
+latitude = _cfg["latitude"]
+longitude = _cfg["longitude"]
+tz = _cfg["timezone"]
 
 # === DEFINE DATE RANGE: 12 MONTHS FROM TODAY ===
 start_date = pd.Timestamp.now(tz=tz).normalize()
@@ -58,7 +62,11 @@ for i, month in enumerate(months):
         label=pd.Timestamp(2000, month, 1).strftime("%b"),
     )
 
-# === ZEN + VIBRANT AESTHETIC ===
+plt.title(
+    f"Solar altitude by hour • {location_name} ({latitude:.4f}°, {longitude:.4f}°)",
+    fontsize=12,
+    fontweight="bold",
+)
 plt.xlabel("Hour of Day", fontsize=12)
 plt.ylabel("Solar Altitude (°)", fontsize=12)
 plt.xticks(fontsize=10)
@@ -75,11 +83,9 @@ plt.legend(
 plt.box(False)
 plt.tight_layout()
 
-# Gentle background
 plt.gcf().patch.set_facecolor("#f9f9f6")
 plt.gca().set_facecolor("#f9f9f6")
 
-# Remove spines for minimalist look
 for spine in plt.gca().spines.values():
     spine.set_visible(False)
 
@@ -87,3 +93,13 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 out_path = OUTPUT_DIR / "sun-path.png"
 plt.savefig(out_path, dpi=150)
 print(f"Saved plot to {out_path}")
+
+peak_by_month = monthly_avg.loc[monthly_avg.groupby("month")["altitude"].idxmax()]
+print("\nPeak solar altitude by month (monthly mean of half-hour samples):")
+for _, row in peak_by_month.iterrows():
+    label = pd.Timestamp(2000, int(row["month"]), 1).strftime("%b")
+    print(f"  {label}: {row['altitude']:.1f}° around {int(row['hour']):02d}:00")
+print(
+    f"  Range: {peak_by_month['altitude'].max() - peak_by_month['altitude'].min():.1f}° "
+    f"({peak_by_month['altitude'].min():.1f}°–{peak_by_month['altitude'].max():.1f}°)"
+)

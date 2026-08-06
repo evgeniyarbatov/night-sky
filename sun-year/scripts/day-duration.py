@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 
@@ -10,11 +11,14 @@ import pandas as pd
 import pvlib
 
 OUTPUT_DIR = Path(os.environ.get("DATA_DIR", "data"))
+REPO_ROOT = Path(__file__).resolve().parent.parent
 
-# === CONFIGURATION ===
-latitude = 20.994839969936898
-longitude = 105.86779701825405
-tz = "Asia/Bangkok"  # Hanoi timezone
+with open(REPO_ROOT / "config.json") as f:
+    _cfg = json.load(f)
+location_name = _cfg["name"]
+latitude = _cfg["latitude"]
+longitude = _cfg["longitude"]
+tz = _cfg["timezone"]
 
 # === DEFINE DATE RANGE: 12 MONTHS FROM TODAY ===
 start_date = pd.Timestamp.now(tz=tz).normalize()
@@ -54,7 +58,11 @@ plt.plot(
 )
 plt.scatter(monthly_avg["month"], monthly_avg["day_length"], s=70, color=colors, alpha=0.9)
 
-# === Minimal, Zen-like styling ===
+plt.title(
+    f"Daylight duration • {location_name} ({latitude:.4f}°, {longitude:.4f}°)",
+    fontsize=12,
+    fontweight="bold",
+)
 plt.xlabel("Month", fontsize=12)
 plt.ylabel("Daylight Duration (hours)", fontsize=12)
 plt.xticks(
@@ -67,11 +75,9 @@ plt.grid(alpha=0.15, linestyle="--")
 plt.box(False)
 plt.tight_layout()
 
-# Gentle background tones
 plt.gcf().patch.set_facecolor("#f9f9f6")
 plt.gca().set_facecolor("#f9f9f6")
 
-# Remove spines for calm aesthetic
 for spine in plt.gca().spines.values():
     spine.set_visible(False)
 
@@ -79,3 +85,18 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 out_path = OUTPUT_DIR / "day-duration.png"
 plt.savefig(out_path, dpi=150)
 print(f"Saved plot to {out_path}")
+
+daily_min_idx = df["day_length"].idxmin()
+daily_max_idx = df["day_length"].idxmax()
+shortest = df.loc[daily_min_idx]
+longest = df.loc[daily_max_idx]
+print("\nDaylight summary (daily rise–set):")
+print(
+    f"  Shortest: {shortest['day_length']:.2f} h on {shortest['date'].strftime('%Y-%m-%d')}"
+)
+print(f"  Longest:  {longest['day_length']:.2f} h on {longest['date'].strftime('%Y-%m-%d')}")
+print(f"  Range:    {longest['day_length'] - shortest['day_length']:.2f} h")
+print(
+    f"  Monthly means: {monthly_avg['day_length'].min():.2f}–"
+    f"{monthly_avg['day_length'].max():.2f} h"
+)

@@ -1,3 +1,4 @@
+import json
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -10,10 +11,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 OUTPUT_DIR = Path(os.environ.get("DATA_DIR", "data"))
+REPO_ROOT = Path(__file__).resolve().parent.parent
 
-# Location: Hanoi, Vietnam
-lat = 20.994839969936898
-lon = 105.86779701825405
+with open(REPO_ROOT / "config.json") as f:
+    _cfg = json.load(f)
+location_name = _cfg["name"]
+lat = _cfg["latitude"]
+lon = _cfg["longitude"]
 
 # Create observer
 observer = ephem.Observer()
@@ -112,6 +116,12 @@ sunset_max_idx = np.argmax(sunset_azimuths)
 
 # Plotting - Separate plots for sunrise and sunset
 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
+fig.suptitle(
+    f"Sunrise & sunset azimuth • {location_name} ({lat:.4f}°, {lon:.4f}°)",
+    fontsize=13,
+    fontweight="bold",
+    y=0.995,
+)
 
 # Stronger colors
 sunrise_color = "#FF8C00"  # Dark orange
@@ -120,6 +130,7 @@ equinox_color = "#4A90E2"  # Blue
 extrema_color = "#2ECC71"  # Green
 
 # Sunrise plot
+ax1.set_title("Sunrise", loc="left", fontsize=11, color="#555555")
 ax1.plot(dates, sunrise_azimuths, color=sunrise_color, alpha=0.8, linewidth=2.5)
 ax1.fill_between(dates, sunrise_azimuths, 90, alpha=0.2, color=sunrise_color)
 
@@ -189,6 +200,7 @@ ax1.spines["bottom"].set_color("#CCCCCC")
 ax1.tick_params(colors="#999999")
 
 # Sunset plot
+ax2.set_title("Sunset", loc="left", fontsize=11, color="#555555")
 ax2.plot(dates, sunset_azimuths, color=sunset_color, alpha=0.8, linewidth=2.5)
 ax2.fill_between(dates, sunset_azimuths, 270, alpha=0.2, color=sunset_color)
 
@@ -265,7 +277,7 @@ print(f"Saved plot to {out_path}")
 
 # Summary statistics
 print("\n" + "=" * 80)
-print("Annual Summary Statistics:")
+print(f"Annual Summary Statistics — {location_name} ({lat:.4f}°, {lon:.4f}°)")
 print("=" * 80)
 print("  Sunrise Azimuth:")
 print(f"    • Average: {np.mean(sunrise_azimuths):.2f}°")
