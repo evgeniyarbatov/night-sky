@@ -1,5 +1,5 @@
 [project]
-name = "sunset-sunrise-azimuth"
+name = "sun-year"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
@@ -8,8 +8,6 @@ dependencies = [
     "numpy",
     "pandas",
     "pvlib",
-    "skyfield",
-    "tqdm",
 ]
 
 [tool.uv]
@@ -37,7 +35,7 @@ warn_return_any = true
 warn_unused_ignores = true
 
 [[tool.mypy.overrides]]
-module = ["pvlib.*", "skyfield.*"]
+module = ["pvlib.*"]
 ignore_missing_imports = true
 
 [dependency-groups]
@@ -46,5 +44,4 @@ dev = [
     "pandas-stubs>=3.0.3.260530",
     "ruff>=0.15.21",
     "types-ephem>=4.2.0.20260712",
-    "types-tqdm>=4.68.0.20260608",
 ]

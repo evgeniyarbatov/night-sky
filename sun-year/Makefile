@@ -25,20 +25,31 @@ duration: install
 	@mkdir -p $(DATA_DIR)
 	@DATA_DIR=$(DATA_DIR) uv run python scripts/day-duration.py
 
-analemma: install
+times: install
 	@mkdir -p $(DATA_DIR)
-	@DATA_DIR=$(DATA_DIR) uv run python scripts/analemma.py
+	@DATA_DIR=$(DATA_DIR) uv run python scripts/sun-times.py
 
-# Entry point: generate all sun charts (plot, path, duration, analemma) into DATA_DIR
-run: plot path duration analemma
+noon: install
+	@mkdir -p $(DATA_DIR)
+	@DATA_DIR=$(DATA_DIR) uv run python scripts/noon-altitude.py
+
+twilight: install
+	@mkdir -p $(DATA_DIR)
+	@DATA_DIR=$(DATA_DIR) uv run python scripts/twilight.py
+
+# Entry point: generate every plot into DATA_DIR
+.PHONY: install test lock plot path duration times noon twilight run help
+run: plot path duration times noon twilight
 
 help:
+	@echo "run        - generate ALL plots into \$$(DATA_DIR)"
+	@echo "plot       - sunrise/set azimuth → \$$(DATA_DIR)/sun-azimuth.png"
+	@echo "path       - solar altitude by hour → \$$(DATA_DIR)/sun-path.png"
+	@echo "duration   - day length → \$$(DATA_DIR)/day-duration.png"
+	@echo "times      - rise/set/noon clock times → \$$(DATA_DIR)/sun-times.png"
+	@echo "noon       - noon altitude + shadow → \$$(DATA_DIR)/noon-altitude.png"
+	@echo "twilight   - golden hour length → \$$(DATA_DIR)/twilight.png"
 	@echo "install    - uv sync (create/update .venv with all deps)"
 	@echo "test       - run unit tests"
 	@echo "lock       - uv lock (refresh uv.lock)"
-	@echo "plot       - save scripts/plot-sun.py output to \$$(DATA_DIR)/sun-azimuth.png"
-	@echo "path       - save scripts/sun-path.py output to \$$(DATA_DIR)/sun-path.png"
-	@echo "duration   - save scripts/day-duration.py output to \$$(DATA_DIR)/day-duration.png"
-	@echo "analemma   - save scripts/analemma.py output to \$$(DATA_DIR)/analemma.png"
-	@echo "run        - generate all charts (plot, path, duration, analemma)"
-	@echo "Default DATA_DIR: ~/data/sunset-sunrise-azimuth. Override: make plot DATA_DIR=/tmp/run"
+	@echo "Default DATA_DIR: ~/data/\$$(REPO_NAME). Override: make run DATA_DIR=/tmp/run"
