@@ -42,6 +42,9 @@ class ConstellationVisibility(TypedDict):
     start: datetime | None
     end: datetime | None
     below_horizon: bool
+    times: list[datetime]
+    altitudes: list[float]
+    azimuths: list[float]
 
 
 # ===== Load constellation names =====
@@ -83,13 +86,6 @@ times = [
 ]
 times_astropy = Time([t.astimezone(pytz.UTC) for t in times])
 
-# ===== Observation time for direction info =====
-obs_time_local = HANOI_TZ.localize(
-    datetime.combine(DATE, datetime.strptime("23:00", "%H:%M").time())
-)
-obs_time_utc = obs_time_local.astimezone(pytz.UTC)
-obs_time_astropy = Time(obs_time_utc)
-
 constellation_data: dict[str, ConstellationVisibility] = {}
 
 # ===== Process constellation files =====
@@ -124,27 +120,27 @@ for file_name in os.listdir(DATA_FOLDER):
         for t in times_astropy:
             altaz_frame = AltAz(obstime=t, location=observer_location)
             star_altaz = stars.transform_to(altaz_frame)
-            altitude_samples.append(star_altaz.alt.deg)
-            azimuth_samples.append(star_altaz.az.deg)
+            altitude_samples.append(float(np.mean(star_altaz.alt.deg)))
+            azimuth_samples.append(float(np.mean(star_altaz.az.deg)))
 
         altitudes = np.array(altitude_samples)
         azimuths = np.array(azimuth_samples)
-
-        # Determine if constellation is above horizon
-        mean_altitudes = np.mean(altitudes, axis=1)
-        visible = mean_altitudes > 0
+        visible = altitudes > 0
 
         if not np.any(visible):
-            # Entirely below horizon
             constellation_data[const_abbr] = {
                 "start": None,
                 "end": None,
                 "below_horizon": True,
+                "times": [],
+                "altitudes": [],
+                "azimuths": [],
             }
             continue
 
-        # Visible times in local timezone
-        visible_times = np.array(times)[visible]
+        # Plot only while the constellation is above the horizon
+        vis_idx = np.flatnonzero(visible)
+        visible_times = [times[i] for i in vis_idx]
         start_time = visible_times[0].astimezone(HANOI_TZ)
         end_time = visible_times[-1].astimezone(HANOI_TZ)
 
@@ -152,6 +148,9 @@ for file_name in os.listdir(DATA_FOLDER):
             "start": start_time,
             "end": end_time,
             "below_horizon": False,
+            "times": visible_times,
+            "altitudes": altitudes[vis_idx].tolist(),
+            "azimuths": azimuths[vis_idx].tolist(),
         }
 
 # ===== Create plots =====
@@ -161,40 +160,9 @@ for const_abbr, data in constellation_data.items():
     gif_path = os.path.join(GIF_FOLDER, f"{const_abbr}.gif")
     has_gif = os.path.exists(gif_path)
 
-    # Skip constellations that somehow failed earlier
-    if const_abbr not in constellation_data:
-        continue
-
-    # Retrieve altitude and azimuth data again for plotting
-    file_path = os.path.join(DATA_FOLDER, f"{const_abbr}.txt")
-    df = pd.read_csv(
-        file_path,
-        sep="|",
-        names=["RA_hms", "Dec_deg", "Constellation"],
-        engine="python",
-    )
-    df["Dec_deg"] = df["Dec_deg"].astype(float)
-
-    # Convert RA hms to degrees
-    ra_deg = [ra_hms_to_deg(ra_hms) for ra_hms in df["RA_hms"]]
-    df["RA_deg"] = ra_deg
-
-    stars = SkyCoord(
-        ra=df["RA_deg"].values * u.degree,
-        dec=df["Dec_deg"].values * u.degree,
-        frame="icrs",
-    )
-
-    altitude_samples = []
-    azimuth_samples = []
-    for t in times_astropy:
-        altaz_frame = AltAz(obstime=t, location=observer_location)
-        star_altaz = stars.transform_to(altaz_frame)
-        altitude_samples.append(np.mean(star_altaz.alt.deg))
-        azimuth_samples.append(np.mean(star_altaz.az.deg))
-
-    altitudes = np.array(altitude_samples)
-    azimuths = np.array(azimuth_samples)
+    plot_times = data["times"]
+    plot_altitudes = data["altitudes"]
+    plot_azimuths = data["azimuths"]
 
     # Create figure layout
     if has_gif:
@@ -215,12 +183,14 @@ for const_abbr, data in constellation_data.items():
 
     # ===== Azimuth over time =====
     ax_az = fig.add_subplot(gs[az_col])
-    ax_az.plot(times, azimuths, color="darkorange", lw=2)
+    if plot_times:
+        ax_az.plot(plot_times, plot_azimuths, color="darkorange", lw=2)  # type: ignore[arg-type]
+        ax_az.set_xlim(plot_times[0], plot_times[-1])  # type: ignore[arg-type]
     ax_az.set_ylabel("Azimuth ° (Direction)")
     ax_az.set_xlabel(f"Time ({TZ_LABEL})")
-    # matplotlib.dates.DateFormatter/HourLocator have no type annotations upstream
+    # matplotlib.dates.DateFormatter/AutoDateLocator have no type annotations upstream
     ax_az.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M", tz=HANOI_TZ))  # type: ignore[no-untyped-call]
-    ax_az.xaxis.set_major_locator(mdates.HourLocator(interval=2, tz=HANOI_TZ))  # type: ignore[no-untyped-call]
+    ax_az.xaxis.set_major_locator(mdates.AutoDateLocator(tz=HANOI_TZ))  # type: ignore[no-untyped-call]
     ax_az.grid(True, alpha=0.3)
 
     # Set azimuth ticks and add cardinal directions
@@ -234,11 +204,14 @@ for const_abbr, data in constellation_data.items():
 
     # ===== Altitude over time =====
     ax_alt = fig.add_subplot(gs[alt_col])
-    ax_alt.plot(times, altitudes, color="steelblue", lw=2)
+    if plot_times:
+        ax_alt.plot(plot_times, plot_altitudes, color="steelblue", lw=2)  # type: ignore[arg-type]
+        ax_alt.set_xlim(plot_times[0], plot_times[-1])  # type: ignore[arg-type]
+        ax_alt.set_ylim(bottom=0)
     ax_alt.set_ylabel("Altitude (°)")
     ax_alt.set_xlabel(f"Time ({TZ_LABEL})")
     ax_alt.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M", tz=HANOI_TZ))  # type: ignore[no-untyped-call]
-    ax_alt.xaxis.set_major_locator(mdates.HourLocator(interval=2, tz=HANOI_TZ))  # type: ignore[no-untyped-call]
+    ax_alt.xaxis.set_major_locator(mdates.AutoDateLocator(tz=HANOI_TZ))  # type: ignore[no-untyped-call]
     ax_alt.grid(True, alpha=0.3)
     ax_alt.axhline(0, color="gray", linestyle="--", lw=1)
 
