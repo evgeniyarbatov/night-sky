@@ -39,9 +39,8 @@ os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 
 class ConstellationVisibility(TypedDict):
-    start: datetime | None
-    end: datetime | None
-    below_horizon: bool
+    start: datetime
+    end: datetime
     times: list[datetime]
     altitudes: list[float]
     azimuths: list[float]
@@ -87,6 +86,7 @@ times = [
 times_astropy = Time([t.astimezone(pytz.UTC) for t in times])
 
 constellation_data: dict[str, ConstellationVisibility] = {}
+skipped_below_horizon = 0
 
 # ===== Process constellation files =====
 for file_name in os.listdir(DATA_FOLDER):
@@ -108,6 +108,7 @@ for file_name in os.listdir(DATA_FOLDER):
 
     for const_abbr_raw, group in df.groupby("Constellation"):
         const_abbr = str(const_abbr_raw).strip()
+        full_name = const_names.get(const_abbr, const_abbr)
         stars = SkyCoord(
             ra=group["RA_deg"].values * u.degree,
             dec=group["Dec_deg"].values * u.degree,
@@ -129,14 +130,8 @@ for file_name in os.listdir(DATA_FOLDER):
         visible = altitudes > 0
 
         if not np.any(visible):
-            constellation_data[const_abbr] = {
-                "start": None,
-                "end": None,
-                "below_horizon": True,
-                "times": [],
-                "altitudes": [],
-                "azimuths": [],
-            }
+            skipped_below_horizon += 1
+            print(f"– {full_name} (below horizon)")
             continue
 
         # Plot only while the constellation is above the horizon
@@ -148,7 +143,6 @@ for file_name in os.listdir(DATA_FOLDER):
         constellation_data[const_abbr] = {
             "start": start_time,
             "end": end_time,
-            "below_horizon": False,
             "times": visible_times,
             "altitudes": altitudes[vis_idx].tolist(),
             "azimuths": azimuths[vis_idx].tolist(),
@@ -184,36 +178,27 @@ for const_abbr, data in constellation_data.items():
 
     # ===== Azimuth over time =====
     ax_az = fig.add_subplot(gs[az_col])
-    if plot_times:
-        # Unwrap so north crossings stay continuous (e.g. 5° → 0° → -7° not 353°)
-        az_series = unwrap_degrees(plot_azimuths)
-        ax_az.plot(plot_times, az_series, color="darkorange", lw=2)  # type: ignore[arg-type]
-        ax_az.set_xlim(plot_times[0], plot_times[-1])  # type: ignore[arg-type]
-        az_min = min(az_series)
-        az_max = max(az_series)
-        pad = max(5.0, 0.05 * (az_max - az_min + 1e-9))
-        y0 = az_min - pad
-        y1 = az_max + pad
-        ax_az.set_ylim(y0, y1)
-        tick_start = int(np.floor(y0 / 45.0)) * 45
-        tick_stop = int(np.ceil(y1 / 45.0)) * 45
-        az_ticks = np.arange(tick_start, tick_stop + 1, 45)
-        cardinals = {0: "N", 45: "NE", 90: "E", 135: "SE", 180: "S", 225: "SW", 270: "W", 315: "NW"}
-        ax_az.set_yticks(az_ticks)
-        az_labels: list[str] = []
-        for t in az_ticks:
-            deg = int(round(t % 360)) % 360
-            card = cardinals.get(deg)
-            az_labels.append(f"{deg}° ({card})" if card else f"{deg}°")
-        ax_az.set_yticklabels(az_labels)
-    else:
-        ax_az.set_ylim(0, 360)
-        az_ticks = np.arange(0, 361, 45)
-        az_labels = ["N", "NE", "E", "SE", "S", "SW", "W", "NW", "N"]
-        ax_az.set_yticks(az_ticks)
-        ax_az.set_yticklabels(
-            [f"{deg}° ({label})" for deg, label in zip(az_ticks, az_labels, strict=False)]
-        )
+    # Unwrap so north crossings stay continuous (e.g. 5° → 0° → -7° not 353°)
+    az_series = unwrap_degrees(plot_azimuths)
+    ax_az.plot(plot_times, az_series, color="darkorange", lw=2)  # type: ignore[arg-type]
+    ax_az.set_xlim(plot_times[0], plot_times[-1])  # type: ignore[arg-type]
+    az_min = min(az_series)
+    az_max = max(az_series)
+    pad = max(5.0, 0.05 * (az_max - az_min + 1e-9))
+    y0 = az_min - pad
+    y1 = az_max + pad
+    ax_az.set_ylim(y0, y1)
+    tick_start = int(np.floor(y0 / 45.0)) * 45
+    tick_stop = int(np.ceil(y1 / 45.0)) * 45
+    az_ticks = np.arange(tick_start, tick_stop + 1, 45)
+    cardinals = {0: "N", 45: "NE", 90: "E", 135: "SE", 180: "S", 225: "SW", 270: "W", 315: "NW"}
+    ax_az.set_yticks(az_ticks)
+    az_labels: list[str] = []
+    for t in az_ticks:
+        deg = int(round(t % 360)) % 360
+        card = cardinals.get(deg)
+        az_labels.append(f"{deg}° ({card})" if card else f"{deg}°")
+    ax_az.set_yticklabels(az_labels)
     ax_az.set_ylabel("Azimuth ° (Direction)")
     ax_az.set_xlabel(f"Time ({TZ_LABEL})")
     # matplotlib.dates.DateFormatter/AutoDateLocator have no type annotations upstream
@@ -223,10 +208,9 @@ for const_abbr, data in constellation_data.items():
 
     # ===== Altitude over time =====
     ax_alt = fig.add_subplot(gs[alt_col])
-    if plot_times:
-        ax_alt.plot(plot_times, plot_altitudes, color="steelblue", lw=2)  # type: ignore[arg-type]
-        ax_alt.set_xlim(plot_times[0], plot_times[-1])  # type: ignore[arg-type]
-        ax_alt.set_ylim(bottom=0)
+    ax_alt.plot(plot_times, plot_altitudes, color="steelblue", lw=2)  # type: ignore[arg-type]
+    ax_alt.set_xlim(plot_times[0], plot_times[-1])  # type: ignore[arg-type]
+    ax_alt.set_ylim(bottom=0)
     ax_alt.set_ylabel("Altitude (°)")
     ax_alt.set_xlabel(f"Time ({TZ_LABEL})")
     ax_alt.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M", tz=HANOI_TZ))  # type: ignore[no-untyped-call]
@@ -235,12 +219,9 @@ for const_abbr, data in constellation_data.items():
     ax_alt.axhline(0, color="gray", linestyle="--", lw=1)
 
     # ===== Title & Save =====
-    if data.get("below_horizon", False) or data["start"] is None or data["end"] is None:
-        title_text = f"{full_name} - below horizon"
-    else:
-        start_str = data["start"].strftime("%H:%M")
-        end_str = data["end"].strftime("%H:%M")
-        title_text = f"{full_name} - visible {start_str}-{end_str}"
+    start_str = data["start"].strftime("%H:%M")
+    end_str = data["end"].strftime("%H:%M")
+    title_text = f"{full_name} - visible {start_str}-{end_str}"
 
     fig.suptitle(title_text, fontsize=13, fontweight="bold")
 
@@ -249,4 +230,7 @@ for const_abbr, data in constellation_data.items():
     plt.close()
     print(f"✓ {full_name}")
 
-print(f"\nGenerated {len(constellation_data)} plots.")
+print(
+    f"\nGenerated {len(constellation_data)} plots"
+    f" (skipped {skipped_below_horizon} below horizon)."
+)
