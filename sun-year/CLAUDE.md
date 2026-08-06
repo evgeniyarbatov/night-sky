@@ -27,5 +27,5 @@ Each writes a PNG to `$(DATA_DIR)` (default `~/data/<repo-folder>/`; override wi
 
 - Python 3.11+, `uv` for dependency management.
 - Location lives only in repo-root `config.json` (`name`, `latitude`, `longitude`, `timezone`). No city names or coords in scripts; load via `location.load_location()`.
-- Plots are title-free (minimal ink); site comes from config for calculations and console summaries only.
+- Plots use short descriptive titles and light labels (ref lines, extrema values); site comes from config for calculations and console summaries only.
 - Shared look via `style.py` (palette, axes, save helper).

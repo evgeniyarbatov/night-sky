@@ -121,16 +121,51 @@ def month_axis(ax: Axes) -> None:
     ax.set_xlabel("")
 
 
-def ref_hline(ax: Axes, y: float) -> None:
+def chart_title(ax: Axes, title: str) -> None:
+    """Short left-aligned title for a panel."""
+    ax.set_title(
+        title,
+        loc="left",
+        color=COLORS["text"],
+        fontsize=12,
+        fontweight="bold",
+        pad=8,
+    )
+
+
+def ref_hline(ax: Axes, y: float, label: str | None = None) -> None:
     ax.axhline(y, color=COLORS["accent"], ls="--", lw=1.0, alpha=0.65)
+    if label:
+        ax.text(
+            0.99,
+            y,
+            label,
+            transform=ax.get_yaxis_transform(),
+            ha="right",
+            va="bottom",
+            fontsize=8,
+            color=COLORS["muted"],
+            clip_on=False,
+        )
 
 
 def ref_vline(ax: Axes, x: Any) -> None:
     ax.axvline(x, color=COLORS["accent"], ls=":", lw=1.0, alpha=0.5)
 
 
-def mark_extrema(ax: Axes, x: Any, y: float) -> None:
+def mark_extrema(ax: Axes, x: Any, y: float, label: str | None = None) -> None:
     ax.scatter([x], [y], s=MARKER_SIZE, color=COLORS["extrema"], zorder=5, edgecolors="none")
+    if label:
+        ax.annotate(
+            label,
+            xy=(x, y),
+            xytext=(0, 8),
+            textcoords="offset points",
+            ha="center",
+            va="bottom",
+            fontsize=8,
+            color=COLORS["muted"],
+        )
 
 
 def plot_line(

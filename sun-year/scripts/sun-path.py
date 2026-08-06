@@ -10,6 +10,7 @@ import pvlib
 
 from location import load_location
 from style import (
+    chart_title,
     month_colors,
     new_figure,
     place_legend,
@@ -57,7 +58,8 @@ def main() -> None:
             label=pd.Timestamp(2000, int(month), 1).strftime("%b"),
         )
 
-    ax.set_xlabel("Hour")
+    chart_title(ax, "Solar altitude by hour (monthly mean)")
+    ax.set_xlabel("Local hour")
     ax.set_ylabel("Altitude (°)")
     place_legend(ax, side="top", ncol=6)
 

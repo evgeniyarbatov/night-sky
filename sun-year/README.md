@@ -21,7 +21,7 @@ The Sun is also the easiest astronomical object to watch — a door into the sky
 
 | Field | Meaning |
 | --- | --- |
-| `name` | Label on every plot title |
+| `name` | Site label in console summaries |
 | `latitude` | Degrees, −90…90 (south negative) |
 | `longitude` | Degrees, −180…180 (west negative) |
 | `timezone` | IANA name for local clock times (e.g. `Europe/Paris`, `America/New_York`) |
@@ -37,7 +37,7 @@ Example — switch to New York:
 }
 ```
 
-Then `make run`. Titles and calculations pick up the new site automatically.
+Then `make run`. Calculations and console summaries pick up the new site automatically.
 
 At low latitudes day length barely moves; higher latitudes swing hard. Near the tropics the sun can be nearly overhead when declination ≈ latitude — not only at June solstice.
 

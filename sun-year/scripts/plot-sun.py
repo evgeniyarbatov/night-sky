@@ -12,6 +12,7 @@ import numpy as np
 from location import format_site, load_location, today_local
 from style import (
     COLORS,
+    chart_title,
     mark_extrema,
     month_axis,
     new_figure,
@@ -101,23 +102,45 @@ def main() -> None:
     style_axes(ax2)
 
     plot_line(ax1, dates, sunrise_azimuths, color=COLORS["sunrise"])
-    ref_hline(ax1, 90.0)
+    ref_hline(ax1, 90.0, "due E")
     for ed in east_dates:
         ref_vline(ax1, ed)
-    mark_extrema(ax1, dates[sunrise_min_idx], sunrise_azimuths[sunrise_min_idx])
-    mark_extrema(ax1, dates[sunrise_max_idx], sunrise_azimuths[sunrise_max_idx])
-    ax1.set_ylabel("Sunrise azimuth")
+    mark_extrema(
+        ax1,
+        dates[sunrise_min_idx],
+        sunrise_azimuths[sunrise_min_idx],
+        f"{sunrise_azimuths[sunrise_min_idx]:.0f}°",
+    )
+    mark_extrema(
+        ax1,
+        dates[sunrise_max_idx],
+        sunrise_azimuths[sunrise_max_idx],
+        f"{sunrise_azimuths[sunrise_max_idx]:.0f}°",
+    )
+    chart_title(ax1, "Sunrise azimuth")
+    ax1.set_ylabel("Azimuth")
     ax1.set_ylim(60, 120)
     ax1.set_yticks([60, 90, 120])
     ax1.set_yticklabels(["60° NE", "90° E", "120° SE"])
 
     plot_line(ax2, dates, sunset_azimuths, color=COLORS["sunset"])
-    ref_hline(ax2, 270.0)
+    ref_hline(ax2, 270.0, "due W")
     for wd in west_dates:
         ref_vline(ax2, wd)
-    mark_extrema(ax2, dates[sunset_max_idx], sunset_azimuths[sunset_max_idx])
-    mark_extrema(ax2, dates[sunset_min_idx], sunset_azimuths[sunset_min_idx])
-    ax2.set_ylabel("Sunset azimuth")
+    mark_extrema(
+        ax2,
+        dates[sunset_max_idx],
+        sunset_azimuths[sunset_max_idx],
+        f"{sunset_azimuths[sunset_max_idx]:.0f}°",
+    )
+    mark_extrema(
+        ax2,
+        dates[sunset_min_idx],
+        sunset_azimuths[sunset_min_idx],
+        f"{sunset_azimuths[sunset_min_idx]:.0f}°",
+    )
+    chart_title(ax2, "Sunset azimuth")
+    ax2.set_ylabel("Azimuth")
     ax2.set_ylim(240, 300)
     ax2.set_yticks([240, 270, 300])
     ax2.set_yticklabels(["240° SW", "270° W", "300° NW"])

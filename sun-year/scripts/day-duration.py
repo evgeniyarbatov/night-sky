@@ -12,9 +12,11 @@ from location import load_location
 from style import (
     COLORS,
     MARKER_SIZE,
+    chart_title,
     mark_extrema,
     month_axis,
     new_figure,
+    place_legend,
     plot_line,
     save_figure,
     style_axes,
@@ -40,7 +42,7 @@ def main() -> None:
     fig, ax = new_figure()
     style_axes(ax)
 
-    plot_line(ax, df["date"], df["day_length"], color=COLORS["day"])
+    plot_line(ax, df["date"], df["day_length"], color=COLORS["day"], label="Daily")
     month_dates = [times[times.month == m][0] for m in monthly_avg["month"]]
     ax.scatter(
         month_dates,
@@ -49,15 +51,20 @@ def main() -> None:
         color=COLORS["noon"],
         zorder=5,
         edgecolors="none",
+        label="Monthly mean",
     )
 
     i_min = int(df["day_length"].values.argmin())
     i_max = int(df["day_length"].values.argmax())
-    mark_extrema(ax, df["date"].iloc[i_min], float(df["day_length"].iloc[i_min]))
-    mark_extrema(ax, df["date"].iloc[i_max], float(df["day_length"].iloc[i_max]))
+    min_h = float(df["day_length"].iloc[i_min])
+    max_h = float(df["day_length"].iloc[i_max])
+    mark_extrema(ax, df["date"].iloc[i_min], min_h, f"{min_h:.1f} h")
+    mark_extrema(ax, df["date"].iloc[i_max], max_h, f"{max_h:.1f} h")
 
+    chart_title(ax, "Day length")
     ax.set_ylabel("Hours")
     month_axis(ax)
+    place_legend(ax, side="right")
 
     out = OUTPUT_DIR / "day-duration.png"
     save_figure(fig, out)

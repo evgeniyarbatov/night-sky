@@ -12,6 +12,7 @@ import numpy as np
 from location import load_location, today_local
 from style import (
     COLORS,
+    chart_title,
     month_axis,
     new_figure,
     plot_line,
@@ -81,11 +82,13 @@ def main() -> None:
     style_axes(ax2)
 
     plot_line(ax1, dates, m_arr, color=COLORS["sunrise"])
-    ax1.set_ylabel("Morning (min)")
+    chart_title(ax1, "Golden hour — morning (0°–6° altitude)")
+    ax1.set_ylabel("Minutes")
     ax1.set_ylim(y_min, y_max)
 
     plot_line(ax2, dates, e_arr, color=COLORS["sunset"])
-    ax2.set_ylabel("Evening (min)")
+    chart_title(ax2, "Golden hour — evening (0°–6° altitude)")
+    ax2.set_ylabel("Minutes")
     ax2.set_ylim(y_min, y_max)
     month_axis(ax2)
 

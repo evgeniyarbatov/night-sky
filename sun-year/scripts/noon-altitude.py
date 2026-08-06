@@ -12,6 +12,7 @@ import pvlib
 from location import load_location
 from style import (
     COLORS,
+    chart_title,
     mark_extrema,
     month_axis,
     new_figure,
@@ -45,13 +46,15 @@ def main() -> None:
     style_axes(ax2)
 
     plot_line(ax1, days, altitude, color=COLORS["noon"])
-    ref_hline(ax1, 90.0 - abs(lat))
-    mark_extrema(ax1, days[i_max], float(altitude[i_max]))
-    mark_extrema(ax1, days[i_min], float(altitude[i_min]))
-    ax1.set_ylabel("Noon altitude (°)")
+    ref_hline(ax1, 90.0 - abs(lat), "overhead max at lat")
+    mark_extrema(ax1, days[i_max], float(altitude[i_max]), f"{altitude[i_max]:.0f}°")
+    mark_extrema(ax1, days[i_min], float(altitude[i_min]), f"{altitude[i_min]:.0f}°")
+    chart_title(ax1, "Altitude at solar noon")
+    ax1.set_ylabel("Altitude (°)")
 
     plot_line(ax2, days, shadow, color=COLORS["day"])
-    ax2.set_ylabel("Noon shadow (× height)")
+    chart_title(ax2, "Noon shadow length")
+    ax2.set_ylabel("× object height")
     month_axis(ax2)
 
     out = OUTPUT_DIR / "noon-altitude.png"

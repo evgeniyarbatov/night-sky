@@ -12,6 +12,7 @@ from matplotlib.ticker import FuncFormatter
 from location import load_location
 from style import (
     COLORS,
+    chart_title,
     mark_extrema,
     month_axis,
     new_figure,
@@ -69,6 +70,7 @@ def main() -> None:
     mark_extrema(ax, days[i_short], float(sunset_h.iloc[i_short]))
     mark_extrema(ax, days[i_long], float(sunrise_h.iloc[i_long]))
 
+    chart_title(ax, "Rise / set / solar noon")
     ax.set_ylabel("Local time")
     month_axis(ax)
     ax.set_ylim(max(0.0, float(sunrise_h.min()) - 0.4), min(24.0, float(sunset_h.max()) + 0.4))
