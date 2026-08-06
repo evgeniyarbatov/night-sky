@@ -13,7 +13,7 @@ from astroplan import Observer
 from astropy.coordinates import AltAz, EarthLocation, SkyCoord
 from astropy.time import Time
 from PIL import Image
-from ra_utils import ra_hms_to_deg
+from ra_utils import circular_mean_deg, ra_hms_to_deg, unwrap_degrees
 
 # ===== User settings =====
 CONFIG_PATH = os.path.join(
@@ -121,7 +121,8 @@ for file_name in os.listdir(DATA_FOLDER):
             altaz_frame = AltAz(obstime=t, location=observer_location)
             star_altaz = stars.transform_to(altaz_frame)
             altitude_samples.append(float(np.mean(star_altaz.alt.deg)))
-            azimuth_samples.append(float(np.mean(star_altaz.az.deg)))
+            # Arithmetic mean of degrees is wrong when points straddle north
+            azimuth_samples.append(circular_mean_deg(star_altaz.az.deg))
 
         altitudes = np.array(altitude_samples)
         azimuths = np.array(azimuth_samples)
@@ -184,23 +185,41 @@ for const_abbr, data in constellation_data.items():
     # ===== Azimuth over time =====
     ax_az = fig.add_subplot(gs[az_col])
     if plot_times:
-        ax_az.plot(plot_times, plot_azimuths, color="darkorange", lw=2)  # type: ignore[arg-type]
+        # Unwrap so north crossings stay continuous (e.g. 5° → 0° → -7° not 353°)
+        az_series = unwrap_degrees(plot_azimuths)
+        ax_az.plot(plot_times, az_series, color="darkorange", lw=2)  # type: ignore[arg-type]
         ax_az.set_xlim(plot_times[0], plot_times[-1])  # type: ignore[arg-type]
+        az_min = min(az_series)
+        az_max = max(az_series)
+        pad = max(5.0, 0.05 * (az_max - az_min + 1e-9))
+        y0 = az_min - pad
+        y1 = az_max + pad
+        ax_az.set_ylim(y0, y1)
+        tick_start = int(np.floor(y0 / 45.0)) * 45
+        tick_stop = int(np.ceil(y1 / 45.0)) * 45
+        az_ticks = np.arange(tick_start, tick_stop + 1, 45)
+        cardinals = {0: "N", 45: "NE", 90: "E", 135: "SE", 180: "S", 225: "SW", 270: "W", 315: "NW"}
+        ax_az.set_yticks(az_ticks)
+        az_labels: list[str] = []
+        for t in az_ticks:
+            deg = int(round(t % 360)) % 360
+            card = cardinals.get(deg)
+            az_labels.append(f"{deg}° ({card})" if card else f"{deg}°")
+        ax_az.set_yticklabels(az_labels)
+    else:
+        ax_az.set_ylim(0, 360)
+        az_ticks = np.arange(0, 361, 45)
+        az_labels = ["N", "NE", "E", "SE", "S", "SW", "W", "NW", "N"]
+        ax_az.set_yticks(az_ticks)
+        ax_az.set_yticklabels(
+            [f"{deg}° ({label})" for deg, label in zip(az_ticks, az_labels, strict=False)]
+        )
     ax_az.set_ylabel("Azimuth ° (Direction)")
     ax_az.set_xlabel(f"Time ({TZ_LABEL})")
     # matplotlib.dates.DateFormatter/AutoDateLocator have no type annotations upstream
     ax_az.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M", tz=HANOI_TZ))  # type: ignore[no-untyped-call]
     ax_az.xaxis.set_major_locator(mdates.AutoDateLocator(tz=HANOI_TZ))  # type: ignore[no-untyped-call]
     ax_az.grid(True, alpha=0.3)
-
-    # Set azimuth ticks and add cardinal directions
-    ax_az.set_ylim(0, 360)
-    az_ticks = np.arange(0, 361, 45)
-    az_labels = ["N", "NE", "E", "SE", "S", "SW", "W", "NW", "N"]
-    ax_az.set_yticks(az_ticks)
-    ax_az.set_yticklabels(
-        [f"{deg}° ({label})" for deg, label in zip(az_ticks, az_labels, strict=False)]
-    )
 
     # ===== Altitude over time =====
     ax_alt = fig.add_subplot(gs[alt_col])
