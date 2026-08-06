@@ -12,6 +12,8 @@ import pytz
 from astroplan import Observer
 from astropy.coordinates import AltAz, EarthLocation, SkyCoord
 from astropy.time import Time
+from matplotlib.axes import Axes
+from matplotlib.ticker import NullLocator
 from PIL import Image
 from ra_utils import circular_mean_deg, ra_hms_to_deg, unwrap_degrees
 
@@ -44,6 +46,21 @@ class ConstellationVisibility(TypedDict):
     times: list[datetime]
     altitudes: list[float]
     azimuths: list[float]
+
+
+def apply_time_axis(ax: Axes, t0: datetime, t1: datetime) -> None:
+    """Sparse hour/minute ticks sized to the visibility window."""
+    # matplotlib.dates locators/formatters lack upstream type annotations
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M", tz=HANOI_TZ))  # type: ignore[no-untyped-call]
+    duration_h = max((t1 - t0).total_seconds() / 3600.0, 0.1)
+    if duration_h <= 2:
+        locator: mdates.DateLocator = mdates.MinuteLocator(byminute=[0, 30], tz=HANOI_TZ)  # type: ignore[no-untyped-call]
+    elif duration_h <= 6:
+        locator = mdates.HourLocator(interval=1, tz=HANOI_TZ)  # type: ignore[no-untyped-call]
+    else:
+        locator = mdates.HourLocator(interval=2, tz=HANOI_TZ)  # type: ignore[no-untyped-call]
+    ax.xaxis.set_major_locator(locator)
+    ax.xaxis.set_minor_locator(NullLocator())
 
 
 # ===== Load constellation names =====
@@ -201,9 +218,7 @@ for const_abbr, data in constellation_data.items():
     ax_az.set_yticklabels(az_labels)
     ax_az.set_ylabel("Azimuth ° (Direction)")
     ax_az.set_xlabel(f"Time ({TZ_LABEL})")
-    # matplotlib.dates.DateFormatter/AutoDateLocator have no type annotations upstream
-    ax_az.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M", tz=HANOI_TZ))  # type: ignore[no-untyped-call]
-    ax_az.xaxis.set_major_locator(mdates.AutoDateLocator(tz=HANOI_TZ))  # type: ignore[no-untyped-call]
+    apply_time_axis(ax_az, plot_times[0], plot_times[-1])
     ax_az.grid(True, alpha=0.3)
 
     # ===== Altitude over time =====
@@ -213,8 +228,7 @@ for const_abbr, data in constellation_data.items():
     ax_alt.set_ylim(bottom=0)
     ax_alt.set_ylabel("Altitude (°)")
     ax_alt.set_xlabel(f"Time ({TZ_LABEL})")
-    ax_alt.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M", tz=HANOI_TZ))  # type: ignore[no-untyped-call]
-    ax_alt.xaxis.set_major_locator(mdates.AutoDateLocator(tz=HANOI_TZ))  # type: ignore[no-untyped-call]
+    apply_time_axis(ax_alt, plot_times[0], plot_times[-1])
     ax_alt.grid(True, alpha=0.3)
     ax_alt.axhline(0, color="gray", linestyle="--", lw=1)
 
