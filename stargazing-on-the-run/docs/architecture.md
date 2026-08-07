@@ -13,7 +13,7 @@ Optional visual path:
   → Stellarium .ssc → screenshots → map overlays → merge → video
 ```
 
-**Identity** is offline-first (Skyfield + curated bright-star list). **Pictures** are optional (Stellarium). Network: map tiles, first ephemeris download, optional Open-Meteo.
+**Identity** is offline-first (Skyfield + curated bright-star list). **Pictures** are optional (Stellarium, rendered headlessly via `docker/` — Ubuntu + Xvfb, no GUI, no macOS dependency). Network: map tiles, first ephemeris download, optional Open-Meteo, plus the one-time `docker build`.
 
 ## Modules (`scripts/`)
 
@@ -27,7 +27,7 @@ Optional visual path:
 | `profile.py` | Route profile, seasonal rotation, constellation cards |
 | `tonight.py` | Pre-run briefing, glance card, audio script, weather |
 | `gpx.py` | Copy sample or `SRC` into the GPX drop zone |
-| `create_scripts.py` | Stellarium scripts |
+| `create_scripts.py` | Stellarium scripts (one `.ssc` per GPX in the drop zone) |
 | `make_maps.py` / `merge.py` | Map thumbnails and composite images |
 
 Shared sky identity: everything that answers “what was / will be there” goes through `sky.py`.

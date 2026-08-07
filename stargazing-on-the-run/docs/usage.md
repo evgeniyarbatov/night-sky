@@ -69,7 +69,7 @@ Outputs under `$(DATA_DIR)/sky-logs/<run-id>/tonight/`:
 
 ## Visual pipeline (optional)
 
-Needs Stellarium (macOS path in Makefile) and ffmpeg for video.
+Needs Docker (headless Stellarium screenshots) and ffmpeg for video.
 
 ```sh
 make all     # sky-log + scripts + screenshots + maps + merge
@@ -77,6 +77,11 @@ make video
 ```
 
 Steps: `stellarium-scripts` → `screenshots` → `maps` → `merge` → `video`.
+
+`screenshots` builds `docker/` into a headless Stellarium image (Ubuntu + Xvfb)
+and renders every `.ssc` script in `$(SCRIPTS_DIR)` inside it — no GUI window,
+no macOS dependency. `stellarium-scripts` already writes one script per GPX
+file found in `$(GPX_DIR)`, so a directory of runs renders in one `make screenshots`.
 
 ## Make targets
 

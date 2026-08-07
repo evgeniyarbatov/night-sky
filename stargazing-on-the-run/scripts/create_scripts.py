@@ -37,8 +37,7 @@ StarMgr.setFlagLabels(true);
 
 MilkyWay.setFlagShow(true);
 
-StelSkyCultureMgr.setCurrentSkyCultureID("western");
-StelSkyCultureMgr.setScreenLabelStyle("native");
+core.setSkyCulture("modern");
 
 ConstellationMgr.setFlagLabels(true);
 ConstellationMgr.setFlagLines(true);

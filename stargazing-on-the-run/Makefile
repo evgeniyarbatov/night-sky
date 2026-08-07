@@ -15,6 +15,7 @@ SKY_INDEX_JSON ?= $(DATA_DIR)/sky-index.json
 SRC ?=
 START ?=
 GPX ?=
+STELLARIUM_IMAGE ?= stargazing-stellarium
 
 install:
 	@uv sync --dev
@@ -38,11 +39,13 @@ stellarium-scripts: install
 	$(SCRIPTS_DIR) \
 	$(SCREENSHOTS_DIR)
 
-screenshots:
-	@for file in $(SCRIPTS_DIR)/*.ssc; do \
-		script_path=$$(realpath $$file); \
-		/Applications/Stellarium.app/Contents/MacOS/stellarium --startup-script $$script_path; \
-	done
+# Headless Stellarium image (Ubuntu + Xvfb); rebuilds are cheap once cached
+stellarium-image:
+	@docker build -t $(STELLARIUM_IMAGE) docker/
+
+# Renders every $(SCRIPTS_DIR)/*.ssc headlessly via the Docker image
+screenshots: stellarium-image
+	@docker run --rm -v $(DATA_DIR):$(DATA_DIR) $(STELLARIUM_IMAGE) $(SCRIPTS_DIR)
 
 maps: install
 	@uv run python -m scripts.make_maps \
@@ -96,7 +99,7 @@ tonight-weather: install
 	fi
 	@uv run python -m scripts.tonight --gpx "$(GPX)" --start "$(START)" --weather --sky-logs-dir $(SKY_LOGS_DIR)
 
-# Full visual pipeline (requires Stellarium on macOS for screenshots)
+# Full visual pipeline (requires Docker for headless screenshots)
 all: sky-log stellarium-scripts screenshots maps merge
 
 demo: install
@@ -127,7 +130,8 @@ help:
 	@echo "tonight              - pre-run briefing (GPX=... START=...)"
 	@echo "tonight-weather      - tonight + Open-Meteo cloud cover"
 	@echo "stellarium-scripts   - create Stellarium scripts"
-	@echo "screenshots          - run Stellarium startup scripts"
+	@echo "stellarium-image     - build headless Stellarium Docker image"
+	@echo "screenshots          - render screenshots headlessly (Docker + Xvfb)"
 	@echo "maps                 - map thumbnails"
 	@echo "merge                - merge screenshots and maps"
 	@echo "video                - build videos from screenshots-with-maps"
