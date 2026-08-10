@@ -18,7 +18,7 @@ make clean             # wipe $DATA_DIR/plots and .venv
 make lock
 ```
 
-Default `DATA_DIR` is `~/data/constellations` (see Makefile). Scripts fall back to `data/` if `DATA_DIR` is unset. Run ad-hoc Python with `uv run`.
+Default `DATA_DIR` is `~/Documents/data/constellations` (see Makefile). Scripts fall back to `data/` if `DATA_DIR` is unset. Run ad-hoc Python with `uv run`.
 
 ## Architecture (do not bypass)
 

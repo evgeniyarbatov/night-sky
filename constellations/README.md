@@ -12,7 +12,7 @@ Requires [uv](https://docs.astral.sh/uv/) and Python 3.11+.
 make run
 ```
 
-Installs deps, refreshes IAU assets, and writes tonight's plots under `~/data/constellations/plots/`.
+Installs deps, refreshes IAU assets, and writes tonight's plots under `~/Documents/data/constellations/plots/`.
 
 ## Other commands
 
