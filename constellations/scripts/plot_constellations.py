@@ -48,6 +48,22 @@ class ConstellationVisibility(TypedDict):
     azimuths: list[float]
 
 
+def pad_time_window(
+    t0: datetime, t1: datetime, min_span_minutes: float = 30.0
+) -> tuple[datetime, datetime]:
+    """Widen a zero/near-zero span so matplotlib date axes stay non-singular.
+
+    Identical xlims make the date transform expand to multi-year limits, and
+    MinuteLocator then tries tens of thousands of ticks.
+    """
+    span_s = (t1 - t0).total_seconds()
+    min_s = min_span_minutes * 60.0
+    if span_s >= min_s:
+        return t0, t1
+    pad = timedelta(seconds=(min_s - span_s) / 2.0)
+    return t0 - pad, t1 + pad
+
+
 def apply_time_axis(ax: Axes, t0: datetime, t1: datetime) -> None:
     """Sparse hour/minute ticks sized to the visibility window."""
     # matplotlib.dates locators/formatters lack upstream type annotations
@@ -175,6 +191,7 @@ for const_abbr, data in constellation_data.items():
     plot_times = data["times"]
     plot_altitudes = data["altitudes"]
     plot_azimuths = data["azimuths"]
+    x0, x1 = pad_time_window(plot_times[0], plot_times[-1])
 
     # Create figure layout
     if has_gif:
@@ -198,7 +215,7 @@ for const_abbr, data in constellation_data.items():
     # Unwrap so north crossings stay continuous (e.g. 5° → 0° → -7° not 353°)
     az_series = unwrap_degrees(plot_azimuths)
     ax_az.plot(plot_times, az_series, color="darkorange", lw=2)  # type: ignore[arg-type]
-    ax_az.set_xlim(plot_times[0], plot_times[-1])  # type: ignore[arg-type]
+    ax_az.set_xlim(x0, x1)  # type: ignore[arg-type]
     az_min = min(az_series)
     az_max = max(az_series)
     pad = max(5.0, 0.05 * (az_max - az_min + 1e-9))
@@ -218,17 +235,17 @@ for const_abbr, data in constellation_data.items():
     ax_az.set_yticklabels(az_labels)
     ax_az.set_ylabel("Azimuth ° (Direction)")
     ax_az.set_xlabel(f"Time ({TZ_LABEL})")
-    apply_time_axis(ax_az, plot_times[0], plot_times[-1])
+    apply_time_axis(ax_az, x0, x1)
     ax_az.grid(True, alpha=0.3)
 
     # ===== Altitude over time =====
     ax_alt = fig.add_subplot(gs[alt_col])
     ax_alt.plot(plot_times, plot_altitudes, color="steelblue", lw=2)  # type: ignore[arg-type]
-    ax_alt.set_xlim(plot_times[0], plot_times[-1])  # type: ignore[arg-type]
+    ax_alt.set_xlim(x0, x1)  # type: ignore[arg-type]
     ax_alt.set_ylim(bottom=0)
     ax_alt.set_ylabel("Altitude (°)")
     ax_alt.set_xlabel(f"Time ({TZ_LABEL})")
-    apply_time_axis(ax_alt, plot_times[0], plot_times[-1])
+    apply_time_axis(ax_alt, x0, x1)
     ax_alt.grid(True, alpha=0.3)
     ax_alt.axhline(0, color="gray", linestyle="--", lw=1)
 
