@@ -33,6 +33,8 @@ OUTPUT_FOLDER = os.path.join(DATA_DIR, "plots")
 GIF_FOLDER = os.path.join(DATA_DIR, "gifs")
 DATE = datetime.now().date()
 DELTA_MINUTES = config["delta_minutes"]
+# Single-sample grazes plot as a point; skip windows shorter than this.
+MIN_VISIBILITY_MINUTES = 30
 HANOI_TZ = pytz.timezone(config["timezone"])
 TZ_LABEL = config["tz_label"]
 NAMES_FILE = "data/constellation_names.csv"
@@ -120,6 +122,7 @@ times_astropy = Time([t.astimezone(pytz.UTC) for t in times])
 
 constellation_data: dict[str, ConstellationVisibility] = {}
 skipped_below_horizon = 0
+skipped_too_brief = 0
 
 # ===== Process constellation files =====
 for file_name in os.listdir(DATA_FOLDER):
@@ -172,6 +175,11 @@ for file_name in os.listdir(DATA_FOLDER):
         visible_times = [times[i] for i in vis_idx]
         start_time = visible_times[0].astimezone(HANOI_TZ)
         end_time = visible_times[-1].astimezone(HANOI_TZ)
+        duration_min = (end_time - start_time).total_seconds() / 60.0
+        if duration_min < MIN_VISIBILITY_MINUTES:
+            skipped_too_brief += 1
+            print(f"– {full_name} (too brief, {duration_min:.0f} min)")
+            continue
 
         constellation_data[const_abbr] = {
             "start": start_time,
@@ -263,5 +271,6 @@ for const_abbr, data in constellation_data.items():
 
 print(
     f"\nGenerated {len(constellation_data)} plots"
-    f" (skipped {skipped_below_horizon} below horizon)."
+    f" (skipped {skipped_below_horizon} below horizon,"
+    f" {skipped_too_brief} too brief)."
 )
