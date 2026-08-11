@@ -35,6 +35,9 @@ DATE = datetime.now().date()
 DELTA_MINUTES = config["delta_minutes"]
 # Single-sample grazes plot as a point; skip windows shorter than this.
 MIN_VISIBILITY_MINUTES = 30
+# Fixed canvas so every PNG is identical pixels (video-friendly).
+FIGSIZE = (16.0, 4.0)
+DPI = 300
 HANOI_TZ = pytz.timezone(config["timezone"])
 TZ_LABEL = config["tz_label"]
 NAMES_FILE = "data/constellation_names.csv"
@@ -201,25 +204,19 @@ for const_abbr, data in constellation_data.items():
     plot_azimuths = data["azimuths"]
     x0, x1 = pad_time_window(plot_times[0], plot_times[-1])
 
-    # Create figure layout
-    if has_gif:
-        fig = plt.figure(figsize=(16, 4))
-        gs = fig.add_gridspec(1, 3, width_ratios=[1.2, 1, 1], wspace=0.3)
-        gif_col, az_col, alt_col = 0, 1, 2
-    else:
-        fig = plt.figure(figsize=(12, 4))
-        gs = fig.add_gridspec(1, 2, width_ratios=[1, 1], wspace=0.3)
-        az_col, alt_col = 0, 1
+    # Always the same canvas + 3-col grid (GIF slot empty if missing).
+    fig = plt.figure(figsize=FIGSIZE, dpi=DPI)
+    gs = fig.add_gridspec(1, 3, width_ratios=[1.2, 1, 1], wspace=0.35)
+    fig.subplots_adjust(left=0.05, right=0.99, top=0.86, bottom=0.18)
 
-    # ===== GIF (if available) =====
+    ax_gif = fig.add_subplot(gs[0])
     if has_gif:
-        ax_gif = fig.add_subplot(gs[gif_col])
         img = Image.open(gif_path)
         ax_gif.imshow(img)
-        ax_gif.axis("off")
+    ax_gif.axis("off")
 
     # ===== Azimuth over time =====
-    ax_az = fig.add_subplot(gs[az_col])
+    ax_az = fig.add_subplot(gs[1])
     # Unwrap so north crossings stay continuous (e.g. 5° → 0° → -7° not 353°)
     az_series = unwrap_degrees(plot_azimuths)
     ax_az.plot(plot_times, az_series, color="darkorange", lw=2)  # type: ignore[arg-type]
@@ -247,7 +244,7 @@ for const_abbr, data in constellation_data.items():
     ax_az.grid(True, alpha=0.3)
 
     # ===== Altitude over time =====
-    ax_alt = fig.add_subplot(gs[alt_col])
+    ax_alt = fig.add_subplot(gs[2])
     ax_alt.plot(plot_times, plot_altitudes, color="steelblue", lw=2)  # type: ignore[arg-type]
     ax_alt.set_xlim(x0, x1)  # type: ignore[arg-type]
     ax_alt.set_ylim(bottom=0)
@@ -265,7 +262,8 @@ for const_abbr, data in constellation_data.items():
     fig.suptitle(title_text, fontsize=13, fontweight="bold")
 
     safe_name = full_name.replace(" ", "_").replace("/", "_")
-    plt.savefig(os.path.join(OUTPUT_FOLDER, f"{safe_name}.png"), dpi=300, bbox_inches="tight")
+    # No bbox_inches="tight" — that crops per-content and makes frame sizes jump.
+    fig.savefig(os.path.join(OUTPUT_FOLDER, f"{safe_name}.png"), dpi=DPI)
     plt.close()
     print(f"✓ {full_name}")
 
