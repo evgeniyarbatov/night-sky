@@ -1,6 +1,7 @@
 import json
 import os
 from datetime import datetime, timedelta
+from io import BytesIO
 from typing import TypedDict
 
 import astropy.units as u
@@ -13,6 +14,7 @@ from astroplan import Observer
 from astropy.coordinates import AltAz, EarthLocation, SkyCoord
 from astropy.time import Time
 from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 from matplotlib.ticker import NullLocator
 from PIL import Image
 from ra_utils import circular_mean_deg, ra_hms_to_deg, unwrap_degrees
@@ -36,8 +38,9 @@ DELTA_MINUTES = config["delta_minutes"]
 # Single-sample grazes plot as a point; skip windows shorter than this.
 MIN_VISIBILITY_MINUTES = 30
 # Fixed canvas so every PNG is identical pixels (video-friendly).
-FIGSIZE = (16.0, 4.0)
+FIGSIZE = (16.0, 4.5)
 DPI = 300
+OUT_SIZE = (int(FIGSIZE[0] * DPI), int(FIGSIZE[1] * DPI))
 HANOI_TZ = pytz.timezone(config["timezone"])
 TZ_LABEL = config["tz_label"]
 NAMES_FILE = "data/constellation_names.csv"
@@ -82,6 +85,54 @@ def apply_time_axis(ax: Axes, t0: datetime, t1: datetime) -> None:
         locator = mdates.HourLocator(interval=2, tz=HANOI_TZ)  # type: ignore[no-untyped-call]
     ax.xaxis.set_major_locator(locator)
     ax.xaxis.set_minor_locator(NullLocator())
+
+
+def fit_gif_axes(ax: Axes, fig: Figure, img_w: int, img_h: int) -> None:
+    """Shrink the GIF axes to the image aspect ratio, centered in its slot."""
+    pos = ax.get_position()
+    fig_aspect = fig.get_figwidth() / fig.get_figheight()
+    img_aspect = img_w / float(img_h)
+    new_width = pos.height * img_aspect / fig_aspect
+    if new_width > pos.width:
+        new_height = pos.width * fig_aspect / img_aspect
+        new_y = pos.y0 + (pos.height - new_height) / 2
+        ax.set_position([pos.x0, new_y, pos.width, new_height])
+    else:
+        new_x = pos.x0 + (pos.width - new_width) / 2
+        ax.set_position([new_x, pos.y0, new_width, pos.height])
+
+
+def save_fixed_canvas(fig: Figure, path: str) -> None:
+    """Tight-crop the figure, then center it on a fixed white canvas."""
+    buf = BytesIO()
+    fig.savefig(
+        buf,
+        format="png",
+        dpi=DPI,
+        bbox_inches="tight",
+        pad_inches=0.1,
+        facecolor="white",
+        edgecolor="none",
+    )
+    plt.close(fig)
+    buf.seek(0)
+    content = Image.open(buf).convert("RGB")
+
+    out_w, out_h = OUT_SIZE
+    canvas = Image.new("RGB", (out_w, out_h), (255, 255, 255))
+    iw, ih = content.size
+    # Leave a thin margin so content never clips the frame edge.
+    max_w = int(out_w * 0.98)
+    max_h = int(out_h * 0.98)
+    scale = min(max_w / iw, max_h / ih)
+    nw = max(1, int(round(iw * scale)))
+    nh = max(1, int(round(ih * scale)))
+    if (nw, nh) != (iw, ih):
+        content = content.resize((nw, nh), Image.Resampling.LANCZOS)
+    x = (out_w - nw) // 2
+    y = (out_h - nh) // 2
+    canvas.paste(content, (x, y))
+    canvas.save(path)
 
 
 # ===== Load constellation names =====
@@ -196,7 +247,7 @@ for file_name in os.listdir(DATA_FOLDER):
 for const_abbr, data in constellation_data.items():
     full_name = const_names.get(const_abbr, const_abbr)
 
-    gif_path = os.path.join(GIF_FOLDER, f"{const_abbr}.gif")
+    gif_path = os.path.join(GIF_FOLDER, f"{const_abbr.upper()}.gif")
     has_gif = os.path.exists(gif_path)
 
     plot_times = data["times"]
@@ -204,19 +255,24 @@ for const_abbr, data in constellation_data.items():
     plot_azimuths = data["azimuths"]
     x0, x1 = pad_time_window(plot_times[0], plot_times[-1])
 
-    # Always the same canvas + 3-col grid (GIF slot empty if missing).
-    fig = plt.figure(figsize=FIGSIZE, dpi=DPI)
-    gs = fig.add_gridspec(1, 3, width_ratios=[1.2, 1, 1], wspace=0.35)
-    fig.subplots_adjust(left=0.05, right=0.99, top=0.86, bottom=0.18)
-
-    ax_gif = fig.add_subplot(gs[0])
+    fig = plt.figure(figsize=FIGSIZE, dpi=DPI, facecolor="white")
     if has_gif:
+        gs = fig.add_gridspec(1, 3, width_ratios=[1.0, 1.35, 1.35], wspace=0.28)
+        gif_col, az_col, alt_col = 0, 1, 2
+    else:
+        gs = fig.add_gridspec(1, 2, width_ratios=[1, 1], wspace=0.28)
+        az_col, alt_col = 0, 1
+    fig.subplots_adjust(left=0.06, right=0.98, top=0.88, bottom=0.14)
+
+    if has_gif:
+        ax_gif = fig.add_subplot(gs[gif_col])
         img = Image.open(gif_path)
         ax_gif.imshow(img)
-    ax_gif.axis("off")
+        ax_gif.axis("off")
+        fit_gif_axes(ax_gif, fig, img.size[0], img.size[1])
 
     # ===== Azimuth over time =====
-    ax_az = fig.add_subplot(gs[1])
+    ax_az = fig.add_subplot(gs[az_col])
     # Unwrap so north crossings stay continuous (e.g. 5° → 0° → -7° not 353°)
     az_series = unwrap_degrees(plot_azimuths)
     ax_az.plot(plot_times, az_series, color="darkorange", lw=2)  # type: ignore[arg-type]
@@ -244,7 +300,7 @@ for const_abbr, data in constellation_data.items():
     ax_az.grid(True, alpha=0.3)
 
     # ===== Altitude over time =====
-    ax_alt = fig.add_subplot(gs[2])
+    ax_alt = fig.add_subplot(gs[alt_col])
     ax_alt.plot(plot_times, plot_altitudes, color="steelblue", lw=2)  # type: ignore[arg-type]
     ax_alt.set_xlim(x0, x1)  # type: ignore[arg-type]
     ax_alt.set_ylim(bottom=0)
@@ -262,9 +318,7 @@ for const_abbr, data in constellation_data.items():
     fig.suptitle(title_text, fontsize=13, fontweight="bold")
 
     safe_name = full_name.replace(" ", "_").replace("/", "_")
-    # No bbox_inches="tight" — that crops per-content and makes frame sizes jump.
-    fig.savefig(os.path.join(OUTPUT_FOLDER, f"{safe_name}.png"), dpi=DPI)
-    plt.close()
+    save_fixed_canvas(fig, os.path.join(OUTPUT_FOLDER, f"{safe_name}.png"))
     print(f"✓ {full_name}")
 
 print(
