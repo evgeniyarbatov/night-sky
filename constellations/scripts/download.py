@@ -21,6 +21,8 @@ def extract_download_links(html: str) -> tuple[list[str], list[str]]:
 
 def download_file(url: str, folder: str) -> None:
     local_filename = os.path.join(folder, os.path.basename(url))
+    if os.path.exists(local_filename):
+        return
     full_url = urljoin(BASE_URL, url)
     with requests.get(full_url, stream=True, timeout=30) as r:
         r.raise_for_status()
