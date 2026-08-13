@@ -18,7 +18,7 @@ make            # or `make all` — runs every style
 make art        # or any single style target (stars, galaxies, planets, ...)
 ```
 
-Images are written to `$(DATA_DIR)/images` (default `~/data/star-art/images`); override with `DATA_ROOT=` or `DATA_DIR=`.
+Images are written to `$(DATA_DIR)/images` (default `~/Documents/data/star-art/images`); override with `DATA_ROOT=` or `DATA_DIR=`.
 
 ## Conventions
 

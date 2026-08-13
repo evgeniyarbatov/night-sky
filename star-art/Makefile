@@ -1,5 +1,5 @@
 # Uses uv (https://docs.astral.sh/uv) for dependency management — uv sync creates/updates .venv; run commands via uv run, no manual activation.
-DATA_ROOT ?= $(HOME)/data
+DATA_ROOT ?= $(HOME)/Documents/data
 REPO_NAME := $(notdir $(CURDIR))
 DATA_DIR  ?= $(DATA_ROOT)/$(REPO_NAME)
 IMAGES_DIR := $(DATA_DIR)/images
@@ -64,7 +64,7 @@ help:
 	@echo "clean      - remove generated images"
 	@echo "lock       - refresh uv.lock"
 	@echo ""
-	@echo "Images are written to \$$(DATA_DIR)/images, default: ~/data/star-art/images"
+	@echo "Images are written to \$$(DATA_DIR)/images, default: ~/Documents/data/star-art/images"
 	@echo "Override with: make <target> DATA_ROOT=/path or DATA_DIR=/path"
 
 # Entry point: full art generation pipeline.
