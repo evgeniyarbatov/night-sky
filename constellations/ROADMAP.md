@@ -158,3 +158,12 @@ Interactive full-sky atlas as a default product, heavy real-time AR as the cente
 - People in both hemispheres, cities and dark sites, feel invited — not filtered out by latitude, jargon, or light pollution denial.
 
 The code already knows *when* a constellation is up. The roadmap is to make people *want* to go find it — and to feel, over time, that those points of light are familiar neighbors.
+
+---
+
+## Connects to
+
+- **[private]**, **[private]**, **stargazing-on-the-run** — the rest of this portfolio's astronomy-from-a-photo/location cluster; all four independently reimplement variations of "what's visible from here, right now" and would benefit from sharing one visibility engine instead of four.
+- **star-art** and **living-room-solar-system** — same subject (the night sky) approached as art and as ambient home projection rather than navigation; a shared "recognizable shapes" asset library (bright stars, anchor asterisms) could serve all three.
+- **solar-lunar-times** and **sun-year** — solve the sun/moon half of "what's in the sky and when" that this repo doesn't cover; Horizon 2's "plan a night" feature is naturally downstream of both.
+- **space-images** — a separate "look up and be inspired" project (NASA imagery) that could cross-link with this repo's tonight's-shortlist: the constellation you're about to learn, illustrated with a real image of what's actually in it.
