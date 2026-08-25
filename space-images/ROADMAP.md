@@ -6,6 +6,30 @@ This repository is **inspiration grounded in tooling**: real images from public 
 
 With a laptop and an Internet connection you already have what this repo needs: open NASA APIs, public image archives, and scripts that pull them home.
 
+## Why keep going
+
+This is the raw-material source for a whole cluster of astronomy projects
+in this account that otherwise generate or render synthetic sky data —
+real mission imagery grounds `star-art` and `[private]` in
+something that actually happened, not just a simulation.
+
+## What it opens up
+
+As the album of provenance-tagged images (mission, date, license) grows,
+it becomes a dataset other repos can pull from directly instead of hitting
+NASA's APIs themselves — a shared local archive of "real space, already
+downloaded" that `[private]` and `star-art` could both consume.
+
+## Connects to
+
+- **[private]** — already uses lunar imagery as art material;
+  a direct downstream consumer of this repo's archive.
+- **star-art**, **[private]**, **constellations** — same domain
+  (the night sky), different register: this repo is documentary, those
+  are rendered/generated.
+- **living-room-solar-system** — same "bring real astronomy into daily
+  life" instinct, different surface (living room wall vs. downloaded album).
+
 ---
 
 ## What you can do today (laptop + network)
