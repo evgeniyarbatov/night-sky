@@ -1,3 +1,4 @@
 - [ ] the graphs are precise but disorienting
   - [ ] I find it hard to place them in the sky when I am outside. I would usually see specific building or landmarks. Generate plots of sky between specific buildings?
 - [ ] one of the images is not high res
+- [ ] no CI — `test_download.py` and `test_ra_utils.py` are offline unit tests and could run on push without needing live IAU downloads
