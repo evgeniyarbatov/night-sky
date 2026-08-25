@@ -6,6 +6,30 @@ This project started with a simple observation: runners spend hours under the op
 
 This roadmap turns that around. The goal is not just to *see* what was overhead on a given run, but to build a lasting relationship with the night sky — so that when you happen to run under the stars, you feel oriented, curious, and quietly awestruck. At home in the cosmos. Wondering about it as a human being. Reaching for the stars, truly.
 
+## Why keep going
+
+Running already produces a time and a place; this just asks what was
+overhead at that moment. It's a nearly-free layer of meaning on a habit
+that already exists — no other repo in this account turns exercise
+logging into an astronomy practice.
+
+## What it opens up
+
+Once the personal sky index (objects "met" on runs, with date and route)
+accumulates, a run stops being just distance and pace — it can be dated by
+what was visible: "the run where Orion first showed up this winter." That's
+a different, richer kind of running log than any fitness app produces.
+
+## Connects to
+
+- **star-art**, **constellations**, **[private]** — same sky data,
+  different register: this repo is personal and route-tied, those are
+  general renders.
+- **space-images** — real mission imagery as a documentary complement to
+  the rendered Stellarium views here.
+- **[private]**, **solar-lunar-times** — same "sky state should
+  inform the run" instinct, sun/moon instead of stars.
+
 ---
 
 ## North Star
