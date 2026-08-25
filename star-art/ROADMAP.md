@@ -12,6 +12,31 @@ This project turns real star positions into quiet, ink-wash images. The point is
 
 Every direction below asks the same question in a different way: *What would it mean to wonder at the scale of the night sky from where I actually stand?*
 
+## Why keep going
+
+Light pollution has made the night sky invisible to most people who could
+otherwise see it. Turning real star positions into something felt rather
+than just plotted is a way of giving that back — and doing it as art
+rather than a star-chart app is the whole point: precision in service of
+feeling, not the reverse.
+
+## What it opens up
+
+Once the negative-constellation and precession-diptych ideas ship, the
+same "real astronomical data, rendered as something to sit with" technique
+becomes portable to other datasets in this account that are currently
+treated as purely analytical — sound, traffic, running routes.
+
+## Connects to
+
+- **gpx-art**, **[private]** — same lineage: real physical/positional data
+  rendered as quiet ink-wash images, different source signal.
+- **stargazing-on-the-run**, **[private]** — same sky, oriented
+  toward personal experience (a specific run, a specific photo) rather
+  than the general compositions this repo explores.
+- **space-images** — real mission imagery this repo's renders could sit
+  alongside as documentary counterpoint to the generated ink washes.
+
 ---
 
 ## Where we are
