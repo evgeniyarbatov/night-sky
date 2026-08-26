@@ -1,5 +1,18 @@
 # Roadmap: Living Room Solar System
 
+## How this connects to the rest of the portfolio
+
+This is the only sky-facing project aimed at a room rather than a camera or a race — everything else in the astronomy cluster produces an image or a data point; this one produces a daily household habit. That distinction is worth keeping as the north star while the phases below get built.
+
+**Connects to:**
+- **constellations** / **[private]** — both already compute nightly visibility from a fixed observer location; the visibility engine described in "Architecture sketch" below could share code with those instead of reimplementing Skyfield queries independently.
+- **stargazing-on-the-run** / **[private]** — render the sky onto photos/Stellarium views taken *outdoors*; this project is the same astronomical computation aimed *indoors*. A shared "what's up right now" core library would serve all three.
+- **sun-year** / **solar-lunar-times** — already compute solar/lunar positions and times for a location; directly relevant to Phase 1's Moon phase and Phase 2's "why does it look like that" seasonal work.
+- **space-images** / **[private]** — Phase 6's knowledge cards ("surface / sample truth") need exactly the kind of curated NASA/ESA imagery those repos already work with.
+- **[private]** — extracts ideas from browsing; a natural place to source the curated science facts Phase 6 wants, rather than building a second extraction pipeline.
+
+---
+
 Make distant worlds **relatable and visible every day** — not as abstract facts, but as positions, motions, and stories you can point to from the couch. Curiosity first; walking on those worlds is the long arc this kind of familiarity feeds.
 
 This document builds on what the repo already does and stays within what is **technically possible** with open ephemerides, public mission data, and household hardware.
