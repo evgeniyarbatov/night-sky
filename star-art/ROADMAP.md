@@ -29,9 +29,9 @@ treated as purely analytical — sound, traffic, running routes.
 
 ## Connects to
 
-- **gpx-art**, **[private]** — same lineage: real physical/positional data
+- **gpx-art** — same lineage: real physical/positional data
   rendered as quiet ink-wash images, different source signal.
-- **stargazing-on-the-run**, **[private]** — same sky, oriented
+- **stargazing-on-the-run** — same sky, oriented
   toward personal experience (a specific run, a specific photo) rather
   than the general compositions this repo explores.
 - **space-images** — real mission imagery this repo's renders could sit
