@@ -18,13 +18,11 @@ something that actually happened, not just a simulation.
 As the album of provenance-tagged images (mission, date, license) grows,
 it becomes a dataset other repos can pull from directly instead of hitting
 NASA's APIs themselves — a shared local archive of "real space, already
-downloaded" that `[private]` and `star-art` could both consume.
+downloaded" that `star-art` could consume.
 
 ## Connects to
 
-- **[private]** — already uses lunar imagery as art material;
-  a direct downstream consumer of this repo's archive.
-- **star-art**, **[private]**, **constellations** — same domain
+- **star-art**, **constellations** — same domain
   (the night sky), different register: this repo is documentary, those
   are rendered/generated.
 - **living-room-solar-system** — same "bring real astronomy into daily
