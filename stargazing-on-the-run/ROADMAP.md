@@ -22,12 +22,12 @@ a different, richer kind of running log than any fitness app produces.
 
 ## Connects to
 
-- **star-art**, **constellations**, **[private]** — same sky data,
+- **star-art**, **constellations** — same sky data,
   different register: this repo is personal and route-tied, those are
   general renders.
 - **space-images** — real mission imagery as a documentary complement to
   the rendered Stellarium views here.
-- **[private]**, **solar-lunar-times** — same "sky state should
+- **solar-lunar-times** — same "sky state should
   inform the run" instinct, sun/moon instead of stars.
 
 ---
