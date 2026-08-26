@@ -10,7 +10,7 @@ With a laptop and an Internet connection you already have what this repo needs: 
 
 This is the raw-material source for a whole cluster of astronomy projects
 in this account that otherwise generate or render synthetic sky data —
-real mission imagery grounds `star-art` and `[private]` in
+real mission imagery grounds `star-art` and other renders in
 something that actually happened, not just a simulation.
 
 ## What it opens up
