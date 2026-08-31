@@ -33,13 +33,17 @@ DATA_DIR = os.environ.get("DATA_DIR", "data")
 DATA_FOLDER = "data/boundaries"
 OUTPUT_FOLDER = os.path.join(DATA_DIR, "plots")
 GIF_FOLDER = os.path.join(DATA_DIR, "gifs")
-DATE = datetime.now().date()
+DATE = (
+    datetime.fromisoformat(os.environ["CONSTELLATIONS_DATE"]).date()
+    if os.environ.get("CONSTELLATIONS_DATE")
+    else datetime.now().date()
+)
 DELTA_MINUTES = config["delta_minutes"]
 # Single-sample grazes plot as a point; skip windows shorter than this.
 MIN_VISIBILITY_MINUTES = 30
 # Fixed canvas so every PNG is identical pixels (video-friendly).
-FIGSIZE = (16.0, 4.5)
-DPI = 300
+FIGSIZE = (7.2, 5.4)
+DPI = 200
 OUT_SIZE = (int(FIGSIZE[0] * DPI), int(FIGSIZE[1] * DPI))
 HANOI_TZ = pytz.timezone(config["timezone"])
 TZ_LABEL = config["tz_label"]
@@ -87,19 +91,8 @@ def apply_time_axis(ax: Axes, t0: datetime, t1: datetime) -> None:
     ax.xaxis.set_minor_locator(NullLocator())
 
 
-def fit_gif_axes(ax: Axes, fig: Figure, img_w: int, img_h: int) -> None:
-    """Shrink the GIF axes to the image aspect ratio, centered in its slot."""
-    pos = ax.get_position()
-    fig_aspect = fig.get_figwidth() / fig.get_figheight()
-    img_aspect = img_w / float(img_h)
-    new_width = pos.height * img_aspect / fig_aspect
-    if new_width > pos.width:
-        new_height = pos.width * fig_aspect / img_aspect
-        new_y = pos.y0 + (pos.height - new_height) / 2
-        ax.set_position([pos.x0, new_y, pos.width, new_height])
-    else:
-        new_x = pos.x0 + (pos.width - new_width) / 2
-        ax.set_position([new_x, pos.y0, new_width, pos.height])
+def new_figure() -> Figure:
+    return plt.figure(figsize=FIGSIZE, dpi=DPI, facecolor="white")
 
 
 def save_fixed_canvas(fig: Figure, path: str) -> None:
@@ -133,6 +126,77 @@ def save_fixed_canvas(fig: Figure, path: str) -> None:
     y = (out_h - nh) // 2
     canvas.paste(content, (x, y))
     canvas.save(path)
+
+
+def plot_chart(gif_path: str, title: str) -> Figure:
+    fig = new_figure()
+    ax = fig.add_subplot(1, 1, 1)
+    img = Image.open(gif_path)
+    ax.imshow(img)
+    ax.axis("off")
+    fig.suptitle(title, fontsize=13, fontweight="bold")
+    fig.tight_layout()
+    return fig
+
+
+def plot_azimuth(
+    plot_times: list[datetime],
+    plot_azimuths: list[float],
+    x0: datetime,
+    x1: datetime,
+    title: str,
+) -> Figure:
+    fig = new_figure()
+    ax = fig.add_subplot(1, 1, 1)
+    az_series = unwrap_degrees(plot_azimuths)
+    ax.plot(plot_times, az_series, color="darkorange", lw=2)  # type: ignore[arg-type]
+    ax.set_xlim(x0, x1)  # type: ignore[arg-type]
+    az_min = min(az_series)
+    az_max = max(az_series)
+    pad = max(5.0, 0.05 * (az_max - az_min + 1e-9))
+    y0 = az_min - pad
+    y1 = az_max + pad
+    ax.set_ylim(y0, y1)
+    tick_start = int(np.floor(y0 / 45.0)) * 45
+    tick_stop = int(np.ceil(y1 / 45.0)) * 45
+    az_ticks = np.arange(tick_start, tick_stop + 1, 45)
+    cardinals = {0: "N", 45: "NE", 90: "E", 135: "SE", 180: "S", 225: "SW", 270: "W", 315: "NW"}
+    ax.set_yticks(az_ticks)
+    az_labels: list[str] = []
+    for t in az_ticks:
+        deg = int(round(t % 360)) % 360
+        card = cardinals.get(deg)
+        az_labels.append(f"{deg}° ({card})" if card else f"{deg}°")
+    ax.set_yticklabels(az_labels)
+    ax.set_ylabel("Azimuth ° (Direction)")
+    ax.set_xlabel(f"Time ({TZ_LABEL})")
+    apply_time_axis(ax, x0, x1)
+    ax.grid(True, alpha=0.3)
+    fig.suptitle(title, fontsize=13, fontweight="bold")
+    fig.tight_layout()
+    return fig
+
+
+def plot_altitude(
+    plot_times: list[datetime],
+    plot_altitudes: list[float],
+    x0: datetime,
+    x1: datetime,
+    title: str,
+) -> Figure:
+    fig = new_figure()
+    ax = fig.add_subplot(1, 1, 1)
+    ax.plot(plot_times, plot_altitudes, color="steelblue", lw=2)  # type: ignore[arg-type]
+    ax.set_xlim(x0, x1)  # type: ignore[arg-type]
+    ax.set_ylim(bottom=0)
+    ax.set_ylabel("Altitude (°)")
+    ax.set_xlabel(f"Time ({TZ_LABEL})")
+    apply_time_axis(ax, x0, x1)
+    ax.grid(True, alpha=0.3)
+    ax.axhline(0, color="gray", linestyle="--", lw=1)
+    fig.suptitle(title, fontsize=13, fontweight="bold")
+    fig.tight_layout()
+    return fig
 
 
 # ===== Load constellation names =====
@@ -244,85 +308,45 @@ for file_name in os.listdir(DATA_FOLDER):
         }
 
 # ===== Create plots =====
+written = 0
 for const_abbr, data in constellation_data.items():
     full_name = const_names.get(const_abbr, const_abbr)
 
     gif_path = os.path.join(GIF_FOLDER, f"{const_abbr.upper()}.gif")
-    has_gif = os.path.exists(gif_path)
-
     plot_times = data["times"]
     plot_altitudes = data["altitudes"]
     plot_azimuths = data["azimuths"]
     x0, x1 = pad_time_window(plot_times[0], plot_times[-1])
-
-    fig = plt.figure(figsize=FIGSIZE, dpi=DPI, facecolor="white")
-    if has_gif:
-        gs = fig.add_gridspec(1, 3, width_ratios=[1.0, 1.35, 1.35], wspace=0.28)
-        gif_col, az_col, alt_col = 0, 1, 2
-    else:
-        gs = fig.add_gridspec(1, 2, width_ratios=[1, 1], wspace=0.28)
-        az_col, alt_col = 0, 1
-    fig.subplots_adjust(left=0.06, right=0.98, top=0.88, bottom=0.14)
-
-    if has_gif:
-        ax_gif = fig.add_subplot(gs[gif_col])
-        img = Image.open(gif_path)
-        ax_gif.imshow(img)
-        ax_gif.axis("off")
-        fit_gif_axes(ax_gif, fig, img.size[0], img.size[1])
-
-    # ===== Azimuth over time =====
-    ax_az = fig.add_subplot(gs[az_col])
-    # Unwrap so north crossings stay continuous (e.g. 5° → 0° → -7° not 353°)
-    az_series = unwrap_degrees(plot_azimuths)
-    ax_az.plot(plot_times, az_series, color="darkorange", lw=2)  # type: ignore[arg-type]
-    ax_az.set_xlim(x0, x1)  # type: ignore[arg-type]
-    az_min = min(az_series)
-    az_max = max(az_series)
-    pad = max(5.0, 0.05 * (az_max - az_min + 1e-9))
-    y0 = az_min - pad
-    y1 = az_max + pad
-    ax_az.set_ylim(y0, y1)
-    tick_start = int(np.floor(y0 / 45.0)) * 45
-    tick_stop = int(np.ceil(y1 / 45.0)) * 45
-    az_ticks = np.arange(tick_start, tick_stop + 1, 45)
-    cardinals = {0: "N", 45: "NE", 90: "E", 135: "SE", 180: "S", 225: "SW", 270: "W", 315: "NW"}
-    ax_az.set_yticks(az_ticks)
-    az_labels: list[str] = []
-    for t in az_ticks:
-        deg = int(round(t % 360)) % 360
-        card = cardinals.get(deg)
-        az_labels.append(f"{deg}° ({card})" if card else f"{deg}°")
-    ax_az.set_yticklabels(az_labels)
-    ax_az.set_ylabel("Azimuth ° (Direction)")
-    ax_az.set_xlabel(f"Time ({TZ_LABEL})")
-    apply_time_axis(ax_az, x0, x1)
-    ax_az.grid(True, alpha=0.3)
-
-    # ===== Altitude over time =====
-    ax_alt = fig.add_subplot(gs[alt_col])
-    ax_alt.plot(plot_times, plot_altitudes, color="steelblue", lw=2)  # type: ignore[arg-type]
-    ax_alt.set_xlim(x0, x1)  # type: ignore[arg-type]
-    ax_alt.set_ylim(bottom=0)
-    ax_alt.set_ylabel("Altitude (°)")
-    ax_alt.set_xlabel(f"Time ({TZ_LABEL})")
-    apply_time_axis(ax_alt, x0, x1)
-    ax_alt.grid(True, alpha=0.3)
-    ax_alt.axhline(0, color="gray", linestyle="--", lw=1)
-
-    # ===== Title & Save =====
     start_str = data["start"].strftime("%H:%M")
     end_str = data["end"].strftime("%H:%M")
-    title_text = f"{full_name} - visible {start_str}-{end_str}"
-
-    fig.suptitle(title_text, fontsize=13, fontweight="bold")
-
+    visible = f"visible {start_str}-{end_str}"
     safe_name = full_name.replace(" ", "_").replace("/", "_")
-    save_fixed_canvas(fig, os.path.join(OUTPUT_FOLDER, f"{safe_name}.png"))
+    out_base = os.path.join(OUTPUT_FOLDER, safe_name)
+
+    if os.path.exists(gif_path):
+        save_fixed_canvas(
+            plot_chart(gif_path, f"{full_name} · {visible}"),
+            f"{out_base}.png",
+        )
+        written += 1
+
+    save_fixed_canvas(
+        plot_azimuth(
+            plot_times, plot_azimuths, x0, x1, f"{full_name} · azimuth · {visible}"
+        ),
+        f"{out_base}-az.png",
+    )
+    save_fixed_canvas(
+        plot_altitude(
+            plot_times, plot_altitudes, x0, x1, f"{full_name} · altitude · {visible}"
+        ),
+        f"{out_base}-alt.png",
+    )
+    written += 2
     print(f"✓ {full_name}")
 
 print(
-    f"\nGenerated {len(constellation_data)} plots"
+    f"\nGenerated {written} plots for {len(constellation_data)} constellations"
     f" (skipped {skipped_below_horizon} below horizon,"
     f" {skipped_too_brief} too brief)."
 )

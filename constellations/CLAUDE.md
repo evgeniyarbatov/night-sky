@@ -4,7 +4,7 @@ Project rules for agents. Global preferences still apply; this file wins on conf
 
 ## What this is
 
-Fixed-location night-sky plots: for each IAU constellation, when (if ever) it is above the horizon between astronomical dusk and dawn. Pipeline: download IAU assets → compute visibility on a time grid → write plots (with optional GIF overlay).
+Fixed-location night-sky plots: for each IAU constellation, when (if ever) it is above the horizon between astronomical dusk and dawn. Pipeline: download IAU assets → compute visibility on a time grid → write three plots per constellation (IAU chart, azimuth vs time, altitude vs time).
 
 ## Commands
 
