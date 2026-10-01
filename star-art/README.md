@@ -34,3 +34,18 @@ Generated images are written outside the repo, to `~/data/star-art/images` by
 default. Override the location with `make <target> DATA_ROOT=/path` (changes
 the root under which every repo's data lives) or `make <target> DATA_DIR=/path`
 (changes this repo's data dir directly).
+
+## Single render
+
+`scripts/render.py` renders one style for one place and date, so pipelines can drive star-art reproducibly:
+
+```
+uv run python scripts/render.py --seed 1 --params params.json --out out/ --inputs sky.json [--size preview|full]
+uv run python scripts/render.py --list-styles
+```
+
+- `sky.json`: `{"name", "lat", "lon", "date": "YYYY-MM-DD"}`.
+- `params.json`: `{"style", "magnitude", "fov", "azimuth", "altitude", "minutes_after_dusk", "footer"}`; all but `style` optional.
+- Writes `<out>/render.png` (`preview` ≈1024 px, `full` 300 dpi). Exit code 3 means nothing was visible.
+- Skyfield files are cached in `STAR_ART_CACHE` (default `~/.cache/star-art`).
+- Installed as a package, the same CLI is `star-art-render` or `python -m star_art.render`.

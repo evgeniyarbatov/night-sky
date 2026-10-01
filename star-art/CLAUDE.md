@@ -9,6 +9,7 @@ Generates minimalist star-field artwork (PNG) from real astronomical data — st
 - `scripts/star-art.py` — base star-field render (default `make all` step)
 - `scripts/star-art-{names,galaxies,planets,nebulae,star-clusters,exotic-objects,path,timelapse}.py` — one render style each
 - `scripts/star_art_utils.py` — shared projection/rendering helpers, imported by all the above
+- `scripts/render.py` — one style, one place, one date, from a seed (`--list-styles`)
 
 ## How to run
 
