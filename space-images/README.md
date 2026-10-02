@@ -10,7 +10,8 @@ See [ROADMAP.md](ROADMAP.md) for the path outward and what you can build with a 
 | --- | --- |
 | `make inspire` | APOD + caption → `$(DATA_DIR)/album/daily/YYYY-MM-DD/` (adds a new photo each run; local only) |
 | `scripts/nasa.py` | Random APOD (last year) + NASA Image Library sample → `$(DATA_DIR)/images/` |
-| `scripts/planets.py` | Up to 20 images per planet (Mercury–Neptune) → `$(DATA_DIR)/images/<planet>/` |
+| `scripts/planets.py` | Up to 20 images per planet (Mercury–Neptune) → `$(DATA_DIR)/images/<planet>/`; `--planet`, `--per-planet` narrow it |
+| `scripts/stars.py` | Hubble / Webb / Chandra / Spitzer photos of nebulae, galaxies and star clusters → `$(DATA_DIR)/images/stars/` |
 | `ROADMAP.md` | Ladder outward + project plan |
 
 Every download gets **sidecar** `.json` + `.md`: title, date, mission, body, license, source URL, destination tag, and full caption from the source.
@@ -34,6 +35,7 @@ Bulk pulls:
 ```bash
 make nasa      # 20× APOD + library samples → $(DATA_DIR)/images/
 make planets   # per-planet sets → $(DATA_DIR)/images/<planet>/
+make stars     # deep-sky photos → $(DATA_DIR)/images/stars/
 ```
 
 Or run scripts once (pass `--root` / `--output-dir` to control where files land; otherwise they default to `images/` and `album/` inside the repo):

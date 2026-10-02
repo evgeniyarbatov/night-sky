@@ -612,23 +612,13 @@ class PlanetImageDownloader:
         print(f"   Successfully downloaded {count}/{max_images} new images for {planet_name}")
         return count > 0
 
-    def download_all(self) -> None:
+    def download_all(self, planets: list[str], per_planet: int) -> None:
         print("NASA Planet Image Downloader")
         print("=" * 60)
-        planets = [
-            "mercury",
-            "venus",
-            "earth",
-            "mars",
-            "jupiter",
-            "saturn",
-            "uranus",
-            "neptune",
-        ]
         results: list[tuple[str, bool]] = []
         start_time = time.time()
         for planet in planets:
-            success = self.download_planet_images(planet, max_images=20)
+            success = self.download_planet_images(planet, max_images=per_planet)
             results.append((planet, success))
             time.sleep(1)
         elapsed = time.time() - start_time
@@ -651,8 +641,17 @@ def main() -> None:
         default=Path(os.environ.get("SPACE_IMAGES_OUTPUT_DIR", "images")),
         help="Directory to save images to (default: images/, or $SPACE_IMAGES_OUTPUT_DIR)",
     )
+    parser.add_argument(
+        "--planet",
+        action="append",
+        choices=list(PLANET_SEARCH_QUERIES),
+        help="planet to download (repeatable; default: all eight)",
+    )
+    parser.add_argument("--per-planet", type=int, default=20, help="new images per planet")
     args = parser.parse_args()
-    PlanetImageDownloader(download_dir=args.output_dir).download_all()
+    PlanetImageDownloader(download_dir=args.output_dir).download_all(
+        args.planet or list(PLANET_SEARCH_QUERIES), args.per_planet
+    )
 
 
 if __name__ == "__main__":

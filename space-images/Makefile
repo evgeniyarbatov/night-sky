@@ -18,6 +18,9 @@ planets: install
 	@mkdir -p $(DATA_DIR)/images
 	@uv run python scripts/planets.py --output-dir $(DATA_DIR)/images
 
+stars: install
+	@uv run python scripts/stars.py --output-dir $(DATA_DIR)/images/stars
+
 inspire: install
 	@mkdir -p $(DATA_DIR)
 	@uv run python scripts/inspire.py --root $(DATA_DIR)
@@ -36,6 +39,7 @@ help:
 	@echo "inspire    - APOD → $(DATA_DIR)/album/daily (adds a new photo each run)"
 	@echo "nasa       - run nasa.py 20 times → $(DATA_DIR)/images"
 	@echo "planets    - run planets.py → $(DATA_DIR)/images/<planet>"
+	@echo "stars      - run stars.py → $(DATA_DIR)/images/stars (nebulae, galaxies, clusters)"
 	@echo "test       - run unit tests"
 	@echo "clean      - remove generated downloads"
 	@echo "lock       - refresh uv.lock"
