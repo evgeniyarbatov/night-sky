@@ -71,7 +71,6 @@ DEEP_SKY_EXCLUDE: tuple[str, ...] = (
     "graph",
     "chart",
     "plot",
-    "comparison",
     "side by side",
     "mirror",
     "instrument",

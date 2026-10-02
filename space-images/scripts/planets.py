@@ -154,6 +154,11 @@ GLOBAL_EXCLUDE: tuple[str, ...] = (
     "landing area narrowed",
     "candidate landing",
     "landing site candidates",
+    "comparison",
+    "spectrometer",
+    "time-lapse",
+    "transit",
+    "solar system portrait",
     # Elevation / science data products — not photographs.
     "mola",
     "elevation map",
@@ -417,6 +422,8 @@ PLANET_MISSIONS: dict[str, tuple[str, ...]] = {
         "landsat",
         "himawari",
         "epix",
+        "expedition",
+        "gemini",
     ),
     "mars": (
         "mro",
@@ -486,11 +493,13 @@ class PlanetImageDownloader:
 
         planet_in_title = bool(re.search(rf"\b{re.escape(planet_name)}\b", title))
         planet_in_kw = any(planet_name in str(k).lower() for k in keywords)
-        planet_in_desc = bool(re.search(rf"\b{re.escape(planet_name)}\b", desc))
         mission_hit = any(m in combined for m in PLANET_MISSIONS.get(planet_name, ()))
 
-        # Title must name the planet, or a known mission with planet in keywords/desc.
-        if not planet_in_title and not (mission_hit and (planet_in_kw or planet_in_desc)):
+        # A mission credit, plus the planet named in the title or keywords.
+        if not mission_hit or not (planet_in_title or planet_in_kw):
+            return False
+        # Untitled archive entries are film scans with borders and handwritten frame numbers.
+        if title == str(data_block.get("nasa_id", "")).lower():
             return False
 
         if any(term in combined for term in GLOBAL_EXCLUDE):

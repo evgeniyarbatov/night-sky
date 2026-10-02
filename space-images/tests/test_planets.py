@@ -45,8 +45,21 @@ class IsValidPlanetImageTests(unittest.TestCase):
         self.downloader = PlanetImageDownloader(download_dir=self.tmpdir.name)
 
     def test_accepts_title_with_planet_name_and_body_term(self) -> None:
-        item = _item(title="Mars Surface Panorama", description="A view of the martian terrain.")
+        item = _item(title="Mars Surface Panorama", description="Curiosity views the terrain.")
         self.assertTrue(self.downloader.is_valid_planet_image(item, "mars"))
+
+    def test_rejects_untitled_archive_scans(self) -> None:
+        item = _item(title="ARC-1986-A86-7019", description="Voyager 2 flyby of Uranus")
+        item["data"][0]["nasa_id"] = "ARC-1986-A86-7019"
+        self.assertFalse(self.downloader.is_valid_planet_image(item, "uranus"))
+
+    def test_rejects_planet_only_in_description(self) -> None:
+        item = _item(title="Apollo spacecraft seen from Soyuz", description="in Earth orbit")
+        self.assertFalse(self.downloader.is_valid_planet_image(item, "earth"))
+
+    def test_rejects_without_a_mission_credit(self) -> None:
+        item = _item(title="Inventor with Venus electronics", keywords=["Venus", "Planet"])
+        self.assertFalse(self.downloader.is_valid_planet_image(item, "venus"))
 
     def test_rejects_when_planet_name_absent_from_title(self) -> None:
         item = _item(title="A distant world", description="surface terrain")
@@ -71,7 +84,7 @@ class IsValidPlanetImageTests(unittest.TestCase):
     def test_allows_crewed_context_for_earth(self) -> None:
         item = _item(
             title="Earth from the International Space Station",
-            description="The blue marble seen from orbit.",
+            description="The blue marble seen from orbit during Expedition 40.",
         )
         self.assertTrue(self.downloader.is_valid_planet_image(item, "earth"))
 
@@ -84,7 +97,7 @@ class IsValidPlanetImageTests(unittest.TestCase):
         self.assertTrue(self.downloader.is_valid_planet_image(item, "jupiter"))
 
     def test_accepts_short_portrait_title_without_body_terms(self) -> None:
-        item = _item(title="Full Blue Mars")
+        item = _item(title="Full Blue Mars", keywords=["Hubble"])
         self.assertTrue(self.downloader.is_valid_planet_image(item, "mars"))
 
     def test_rejects_long_title_without_body_terms_or_portrait_words(self) -> None:
