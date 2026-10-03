@@ -554,8 +554,8 @@ class StarArtUtils:
         ax.set_facecolor("#fdfdf9")
 
         if stars is not None and stars.get("count", 0) > 0:
-            sizes = np.maximum(40 * np.exp(-stars["mag"] / 3.5), 3.0)
-            alphas = np.clip(1.0 - stars["mag"] / 20, 0.6, 0.95)
+            sizes = 40 * np.exp(-stars["mag"] / 2.2)
+            alphas = np.clip(0.9 - stars["mag"] / 12, 0.3, 0.9)
             ax.scatter(stars["x"], stars["y"], s=sizes, c="#1a1a1a", alpha=alphas, linewidths=0)
 
         ax.set_xlim(-fov / 2.0, fov / 2.0)
