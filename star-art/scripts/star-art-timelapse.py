@@ -1,11 +1,10 @@
 import json
 import os
 import time
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Any
 
 import matplotlib.pyplot as plt
-import pytz
 from skyfield.api import load, wgs84
 from star_art_utils import StarArtUtils
 
@@ -33,16 +32,7 @@ def generate_timelapse(location: dict[str, Any]) -> None:
 
     observer = earth + wgs84.latlon(lat, lon)
 
-    tz = StarArtUtils.get_timezone(lat, lon)
-    now_utc = datetime.now(pytz.UTC)
-    local_date = now_utc.astimezone(tz).date() if tz else now_utc.date()
-
-    dusk = StarArtUtils.get_astronomical_dusk(lat, lon, local_date, tzinfo=tz or pytz.UTC)
-    sunrise = StarArtUtils.get_sunrise(lat, lon, local_date, tzinfo=tz or pytz.UTC)
-    if sunrise <= dusk:
-        sunrise = StarArtUtils.get_sunrise(
-            lat, lon, local_date + timedelta(days=1), tzinfo=tz or pytz.UTC
-        )
+    dusk, sunrise = StarArtUtils.get_night_window(lat, lon)
 
     total_minutes = max(0, int((sunrise - dusk).total_seconds() / 60))
     total_frames = total_minutes // FRAME_MINUTES + 1

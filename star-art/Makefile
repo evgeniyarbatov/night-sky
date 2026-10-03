@@ -63,7 +63,7 @@ help:
 	@echo "exotic     - run star-art-exotic-objects.py"
 	@echo "path       - run star-art-path.py"
 	@echo "timelapse  - run star-art-timelapse.py"
-	@echo "horizon    - run star-art-horizon-slice.py"
+	@echo "horizon    - run star-art-horizon-slice.py (dusk-to-sunrise frames per magnitude)"
 	@echo "test       - run unittest suite"
 	@echo "clean      - remove generated images"
 	@echo "lock       - refresh uv.lock"

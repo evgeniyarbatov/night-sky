@@ -7,12 +7,13 @@ This project generates minimalist star-field artworks from real star positions.
 - Loads locations from `stargazing-locations.json`.
 - For each location and each registered style, computes astronomical dusk for the current UTC date and observes stars from that place and time.
 - Uses the Hipparcos catalog (via Skyfield) and filters stars by a magnitude threshold.
-- Projects the visible stars into a 2D stereographic view centered at azimuth 0 deg and altitude 90 deg with a 180 deg field of view.
-- Renders each view with Matplotlib and saves a PNG to `images/<style>/...`.
+- Projects the visible stars into a 2D stereographic view centered at azimuth 0 deg and altitude 90 deg with a 180 deg field of view (the horizon style instead plots a narrow altitude band in panoramic azimuth/altitude coordinates).
+- Renders each view with Matplotlib and saves a PNG to `<images dir>/<style>/...` (see below).
 
 ## How to run
 
 ```
+make install    # sync dependencies with uv
 make            # or `make all` — generates every style below
 ```
 
@@ -28,9 +29,18 @@ make clusters   # generates star cluster renders
 make exotic     # generates exotic object renders
 make path       # generates the path renders
 make timelapse  # generates timelapse frames for a single location
+make horizon    # generates dusk-to-sunrise frames of a low-altitude band (12-20 deg), one sequence per magnitude limit
 ```
 
-Generated images are written outside the repo, to `~/data/star-art/images` by
+Other targets:
+
+```
+make test       # runs the unittest suite
+make clean      # removes generated images
+make help       # lists all targets
+```
+
+Generated images are written outside the repo, to `~/Documents/data/star-art/images` by
 default. Override the location with `make <target> DATA_ROOT=/path` (changes
 the root under which every repo's data lives) or `make <target> DATA_DIR=/path`
 (changes this repo's data dir directly).

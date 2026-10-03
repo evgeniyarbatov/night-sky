@@ -1,113 +1,95 @@
 import json
 import os
 import time
-from datetime import datetime
+from datetime import timedelta
 from typing import Any
 
 import matplotlib.pyplot as plt
-import pytz
 from skyfield.api import load, wgs84
 from star_art_utils import StarArtUtils
 
 IMAGES_DIR = os.environ.get("STAR_ART_IMAGES_DIR", "images")
+LOCATIONS_FILE = "stargazing-locations.json"
+
+FRAME_MINUTES = 10
+# City sky, suburban, rural, dark-site naked-eye limit, binoculars, small telescope.
+MAGNITUDES = [2.0, 3.5, 5.0, 6.5, 9.0, 12.0]
+FOV = 180
+AZIMUTH = 0
+ALT_MIN, ALT_MAX = 12, 20
 
 os.makedirs(IMAGES_DIR, exist_ok=True)
 
 
-def create_artwork(
-    location: dict[str, Any],
-    magnitude: float,
-    fov: float,
-    azimuth: float,
-    alt_min: float,
-    alt_max: float,
-) -> None:
+def filter_by_magnitude(stars: dict[str, Any] | None, magnitude: float) -> dict[str, Any] | None:
+    if stars is None:
+        return None
+    mask = stars["mag"] <= magnitude
+    return {
+        "x": stars["x"][mask],
+        "y": stars["y"][mask],
+        "mag": stars["mag"][mask],
+        "count": int(mask.sum()),
+    }
+
+
+def generate_timelapse(location: dict[str, Any]) -> None:
     start_time = time.time()
 
-    planets = load("de421.bsp")
-    earth = planets["earth"]
+    earth = load("de421.bsp")["earth"]
 
     lat = float(location["lat"])
     lon = float(location["lon"])
     name = location.get("name", f"{lat},{lon}")
-
     observer = earth + wgs84.latlon(lat, lon)
 
-    today = datetime.now(pytz.UTC).date()
-    obs_time = StarArtUtils.get_astronomical_dusk(lat, lon, today)
+    dusk, sunrise = StarArtUtils.get_night_window(lat, lon)
+    total_minutes = max(0, int((sunrise - dusk).total_seconds() / 60))
+    total_frames = total_minutes // FRAME_MINUTES + 1
+
+    safe_name = name.replace(" ", "_").replace(",", "_")
+    out_dirs = {
+        magnitude: f"{IMAGES_DIR}/horizon-slice/{safe_name}/mag{magnitude}" for magnitude in MAGNITUDES
+    }
+    for out_dir in out_dirs.values():
+        os.makedirs(out_dir, exist_ok=True)
 
     print(
-        f"\nGenerating 'horizon-slice' for {name} at astronomical dusk (UTC): "
-        f"{obs_time.strftime('%Y-%m-%d %H:%M UTC')}"
+        f"\nGenerating horizon-slice timelapse for {name}: {total_frames} frames x "
+        f"{len(MAGNITUDES)} magnitudes, starting at astronomical dusk "
+        f"{dusk.strftime('%Y-%m-%d %H:%M %Z')}"
     )
 
-    stars = StarArtUtils.get_horizon_band_stars(
-        observer, obs_time, magnitude, alt_min, alt_max, azimuth, fov
-    )
-    if stars is None or stars.get("count", 0) == 0:
-        print("No stars visible in this band, skipping...")
-        return
+    for idx in range(total_frames):
+        obs_time = dusk + timedelta(minutes=FRAME_MINUTES * idx)
+        all_stars = StarArtUtils.get_horizon_band_stars(
+            observer, obs_time, max(MAGNITUDES), ALT_MIN, ALT_MAX, AZIMUTH, FOV
+        )
 
-    print(f"Stars in band: {stars['count']}")
+        for magnitude in MAGNITUDES:
+            stars = filter_by_magnitude(all_stars, magnitude)
+            fig, bg_color = StarArtUtils.horizon_slice_style(stars, ALT_MIN, ALT_MAX, FOV)
 
-    fig, bg_color = StarArtUtils.horizon_slice_style(stars, alt_min, alt_max, fov)
-    if fig is None:
-        print("Failed to generate artwork, skipping...")
-        return
+            details = f"Mag ≤{magnitude}  |  FOV {FOV}°  |  Az {AZIMUTH}°  |  Alt {ALT_MIN}-{ALT_MAX}°"
+            StarArtUtils.add_info_text(fig, location, obs_time, details, bg_color)
 
-    details = f"Mag ≤{magnitude}  |  FOV {fov}°  |  Az {azimuth}°  |  Alt {alt_min}-{alt_max}°"
-    StarArtUtils.add_info_text(fig, location, obs_time, details, bg_color)
+            filename = f"{out_dirs[magnitude]}/frame_{idx + 1:04d}.png"
+            fig.tight_layout(pad=0.5)
+            plt.savefig(filename, dpi=300, facecolor=bg_color, edgecolor="none", bbox_inches="tight")
+            plt.close(fig)
 
-    date_stamp = obs_time.strftime("%Y%m%d")
-    safe_name = name.replace(" ", "_").replace(",", "_")
-    out_dir = f"{IMAGES_DIR}/horizon-slice"
-    os.makedirs(out_dir, exist_ok=True)
-    filename = (
-        f"{out_dir}/{safe_name}_horizon_mag{magnitude}_fov{fov}_az{azimuth}_"
-        f"alt{alt_min}-{alt_max}_{date_stamp}.png"
-    )
+        print(f"✓ Frame {idx + 1}/{total_frames} ({obs_time.strftime('%H:%M %Z')})")
 
-    try:
-        fig.tight_layout(pad=0.5)
-        plt.savefig(filename, dpi=300, facecolor=bg_color, edgecolor="none", bbox_inches="tight")
-        duration = time.time() - start_time
-        print(f"✓ Saved: {filename} ({duration:.2f}s)")
-    except Exception as e:
-        print(f"Error saving figure: {e}")
-    finally:
-        plt.close(fig)
+    duration = time.time() - start_time
+    print(f"\n✓ Horizon-slice frames saved to {IMAGES_DIR}/horizon-slice/{safe_name} ({duration:.2f}s)")
 
 
-def main(locations_file: str = "stargazing-locations.json") -> None:
-    try:
-        with open(locations_file) as f:
-            locations = json.load(f)
-    except Exception as e:
-        print(f"Could not load locations file '{locations_file}': {e}")
-        return
-
-    print(f"\nGenerating horizon-slice artworks for {len(locations)} locations...")
-
-    magnitudes = [3.5]
-    fovs = [180]
-    azimuths = [0]
-    alt_min, alt_max = 12, 20
-
-    total = len(locations) * len(magnitudes) * len(fovs) * len(azimuths)
-    current = 0
+def main(locations_file: str = LOCATIONS_FILE) -> None:
+    with open(locations_file) as f:
+        locations = json.load(f)
 
     for location in locations:
-        for magnitude in magnitudes:
-            for fov in fovs:
-                for azimuth in azimuths:
-                    current += 1
-                    print(f"\n[{current}/{total}]", end=" ")
-                    try:
-                        create_artwork(location, magnitude, fov, azimuth, alt_min, alt_max)
-                    except Exception as e:
-                        print(f"Error: {e}")
-
-    print(f"\n✓ All artworks (attempted) saved to {IMAGES_DIR}/")
+        generate_timelapse(location)
 
 
 if __name__ == "__main__":

@@ -180,6 +180,18 @@ class StarArtUtils:
         except Exception:
             return datetime.now(tz_fallback)
 
+    @classmethod
+    def get_night_window(cls, lat: float, lon: float) -> tuple[datetime, datetime]:
+        """Tonight's astronomical dusk and the following sunrise, using the location's local date."""
+        tz = cls.get_timezone(lat, lon) or pytz.UTC
+        local_date = datetime.now(pytz.UTC).astimezone(tz).date()
+
+        dusk = cls.get_astronomical_dusk(lat, lon, local_date, tzinfo=tz)
+        sunrise = cls.get_sunrise(lat, lon, local_date, tzinfo=tz)
+        if sunrise <= dusk:
+            sunrise = cls.get_sunrise(lat, lon, local_date + timedelta(days=1), tzinfo=tz)
+        return dusk, sunrise
+
     @staticmethod
     def place_labels(ax: Axes, objects: dict[str, Any], color: str = "#1a1a1a") -> None:
         fig = ax.figure
@@ -536,17 +548,15 @@ class StarArtUtils:
     @staticmethod
     def horizon_slice_style(
         stars: dict[str, Any] | None, alt_min: float, alt_max: float, fov: float
-    ) -> tuple[Figure | None, str]:
-        if stars is None or stars.get("count", 0) == 0:
-            return None, "white"
-
+    ) -> tuple[Figure, str]:
+        """Renders an empty band (horizon line only) when no stars are given, so timelapse frames stay contiguous."""
         fig, ax = plt.subplots(figsize=(18, 6), facecolor="#fdfdf9", dpi=300)
         ax.set_facecolor("#fdfdf9")
 
-        sizes = 40 * np.exp(-stars["mag"] / 2.2)
-        alphas = np.clip(0.9 - (stars["mag"] - np.min(stars["mag"])) / 12, 0.3, 0.9)
-
-        ax.scatter(stars["x"], stars["y"], s=sizes, c="#1a1a1a", alpha=alphas, linewidths=0)
+        if stars is not None and stars.get("count", 0) > 0:
+            sizes = 40 * np.exp(-stars["mag"] / 2.2)
+            alphas = np.clip(0.9 - stars["mag"] / 12, 0.3, 0.9)
+            ax.scatter(stars["x"], stars["y"], s=sizes, c="#1a1a1a", alpha=alphas, linewidths=0)
 
         ax.set_xlim(-fov / 2.0, fov / 2.0)
         ax.set_ylim(alt_min, alt_max)
