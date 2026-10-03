@@ -360,6 +360,64 @@ class StarArtUtils:
         return {"x": x[mask], "y": y[mask], "mag": mags[mask], "count": int(np.sum(mask))}
 
     @classmethod
+    def get_horizon_band_stars(
+        cls,
+        observer: Any,
+        obs_time: datetime,
+        magnitude_limit: float,
+        alt_min: float,
+        alt_max: float,
+        center_az: float,
+        fov: float,
+    ) -> dict[str, Any] | None:
+        """Stars within a horizontal altitude band, in azimuth/altitude (panoramic) coordinates."""
+        df = cls._load_hipparcos(source="remote")
+        if df is None or len(df) == 0:
+            print("Hipparcos catalog not available.")
+            return None
+
+        visible_df = df[df["magnitude"] <= float(magnitude_limit)].copy()
+        if len(visible_df) == 0:
+            return None
+
+        try:
+            stars = Star.from_dataframe(visible_df)
+        except Exception as e:
+            print(f"Error creating Star objects: {e}")
+            return None
+
+        ts = load.timescale()
+        try:
+            t = ts.from_datetime(obs_time)
+        except Exception:
+            if obs_time.tzinfo is None:
+                obs_time = obs_time.replace(tzinfo=pytz.UTC)
+            t = ts.from_datetime(obs_time)
+
+        astrometric = observer.at(t).observe(stars)
+        app = astrometric.apparent()
+        alt, az, _ = app.altaz()
+
+        alt_deg = np.asarray(alt.degrees)
+        az_deg = np.asarray(az.degrees)
+        mags = np.asarray(visible_df["magnitude"].values)
+
+        az_offset = ((az_deg - float(center_az) + 180.0) % 360.0) - 180.0
+
+        mask = (
+            (alt_deg >= float(alt_min))
+            & (alt_deg <= float(alt_max))
+            & (np.abs(az_offset) <= float(fov) / 2.0)
+        )
+
+        return {
+            "x": az_offset[mask],
+            "y": alt_deg[mask],
+            "mag": mags[mask],
+            "count": int(np.sum(mask)),
+        }
+
+    @classmethod
     def get_named_stars(
         cls,
         observer: Any,
@@ -472,6 +530,29 @@ class StarArtUtils:
 
         circle = Circle((0, 0), r_max, color="#1a1a1a", fill=False, linewidth=0.25)
         ax.add_patch(circle)
+
+        return fig, "#fdfdf9"
+
+    @staticmethod
+    def horizon_slice_style(
+        stars: dict[str, Any] | None, alt_min: float, alt_max: float, fov: float
+    ) -> tuple[Figure | None, str]:
+        if stars is None or stars.get("count", 0) == 0:
+            return None, "white"
+
+        fig, ax = plt.subplots(figsize=(18, 6), facecolor="#fdfdf9", dpi=300)
+        ax.set_facecolor("#fdfdf9")
+
+        sizes = 40 * np.exp(-stars["mag"] / 2.2)
+        alphas = np.clip(0.9 - (stars["mag"] - np.min(stars["mag"])) / 12, 0.3, 0.9)
+
+        ax.scatter(stars["x"], stars["y"], s=sizes, c="#1a1a1a", alpha=alphas, linewidths=0)
+
+        ax.set_xlim(-fov / 2.0, fov / 2.0)
+        ax.set_ylim(alt_min, alt_max)
+        ax.axis("off")
+
+        ax.axhline(alt_min, color="#1a1a1a", linewidth=0.25)
 
         return fig, "#fdfdf9"
 

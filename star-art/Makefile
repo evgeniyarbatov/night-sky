@@ -4,10 +4,10 @@ REPO_NAME := $(notdir $(CURDIR))
 DATA_DIR  ?= $(DATA_ROOT)/$(REPO_NAME)
 IMAGES_DIR := $(DATA_DIR)/images
 
-.PHONY: all art stars galaxies planets nebulae clusters exotic path timelapse test clean install lock help
+.PHONY: all art stars galaxies planets nebulae clusters exotic path timelapse horizon test clean install lock help
 
 # Entry point (default goal): generate every style of star art
-all: art stars galaxies planets nebulae clusters exotic path timelapse
+all: art stars galaxies planets nebulae clusters exotic path timelapse horizon
 
 install:
 	@uv sync
@@ -39,6 +39,9 @@ path: install
 timelapse: install
 	@STAR_ART_IMAGES_DIR=$(IMAGES_DIR) uv run python scripts/star-art-timelapse.py
 
+horizon: install
+	@STAR_ART_IMAGES_DIR=$(IMAGES_DIR) uv run python scripts/star-art-horizon-slice.py
+
 test: install
 	@uv run python -m unittest discover -s tests
 
@@ -60,6 +63,7 @@ help:
 	@echo "exotic     - run star-art-exotic-objects.py"
 	@echo "path       - run star-art-path.py"
 	@echo "timelapse  - run star-art-timelapse.py"
+	@echo "horizon    - run star-art-horizon-slice.py"
 	@echo "test       - run unittest suite"
 	@echo "clean      - remove generated images"
 	@echo "lock       - refresh uv.lock"
