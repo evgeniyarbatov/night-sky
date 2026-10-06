@@ -17,6 +17,7 @@ package = false
 [tool.ruff]
 line-length = 99
 target-version = "py311"
+src = ["scripts"]
 
 
 [tool.ruff.lint]
