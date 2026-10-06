@@ -1,2 +1,0 @@
-- [ ] `tests/` only has `__init__.py` — an earlier commit ("add focused unit tests for analemma date/ephemeris/unwrap logic") added real tests, but the analemma feature (and its tests) was later dropped in "expand charts, shared style, drop analemma"; no test files remain for the six current charts
-- [ ] No CI workflow at all (no `.github/`) — nothing runs ruff/mypy/pytest automatically on push
