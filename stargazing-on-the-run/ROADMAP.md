@@ -57,7 +57,7 @@ The existing pipeline (GPX → sky reconstruction → maps → video) is the fir
 | Overlay map + direction arrow on sky image | Done |
 | Merge into slideshow / video | Done |
 | Multiple elevation angles (horizon, 30°, 70°) | Done |
-| Variable field of view (zoom) | Planned ([TODO.md](TODO.md)) |
+| Variable field of view (zoom) | Planned |
 
 The current workflow is **retrospective**: after a run, reconstruct what was above you. The roadmap adds **prospective** and **pedagogical** layers — preparing you before a night run and helping you recognize what you see while the memory is fresh.
 
@@ -92,7 +92,7 @@ The foundation is already built. This phase hardens it and makes the output more
 - [ ] Configurable GPX input (drop a file in `data/gpx/`, no personal path in `scripts/gpx.py`).
 - [ ] **Sky object manifest** per screenshot: brightest stars, visible planets, moon phase, named constellations in the field of view (via Stellarium scripting or a Python sky library such as [Skyfield](https://rhodesmill.org/skyfield/)).
 - [ ] Annotated output: labels on merged images or a sidecar JSON/Markdown summary per run.
-- [ ] FOV variation — same direction, tighter zoom on a notable object ([TODO.md](TODO.md)).
+- [ ] FOV variation — same direction, tighter zoom on a notable object.
 - [ ] README walkthrough with a sample GPX so anyone can reproduce a sky log in one `make` invocation.
 
 **Success criterion:** After a night run, open one folder and answer: *What was that bright thing in the southeast at minute 23?*

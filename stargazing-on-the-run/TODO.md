@@ -1,1 +1,0 @@
-- [x] Vary FOV: same direction but more zoom (intentional zoom on highlight near center)
