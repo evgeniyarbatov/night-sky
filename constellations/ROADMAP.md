@@ -20,7 +20,7 @@ Everything below is ordered toward that feeling — recognition, curiosity, and 
 | Offline data + offline tests | No path for someone far from Saigon without editing config |
 | One PNG per constellation | No “what should I learn first tonight?” story |
 
-Personal notes that drive design (see also `TODO.md`):
+Personal notes that drive design:
 
 - The graphs are precise but disorienting when you are under the real sky.
 - Orientation usually comes from buildings and landmarks, not abstract degrees.
