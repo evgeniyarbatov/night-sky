@@ -39,6 +39,7 @@ STYLES = {
     "sumi-nebulae": "Nebulae overhead with labels",
     "sumi-star-clusters": "Star clusters overhead with labels",
     "sumi-exotic-objects": "Black holes, pulsars and quasars overhead with labels",
+    "horizon-slice": "Panoramic band of stars just above the horizon",
 }
 
 
@@ -113,6 +114,15 @@ def render(seed: int, params: dict[str, Any], sky_file: Path, out_dir: Path, siz
                 objects["count"] = int(np.sum(keep))
             path_mod = _load("star-art-path.py", "star_art_path")
             fig, bg = path_mod.wabi_sabi_minimal_style(objects)
+    elif style == "horizon-slice":
+        horizon_mod = _load("star-art-horizon-slice.py", "star_art_horizon_slice")
+        alt_min, alt_max = horizon_mod.ALT_MIN, horizon_mod.ALT_MAX
+        objects = StarArtUtils.get_horizon_band_stars(
+            observer, obs_time, magnitude, alt_min, alt_max, azimuth, fov
+        )
+        if objects is None or objects["count"] == 0:
+            raise LookupError(f"no stars in the {alt_min}-{alt_max} deg band")
+        fig, bg = StarArtUtils.horizon_slice_style(objects, alt_min, alt_max, fov)
     elif style == "sumi-planets":
         planets_mod = _load("star-art-planets.py", "star_art_planets")
         objects = planets_mod.get_bodies(observer, planets, obs_time, altitude, azimuth, fov)

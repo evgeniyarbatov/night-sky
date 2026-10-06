@@ -16,11 +16,12 @@ class TestRender(unittest.TestCase):
         names = {s["name"] for s in render.list_styles()}
         self.assertIn("sumi", names)
         self.assertIn("wabi-sabi-stars", names)
-        self.assertEqual(len(names), 8)
+        self.assertIn("horizon-slice", names)
+        self.assertEqual(len(names), 9)
 
     def test_catalog_styles_resolve_to_script_constants(self) -> None:
         for name in render.STYLES:
-            if name in ("sumi", "sumi-stars", "wabi-sabi-stars", "sumi-planets"):
+            if name in ("sumi", "sumi-stars", "wabi-sabi-stars", "sumi-planets", "horizon-slice"):
                 continue
             kind = name.removeprefix("sumi-")
             self.assertTrue((SCRIPTS_DIR / f"star-art-{kind}.py").exists(), name)
