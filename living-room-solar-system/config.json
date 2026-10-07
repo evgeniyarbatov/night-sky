@@ -1,0 +1,9 @@
+{
+  "city_name": "Ho Chi Minh",
+  "country": "Vietnam",
+  "latitude": 10.811487948774618,
+  "longitude": 106.6741415742141,
+  "timezone": "Asia/Ho_Chi_Minh",
+  "sample_interval_minutes": 10,
+  "elevation_m": 5
+}
