@@ -1,0 +1,6 @@
+*.bsp
+*.dat
+__pycache__/
+.venv/
+/images/*
+!/images/.gitignore
