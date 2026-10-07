@@ -18,7 +18,7 @@ import requests
 NASA_IMAGES_API = "https://images-api.nasa.gov"
 APOD_API = "https://api.nasa.gov/planetary/apod"
 DEFAULT_LICENSE = "NASA media (check source; U.S. government works are typically public domain)"
-USER_AGENT = "space-images/0.1 (+https://github.com/evgeniyarbatov/space-images)"
+USER_AGENT = "space-images/0.1 (+https://github.com/evgeniyarbatov/night-sky/tree/main/space-images)"
 
 DESTINATIONS: dict[str, tuple[str, ...]] = {
     "moon": ("moon", "lunar", "apollo", "artemis", "selen"),
