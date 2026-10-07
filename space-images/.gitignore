@@ -1,0 +1,15 @@
+.DS_Store
+.venv
+.ipynb_checkpoints/
+__pycache__/
+.venv/
+.mypy_cache/
+.ruff_cache/
+
+# Generated downloads (keep directory placeholders)
+album/daily/**
+!album/daily/.gitkeep
+images/*
+!images/.gitignore
+planets/*
+!planets/.gitignore
