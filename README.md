@@ -1,6 +1,20 @@
 # night-sky
 
-The sky above my runs: which stars and constellations are up, where the sun rises and sets through the year, real NASA imagery, and art and room-scale models made from all of it.
+The sky above my runs: which stars and constellations are up, where the sun rises and sets through the year, real NASA imagery, and art and room-scale models made from all of it. Every folder starts from the same thing, an observer at a place and time, sometimes taken point by point from a GPX run.
+
+## How the pieces fit
+
+```
+observer location (config.json) or a GPX run
+        │
+        ├─► what's up ─────► stargazing-on-the-run (Stellarium), constellations, sun-year
+        └─► what to make ──► star-art, space-images (NASA), living-room-solar-system
+```
+
+## Shared building blocks
+
+- **Observer + time → sky**: each folder's `config.json` sets the location. stargazing-on-the-run turns every point of a GPX into an observer.
+- **Stellarium** for rendered skies; ephemeris maths for the sun and planets.
 
 ## Projects
 
