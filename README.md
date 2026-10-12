@@ -34,6 +34,17 @@ observer location (config.json) or a GPX run
 | [space-images/](space-images) | Downloads real NASA imagery, with a roadmap from Earth to the stars | `make nasa planets` |
 | [living-room-solar-system/](living-room-solar-system) | Where the planets are, projected onto the living-room walls | `make run` |
 
+## Status
+
+| Folder | Status | Last touched | Next step |
+|---|---|---|---|
+| stargazing-on-the-run | active | 2026-10-08 | Run the full pipeline on any GPX file without hardcoded paths or local-only assumptions |
+| constellations | active | 2026-08-31 | Label every plot with place + date so shared images carry context |
+| sun-year | active | 2026-10-06 | — |
+| star-art | active | 2026-10-06 | Add my window to stargazing-locations.json |
+| space-images | active | 2026-10-02 | Add make targets for the image pipeline |
+| living-room-solar-system | parked | 2026-08-26 | — |
+
 ## Getting started
 
 Each folder is a standalone Python project with its own Makefile and uv environment; run targets from inside a folder or with `make -C <folder> <target>`. Observer location is set in each folder's `config.json`. `stargazing-on-the-run` also needs Stellarium.
