@@ -5,7 +5,7 @@ REPO_NAME := $(notdir $(CURDIR))
 DATA_DIR  ?= $(DATA_ROOT)/$(REPO_NAME)
 
 install:
-	@uv sync
+	@uv sync --all-packages
 
 test: install
 	@uv run python -m unittest discover -s tests -p 'test_*.py' -v
