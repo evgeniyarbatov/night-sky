@@ -99,7 +99,7 @@ Proxima, the Centauri system, everything beyond. Light-years mean **new propulsi
 - **Daily pull** — `make inspire` fetches APOD into `album/daily/` with caption
 - **Bulk pulls** — NASA Image Library + APOD samples into `images/`; per-planet sets into `images/<planet>/`
 - **Sidecars** — metadata and source caption next to every image
-- **Make targets** — `inspire`, `nasa`, `planets`, `clean`, `lock`
+- **Make targets** — `inspire`, `nasa`, `planets`, `lock`
 - **Source map** — links to NASA, ESA, Hubble, JPL, ESO, Chandra, Mars raw, and space news (see `README.md`)
 
 The seed: **put the cosmos on disk so you can look hard and build from it.**
