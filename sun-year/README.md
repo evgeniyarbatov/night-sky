@@ -64,7 +64,7 @@ Builds **all** plots (the six charts above) as PNGs under `~/data/<repo-folder>/
 make run DATA_DIR=/tmp/sun-year
 ```
 
-Python 3.11+, managed with `uv` (`make install` if you only want the venv).
+Python 3.11+, managed with `uv` (`make setup` if you only want the venv).
 
 Single chart (optional):
 

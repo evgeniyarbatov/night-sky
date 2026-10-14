@@ -9,13 +9,12 @@ GPX → sky identity (Skyfield) → per-run logs / route learning / tonight brie
 ## Commands
 
 ```sh
-make install          # uv sync --dev
+make setup            # uv sync --dev
 make demo             # sample → sky-log → profile
 make sky-log          # identity logs + index (no Stellarium)
 make profile          # route profile, seasons, cards
 make tonight GPX=… START=YYYY-MM-DDTHH:MM
 make test
-make clean            # generated data only; keeps samples/content
 ```
 
 Use `uv run` for ad-hoc Python. Do not invent personal GPX paths; drop files in `data/gpx/` or `make gpx SRC=…`.

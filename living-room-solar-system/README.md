@@ -21,7 +21,7 @@ by converting sky positions into wall projection heights.
 ## Setup
 
 ```bash
-make install
+make setup
 ```
 
 This creates a `.venv` and installs dependencies.

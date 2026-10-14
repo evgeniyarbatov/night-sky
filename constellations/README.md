@@ -17,7 +17,7 @@ Installs deps, refreshes IAU assets, and writes tonight's plots under `~/Documen
 ## Other commands
 
 ```sh
-make install    # .venv + deps
+make setup      # .venv + deps
 make download   # refresh IAU GIFs + boundary .txt under DATA_DIR
 make plot       # visibility plots for tonight
 make test       # offline unit tests

@@ -4,41 +4,43 @@ DATA_ROOT ?= $(HOME)/data
 REPO_NAME := $(notdir $(CURDIR))
 DATA_DIR  ?= $(DATA_ROOT)/$(REPO_NAME)
 
-install:
+.DEFAULT_GOAL := help
+
+setup:
 	@uv sync --all-packages
 
-test: install
+test: setup
 	@uv run python -m unittest discover -s tests -p 'test_*.py' -v
 
 lock:
 	@uv lock
 
-plot: install
+plot: setup
 	@mkdir -p $(DATA_DIR)
 	@DATA_DIR=$(DATA_DIR) uv run python scripts/plot-sun.py
 
-path: install
+path: setup
 	@mkdir -p $(DATA_DIR)
 	@DATA_DIR=$(DATA_DIR) uv run python scripts/sun-path.py
 
-duration: install
+duration: setup
 	@mkdir -p $(DATA_DIR)
 	@DATA_DIR=$(DATA_DIR) uv run python scripts/day-duration.py
 
-times: install
+times: setup
 	@mkdir -p $(DATA_DIR)
 	@DATA_DIR=$(DATA_DIR) uv run python scripts/sun-times.py
 
-noon: install
+noon: setup
 	@mkdir -p $(DATA_DIR)
 	@DATA_DIR=$(DATA_DIR) uv run python scripts/noon-altitude.py
 
-twilight: install
+twilight: setup
 	@mkdir -p $(DATA_DIR)
 	@DATA_DIR=$(DATA_DIR) uv run python scripts/twilight.py
 
 # Entry point: generate every plot into DATA_DIR
-.PHONY: install test lock plot path duration times noon twilight run help
+.PHONY: setup test lock plot path duration times noon twilight run help
 run: plot path duration times noon twilight
 
 help:
@@ -49,7 +51,7 @@ help:
 	@echo "times      - rise/set/noon clock times → \$$(DATA_DIR)/sun-times.png"
 	@echo "noon       - noon altitude + shadow → \$$(DATA_DIR)/noon-altitude.png"
 	@echo "twilight   - golden hour length → \$$(DATA_DIR)/twilight.png"
-	@echo "install    - uv sync (create/update .venv with all deps)"
+	@echo "setup      - uv sync (create/update .venv with all deps)"
 	@echo "test       - run unit tests"
 	@echo "lock       - uv lock (refresh uv.lock)"
 	@echo "Default DATA_DIR: ~/data/\$$(REPO_NAME). Override: make run DATA_DIR=/tmp/run"

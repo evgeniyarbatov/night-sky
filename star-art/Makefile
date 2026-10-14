@@ -4,55 +4,55 @@ REPO_NAME := $(notdir $(CURDIR))
 DATA_DIR  ?= $(DATA_ROOT)/$(REPO_NAME)
 IMAGES_DIR := $(DATA_DIR)/images
 
-.PHONY: all art stars galaxies planets nebulae clusters exotic path timelapse horizon test clean install lock help
+.DEFAULT_GOAL := help
+
+.PHONY: all art stars galaxies planets nebulae clusters exotic path timelapse horizon test setup lock help
 
 # Entry point (default goal): generate every style of star art
 all: art stars galaxies planets nebulae clusters exotic path timelapse horizon
 
-install:
+setup:
 	@uv sync --all-packages
 
-art: install
+art: setup
 	@STAR_ART_IMAGES_DIR=$(IMAGES_DIR) uv run python scripts/star-art.py
 
-stars: install
+stars: setup
 	@STAR_ART_IMAGES_DIR=$(IMAGES_DIR) uv run python scripts/star-art-names.py
 
-galaxies: install
+galaxies: setup
 	@STAR_ART_IMAGES_DIR=$(IMAGES_DIR) uv run python scripts/star-art-galaxies.py
 
-planets: install
+planets: setup
 	@STAR_ART_IMAGES_DIR=$(IMAGES_DIR) uv run python scripts/star-art-planets.py
 
-nebulae: install
+nebulae: setup
 	@STAR_ART_IMAGES_DIR=$(IMAGES_DIR) uv run python scripts/star-art-nebulae.py
 
-clusters: install
+clusters: setup
 	@STAR_ART_IMAGES_DIR=$(IMAGES_DIR) uv run python scripts/star-art-star-clusters.py
 
-exotic: install
+exotic: setup
 	@STAR_ART_IMAGES_DIR=$(IMAGES_DIR) uv run python scripts/star-art-exotic-objects.py
 
-path: install
+path: setup
 	@STAR_ART_IMAGES_DIR=$(IMAGES_DIR) uv run python scripts/star-art-path.py
 
-timelapse: install
+timelapse: setup
 	@STAR_ART_IMAGES_DIR=$(IMAGES_DIR) uv run python scripts/star-art-timelapse.py
 
-horizon: install
+horizon: setup
 	@STAR_ART_IMAGES_DIR=$(IMAGES_DIR) uv run python scripts/star-art-horizon-slice.py
 
-test: install
+test: setup
 	@uv run python -m unittest discover -s tests
-
-clean:
-	@rm -rf $(IMAGES_DIR)
 
 lock:
 	@uv lock
 
 help:
-	@echo "install    - create/update .venv and install dependencies"
+	@echo "run        - full art generation pipeline"
+	@echo "setup      - create/update .venv and install dependencies"
 	@echo "all        - run all generation targets"
 	@echo "art        - run star-art.py"
 	@echo "stars      - run star-art-names.py"
@@ -65,7 +65,6 @@ help:
 	@echo "timelapse  - run star-art-timelapse.py"
 	@echo "horizon    - run star-art-horizon-slice.py (dusk-to-sunrise frames per magnitude)"
 	@echo "test       - run unittest suite"
-	@echo "clean      - remove generated images"
 	@echo "lock       - refresh uv.lock"
 	@echo ""
 	@echo "Images are written to \$$(DATA_DIR)/images, default: ~/Documents/data/star-art/images"

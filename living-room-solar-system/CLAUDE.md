@@ -8,7 +8,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `make test` — install dependencies and run the full test suite (`pytest -q`).
 - `uv run python -m pytest tests/test_planets.py::test_load_settings_success` — run a single test.
 - `make lock` — refresh `uv.lock` after changing dependencies in `pyproject.toml`.
-- `make clean` — remove `.venv`.
 - Pre-commit hooks (ruff lint/format, mypy --strict, trailing-whitespace, etc.) are configured in `.pre-commit-config.yaml`.
 
 ## Architecture

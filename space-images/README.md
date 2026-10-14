@@ -23,7 +23,7 @@ Generated images never live in the repo working tree. By default they go to `~/d
 Requires Python 3.11+ and [uv](https://docs.astral.sh/uv).
 
 ```bash
-make install
+make setup
 export NASA_API_KEY=your_key   # free at https://api.nasa.gov — optional; DEMO_KEY works with limits
 make inspire                   # one picture + story (repeat to add more the same day)
 ```

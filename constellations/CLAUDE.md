@@ -10,11 +10,10 @@ Fixed-location night-sky plots: for each IAU constellation, when (if ever) it is
 
 ```sh
 make run               # full pipeline: install → download → plot
-make install
+make setup
 make test
 make download          # scripts/download.py → $DATA_DIR/{gifs,boundaries}
 make plot              # clear $DATA_DIR/plots, then scripts/plot_constellations.py
-make clean             # wipe $DATA_DIR/plots and .venv
 make lock
 ```
 

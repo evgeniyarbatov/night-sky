@@ -14,7 +14,7 @@ Generates minimalist star-field artwork (PNG) from real astronomical data — st
 ## How to run
 
 ```bash
-make install
+make setup
 make            # or `make all` — runs every style
 make art        # or any single style target (stars, galaxies, planets, ...)
 ```

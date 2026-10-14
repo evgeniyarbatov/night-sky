@@ -13,7 +13,7 @@ This project generates minimalist star-field artworks from real star positions.
 ## How to run
 
 ```
-make install    # sync dependencies with uv
+make setup      # sync dependencies with uv
 make            # or `make all` — generates every style below
 ```
 
@@ -36,7 +36,6 @@ Other targets:
 
 ```
 make test       # runs the unittest suite
-make clean      # removes generated images
 make help       # lists all targets
 ```
 

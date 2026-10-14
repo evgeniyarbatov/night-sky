@@ -3,7 +3,7 @@
 ## Setup
 
 ```sh
-make install   # uv sync --dev
+make setup     # uv sync --dev
 ```
 
 First planet/Moon computation downloads the Skyfield ephemeris into `$(DATA_DIR)/.skyfield/` (one-time, then offline).
@@ -95,4 +95,3 @@ file found in `$(GPX_DIR)`, so a directory of runs renders in one `make screensh
 | `make tonight-weather …` | Briefing + Open-Meteo cloud cover |
 | `make all` | Sky log + Stellarium visual chain |
 | `make test` | Pytest |
-| `make clean` | Generated outputs (keeps samples/content) |

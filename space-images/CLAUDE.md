@@ -31,7 +31,7 @@ Default write-ups and explanations to the conceptual level: name scripts, dirs, 
 
 ## Make / tooling
 
-- User-facing targets: `make install` / `inspire` / `nasa` / `planets` / `clean` / `lock`; keep `make help` accurate.
+- User-facing targets: `make setup` / `run` / `inspire` / `nasa` / `planets` / `lock`; keep `make help` accurate.
 - Ruff + mypy config live in `pyproject.toml` (`mypy_path = scripts`); match existing lint/format style.
 - Downloaded and generated content is written outside the repo tree, under `$(DATA_DIR)`; nothing generated is committed or gitignored inside the repo itself.
 
