@@ -18,7 +18,7 @@ GPX ?=
 STELLARIUM_IMAGE ?= stargazing-stellarium
 
 install:
-	@uv sync --dev
+	@uv sync --all-packages
 
 # Copy a GPX into $(GPX_DIR). Default: committed sample (data/samples/). Override: make gpx SRC=/path/to/file.gpx
 gpx: install

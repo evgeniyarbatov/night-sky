@@ -1,0 +1,17 @@
+[project]
+name = "night-sky"
+version = "0.1.0"
+requires-python = ">=3.11"
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = [
+    "constellations",
+    "living-room-solar-system",
+    "space-images",
+    "star-art",
+    "stargazing-on-the-run",
+    "sun-year",
+]

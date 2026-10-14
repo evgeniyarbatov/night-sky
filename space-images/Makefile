@@ -6,7 +6,7 @@ DATA_DIR  ?= $(DATA_ROOT)/$(REPO_NAME)
 SHELL := /bin/bash
 
 install:
-	@uv sync --dev
+	@uv sync --all-packages
 
 nasa: install
 	@mkdir -p $(DATA_DIR)/images

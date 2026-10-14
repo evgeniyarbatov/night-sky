@@ -10,7 +10,7 @@ IMAGES_DIR := $(DATA_DIR)/images
 all: art stars galaxies planets nebulae clusters exotic path timelapse horizon
 
 install:
-	@uv sync
+	@uv sync --all-packages
 
 art: install
 	@STAR_ART_IMAGES_DIR=$(IMAGES_DIR) uv run python scripts/star-art.py

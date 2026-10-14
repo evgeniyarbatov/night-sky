@@ -7,7 +7,7 @@ run: install
 	@uv run python scripts/planets.py
 
 install:
-	@uv sync --dev
+	@uv sync --all-packages
 
 lock:
 	@uv lock
