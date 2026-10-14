@@ -36,6 +36,8 @@ observer location (config.json) or a GPX run
 
 ## Getting started
 
+Per-folder run commands, dependencies and cautions for coding agents: [AGENTS.md](AGENTS.md).
+
 Each folder is a standalone Python project with its own Makefile; Python folders share one uv workspace (`uv sync --all-packages` at the root); run targets from inside a folder or with `make -C <folder> <target>`. Observer location is set in each folder's `config.json`. `stargazing-on-the-run` also needs Stellarium.
 
 Related live sites are kept as their own repos: [solar-lunar-times](https://github.com/evgeniyarbatov/solar-lunar-times) and [vmm-stargazing](https://github.com/evgeniyarbatov/vmm-stargazing).
