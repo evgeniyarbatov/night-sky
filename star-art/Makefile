@@ -6,10 +6,10 @@ IMAGES_DIR := $(DATA_DIR)/images
 
 .DEFAULT_GOAL := help
 
-.PHONY: all art stars galaxies planets nebulae clusters exotic path timelapse horizon test setup lock help
+.PHONY: all art stars galaxies planets nebulae clusters exotic path timelapse horizon strip test setup lock help
 
 # Entry point (default goal): generate every style of star art
-all: art stars galaxies planets nebulae clusters exotic path timelapse horizon
+all: art stars galaxies planets nebulae clusters exotic path timelapse horizon $(if $(GPX),strip)
 
 setup:
 	@uv sync --all-packages
@@ -44,6 +44,9 @@ timelapse: setup
 horizon: setup
 	@STAR_ART_IMAGES_DIR=$(IMAGES_DIR) uv run python scripts/star-art-horizon-slice.py
 
+strip: setup
+	@STAR_ART_IMAGES_DIR=$(IMAGES_DIR) uv run python scripts/star-art-run-strip.py "$(GPX)"
+
 test: setup
 	@uv run python -m unittest discover -s tests
 
@@ -64,6 +67,7 @@ help:
 	@echo "path       - run star-art-path.py"
 	@echo "timelapse  - run star-art-timelapse.py"
 	@echo "horizon    - run star-art-horizon-slice.py (dusk-to-sunrise frames per magnitude)"
+	@echo "strip      - run star-art-run-strip.py GPX=run.gpx (stars overhead during one run; in all when GPX is set)"
 	@echo "test       - run unittest suite"
 	@echo "lock       - refresh uv.lock"
 	@echo ""
